@@ -10,6 +10,7 @@ using BotClient.Models.HTMLElements.Enumerators;
 using BotClient.Models.Role;
 using BotClient.Models.Role.Enumerators;
 using BotClient.Models.WebReports;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -297,8 +298,8 @@ namespace BotClient.Bussines.Services
 
         private async Task<bool> CheckMessage(Guid WebDriverId, int BotId)
         {
-            var dialogs = await vkActionService.GetDialogsWithNewMessages(WebDriverId).ConfigureAwait(false);//
-            if ((dialogs != null) && (dialogs.Count > 0))
+            var dialogs = await vkActionService.GetDialogsWithNewMessages(WebDriverId).ConfigureAwait(false);
+            while ((dialogs != null) && (dialogs.Count > 0))
             {
                 var botClientRoleConnector = await clientCompositeService.GetBotClientRoleConnection(BotId, dialogs[0].ClientVkId);
                 if (botClientRoleConnector != null)
@@ -307,7 +308,40 @@ namespace BotClient.Bussines.Services
                     if (!readNewMessagesResult)
                         clientCompositeService.SetSuccess(botClientRoleConnector.Id, false);
                 }
-                return await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                dialogs = await vkActionService.GetDialogsWithNewMessages(WebDriverId).ConfigureAwait(false);
+            }
+            var botDialogsWithNewBotMessages = await clientCompositeService.GetBotClientRoleConnection(BotId, null, null, null, true).ConfigureAwait(false);
+            if ((botDialogsWithNewBotMessages != null) && (botDialogsWithNewBotMessages.Count > 0))
+            {
+                for (int i = 0; i < botDialogsWithNewBotMessages.Count; i++)
+                {
+                    var client = await clientCompositeService.GetClientById(botDialogsWithNewBotMessages[i].ClientId).ConfigureAwait(false);
+                    if (client != null)
+                    {
+                        var goToDialogResult = await vkActionService.GoToDialog(WebDriverId, client.VkId).ConfigureAwait(false);
+                        if (!goToDialogResult.hasError)
+                        {
+                            var messages = await clientCompositeService.GetMessagesByConnectionId(botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
+                            if ((messages != null) && (messages.Count > 0))
+                            {
+                                var sendAnswerMessageResult = new AlgoritmResult()
+                                {
+                                    ActionResultMessage = EnumActionResult.ElementError,
+                                    hasError = true
+                                };
+                                for (int j = 0; j < messages.Count; j++)
+                                {
+                                    var newBotMessage = RandMess(messages[j].Text);
+                                    sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage).ConfigureAwait(false);
+                                }
+                                if (!sendAnswerMessageResult.hasError)
+                                {
+                                    clientCompositeService.SetHasNewBotMessages(botDialogsWithNewBotMessages[i].Id, false);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             return true;
         }

@@ -28,9 +28,9 @@ namespace BotClient.Bussines.Services.Composite
             roleMissionConnectorService = RoleMissionConnectorService;
         }
 
-        public async Task<List<BotClientRoleConnectorModel>> GetBotClientRoleConnection(int BotId, int RoleId, bool? isComplete = false)
+        public async Task<List<BotClientRoleConnectorModel>> GetBotClientRoleConnection(int BotId, int? RoleId = null, bool? isComplete = false, bool? hasNewMessage = null, bool? hasNewBotMessage = null)
         {
-            var connections = await botClientRoleConnector.GetAll(BotId, null, RoleId, isComplete).ConfigureAwait(false);
+            var connections = await botClientRoleConnector.GetAll(BotId, null, RoleId, isComplete, hasNewMessage, hasNewBotMessage).ConfigureAwait(false);
             return connections;
         }
 
@@ -117,6 +117,12 @@ namespace BotClient.Bussines.Services.Composite
         public async Task<bool> SetHasNewMessage(int Id, bool? hasNewMessage = true)
         {
             var result = await botClientRoleConnector.SetHasNewMessage(Id, hasNewMessage.Value).ConfigureAwait(false);
+            return result;
+        }
+
+        public async Task<bool> SetHasNewBotMessages(int Id, bool? hasNewBotMessages = true)
+        {
+            var result = await botClientRoleConnector.SetHasNewBotMessages(Id, hasNewBotMessages.Value).ConfigureAwait(false);
             return result;
         }
     }

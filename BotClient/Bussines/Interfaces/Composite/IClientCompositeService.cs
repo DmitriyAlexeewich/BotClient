@@ -9,7 +9,7 @@ namespace BotClient.Bussines.Interfaces.Composite
 {
     public interface IClientCompositeService
     {
-        Task<List<BotClientRoleConnectorModel>> GetBotClientRoleConnection(int BotId,  int RoleId, bool? isComplete = false);
+        Task<List<BotClientRoleConnectorModel>> GetBotClientRoleConnection(int BotId, int? RoleId = null, bool? isComplete = false, bool? hasNewMessage = null, bool? hasNewBotMessage = null);
         Task<BotClientRoleConnectorModel> GetBotClientRoleConnection(int BotId, string ClientVkId, bool? isComplete = false);
         Task<ClientModel> GetClientById(int ClientId);
         Task<List<MessageModel>> GetMessagesByConnectionId(int BotClientConnectionId);
@@ -24,5 +24,6 @@ namespace BotClient.Bussines.Interfaces.Composite
         Task<bool> SetClientMissionPath(int BotId, int ClientId, int RoleId, string MissionPath);
         Task<bool> SetMissionId(int Id, int MissionId);
         Task<bool> SetHasNewMessage(int Id, bool? hasNewMessage = true);
+        Task<bool> SetHasNewBotMessages(int Id, bool? hasNewBotMessages = true);
     }
 }

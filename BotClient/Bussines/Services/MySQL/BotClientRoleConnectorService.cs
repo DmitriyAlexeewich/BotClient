@@ -18,7 +18,7 @@ namespace BotClient.Bussines.Services.MySQL
             mySQLService = MySQLService;
         }
 
-        public async Task<List<BotClientRoleConnectorModel>> GetAll(int? BotId, int? ClientId, int? RoleId, bool? isComplete)
+        public async Task<List<BotClientRoleConnectorModel>> GetAll(int? BotId, int? ClientId, int? RoleId, bool? isComplete, bool? hasNewMessage, bool? hasNewBotMessages)
         {
             var filters = new List<QueryFilter>();
             if (BotId != null)
@@ -55,6 +55,24 @@ namespace BotClient.Bussines.Services.MySQL
                     Table = "BotClientRoleConnector",
                     Column = "RoleId",
                     Filter = isComplete == true ? "1" : "0"
+                });
+            }
+            if (hasNewMessage != null)
+            {
+                filters.Add(new QueryFilter()
+                {
+                    Table = "BotClientRoleConnector",
+                    Column = "HasNewMessage",
+                    Filter = hasNewMessage == true ? "1" : "0"
+                });
+            }
+            if (hasNewBotMessages != null)
+            {
+                filters.Add(new QueryFilter()
+                {
+                    Table = "BotClientRoleConnector",
+                    Column = "HasNewBotMessages",
+                    Filter = hasNewBotMessages == true ? "1" : "0"
                 });
             }
             var botClientRoleConnectionsDataTable = await Select(filters.Count > 0 ? filters : null).ConfigureAwait(false);
@@ -167,9 +185,19 @@ namespace BotClient.Bussines.Services.MySQL
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
                            $"`UpdateDate`='{DateTime.UtcNow}', " +
-                           $"`HasNewMessage`='{hasNewMessage}' " +
+                           $"`HasNewMessage`='{(hasNewMessage == true ? 1 : 0)}' " +
                            "WHERE " +
                            $"`Id`='{Id}'";
+            return await mySQLService.ExecuteNonQuery(query);
+        }
+
+        public async Task<bool> SetHasNewBotMessages(int Id, bool hasNewBotMessages)
+        {
+            var query = "UPDATE `BotClientRoleConnector` SET " +
+                               $"`UpdateDate`='{DateTime.UtcNow}', " +
+                               $"`HasNewBotMessages`='{(hasNewBotMessages == true ? 1 : 0)}' " +
+                               "WHERE " +
+                               $"`Id`='{Id}'";
             return await mySQLService.ExecuteNonQuery(query);
         }
 
@@ -204,7 +232,8 @@ namespace BotClient.Bussines.Services.MySQL
                     MissionPath = DataTable[i][7],
                     isComplete = DataTable[i][8] == "True" ? true : false,
                     isSuccess = DataTable[i][9] == "True" ? true : false,
-                    hasNewMessage = DataTable[i][10] == "True" ? true : false
+                    hasNewMessage = DataTable[i][10] == "True" ? true : false,
+                    hasNewBotMessages = DataTable[i][10] == "True" ? true : false
                 });
             }
             return botClientRoleConnections;

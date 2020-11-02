@@ -8,7 +8,7 @@ namespace BotClient.Bussines.Interfaces.MySQL
 {
     public interface IBotClientRoleConnectorService
     {
-        Task<List<BotClientRoleConnectorModel>> GetAll(int? BotId, int? ClientId, int? RoleId, bool? isComplete);
+        Task<List<BotClientRoleConnectorModel>> GetAll(int? BotId, int? ClientId, int? RoleId, bool? isComplete, bool? hasNewMessage, bool? hasNewBotMessages);
         Task<BotClientRoleConnectorModel> GetByClientVkId(int BotId, string ClientVkId, bool isComplete);
         Task<bool> SetComplete(int Id);
         Task<bool> SetComplete(int BotId, int ClientId, int RoleId);
@@ -18,5 +18,6 @@ namespace BotClient.Bussines.Interfaces.MySQL
         Task<bool> SetMissionPath(int BotId, int ClientId, int RoleId, string MissionPath);
         Task<bool> SetMissionId(int Id, int MissionId);
         Task<bool> SetHasNewMessage(int Id, bool hasNewMessage);
+        Task<bool> SetHasNewBotMessages(int Id, bool hasNewBotMessages);
     }
 }

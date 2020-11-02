@@ -18,5 +18,6 @@ namespace BotClient.Models.Role
         public bool isComplete { get; set; }
         public bool isSuccess { get; set; }
         public bool hasNewMessage { get; set; }
+        public bool hasNewBotMessages { get; set; }
     }
 }
