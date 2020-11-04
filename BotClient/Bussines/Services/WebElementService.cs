@@ -16,6 +16,8 @@ namespace BotClient.Bussines.Services
             webDriverService = WebDriverService;
         }
 
+
+
         public bool ClickToElement(WebHTMLElement Element, EnumClickType ClickType)
         {
             if (Element != null)
@@ -129,5 +131,26 @@ namespace BotClient.Bussines.Services
             }
             return null;
         }
+
+        public List<WebHTMLElement> GetChildElements(WebHTMLElement Element, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
+        {
+            var childs = Element.GetChildElements(SelectorType, Link, isRequired.Value);
+            if ((childs != null) && (childs.Count > 0))
+                return childs;
+            return null;
+        }
+
+        public async Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
+        {
+            var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+            if (body != null)
+            {
+                var childs = body.GetChildElements(SelectorType, Link, isRequired.Value);
+                if ((childs != null) && (childs.Count > 0))
+                    return childs;
+            }
+            return null;
+        }
+
     }
 }

@@ -298,17 +298,17 @@ namespace BotClient.Bussines.Services
 
         private async Task<bool> CheckMessage(Guid WebDriverId, int BotId)
         {
-            var dialogs = await vkActionService.GetDialogsWithNewMessages(WebDriverId).ConfigureAwait(false);
-            while ((dialogs != null) && (dialogs.Count > 0))
+            var dialog = await vkActionService.GetDialogWithNewMessages(WebDriverId).ConfigureAwait(false);
+            while (dialog != null)
             {
-                var botClientRoleConnector = await clientCompositeService.GetBotClientRoleConnection(BotId, dialogs[0].ClientVkId);
+                var botClientRoleConnector = await clientCompositeService.GetBotClientRoleConnection(BotId, dialog.ClientVkId);
                 if (botClientRoleConnector != null)
                 {
-                    var readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector).ConfigureAwait(false);
+                    var readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector, dialog.ClientVkId).ConfigureAwait(false);
                     if (!readNewMessagesResult)
                         clientCompositeService.SetSuccess(botClientRoleConnector.Id, false);
                 }
-                dialogs = await vkActionService.GetDialogsWithNewMessages(WebDriverId).ConfigureAwait(false);
+                dialog = await vkActionService.GetDialogWithNewMessages(WebDriverId).ConfigureAwait(false);
             }
             var botDialogsWithNewBotMessages = await clientCompositeService.GetBotClientRoleConnection(BotId, null, null, null, true).ConfigureAwait(false);
             if ((botDialogsWithNewBotMessages != null) && (botDialogsWithNewBotMessages.Count > 0))
@@ -346,9 +346,9 @@ namespace BotClient.Bussines.Services
             return true;
         }
 
-        private async Task<bool> ReadNewMessages(Guid WebDriverId, int RoleId, BotClientRoleConnectorModel botClientRoleConnector)
+        private async Task<bool> ReadNewMessages(Guid WebDriverId, int RoleId, BotClientRoleConnectorModel botClientRoleConnector, string ClientVkId)
         {
-            var newMessages = await vkActionService.GetNewMessagesInDialog(WebDriverId).ConfigureAwait(false);//
+            var newMessages = await vkActionService.GetNewMessagesInDialog(WebDriverId, ClientVkId).ConfigureAwait(false);
             if ((newMessages != null) && (newMessages.Count > 0))
             {
                 var newMessageText = "";

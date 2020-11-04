@@ -56,6 +56,27 @@ namespace BotClient.Models.HTMLElements
             }
         }
 
+        private WebHTMLElement(IWebDriver WebDriver, EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired, IWebElement WebDriverWebElement, WebConnectionSettings ConnectionSettings)
+        {
+            if (WebDriver != null)
+            {
+                webDriver = WebDriver;
+                element = WebDriverWebElement;
+                if (element != null)
+                {
+                    var ElementModel = new WebHTMLElementModel()
+                    {
+                        SelectorType = SelectorType,
+                        Link = Link,
+                        isRequired = isRequired
+                    };
+                    HTMLElementModel = ElementModel;
+                    WebSettings = ConnectionSettings;
+                    isAvailable = true;
+                }
+            }
+        }
+
         public EnumWebHTMLPageStatus WaitPageLoading()
         {
             for (int i = 0; i < WebSettings.HTMLPageWaitingTime; i++)
@@ -226,15 +247,33 @@ namespace BotClient.Models.HTMLElements
             return null;
         }
 
+        public List<WebHTMLElement> GetChildElements(EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired)
+        {
+            var findElementsResult = FindWebElements(SelectorType, Link, isRequired);
+            var result = new List<WebHTMLElement>();
+            if ((findElementsResult != null) && (findElementsResult.Count > 0))
+            {
+                for (int i = 0; i < findElementsResult.Count; i++)
+                {
+                    var bufferElement = new WebHTMLElement(webDriver, SelectorType, Link, isRequired, findElementsResult[i], WebSettings);
+                    if (bufferElement.isAvailable)
+                        result.Add(bufferElement);
+                }
+            }
+            if (result.Count > 0)
+                return result;
+            return null;
+        }
+
         private IWebElement FindWebElement(WebHTMLElementModel ElementModel, bool? isParentElementIsDriver = true)
         {
-            IWebElement bufferElement = null;
+            IWebElement bufferElement;
             try
             {
                 switch (ElementModel.SelectorType)
                 {
                     case EnumWebHTMLElementSelector.Id:
-                        if(isParentElementIsDriver.Value)
+                        if (isParentElementIsDriver.Value)
                             bufferElement = webDriver.FindElement(By.Id(ElementModel.Link));
                         else
                             bufferElement = element.FindElement(By.Id(ElementModel.Link));
@@ -279,6 +318,55 @@ namespace BotClient.Models.HTMLElements
                 bufferElement = null;
             }
             return bufferElement;
+        }
+
+        private List<IWebElement> FindWebElements(EnumWebHTMLElementSelector SelectorType, string Link, bool? isParentElementIsDriver = true)
+        {
+            List<IWebElement> bufferElements = new List<IWebElement>();
+            try
+            {
+                switch (SelectorType)
+                {
+                    case EnumWebHTMLElementSelector.Name:
+                        if (isParentElementIsDriver.Value)
+                            bufferElements = webDriver.FindElements(By.Name(Link)).ToList();
+                        else
+                            bufferElements = element.FindElements(By.Name(Link)).ToList();
+                        break;
+                    case EnumWebHTMLElementSelector.XPath:
+                        if (isParentElementIsDriver.Value)
+                            bufferElements = webDriver.FindElements(By.XPath(Link)).ToList();
+                        else
+                            bufferElements = element.FindElements(By.XPath(Link)).ToList();
+                        break;
+                    case EnumWebHTMLElementSelector.TagName:
+                        if (isParentElementIsDriver.Value)
+                            bufferElements = webDriver.FindElements(By.TagName(Link)).ToList();
+                        else
+                            bufferElements = element.FindElements(By.TagName(Link)).ToList();
+                        break;
+                    case EnumWebHTMLElementSelector.ClassName:
+                        if (isParentElementIsDriver.Value)
+                            bufferElements = webDriver.FindElements(By.ClassName(Link)).ToList();
+                        else
+                            bufferElements = element.FindElements(By.ClassName(Link)).ToList();
+                        break;
+                    case EnumWebHTMLElementSelector.CSSSelector:
+                        if (isParentElementIsDriver.Value)
+                            bufferElements = webDriver.FindElements(By.CssSelector(Link)).ToList();
+                        else
+                            bufferElements = element.FindElements(By.CssSelector(Link)).ToList();
+                        break;
+                    default:
+                        bufferElements = null;
+                        break;
+                }
+            }
+            catch
+            {
+                bufferElements = null;
+            }
+            return bufferElements;
         }
 
         private bool isCanPrintText()

@@ -24,8 +24,8 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
         Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
-        Task<List<DialogWithNewMessagesModel>> GetDialogsWithNewMessages(Guid WebDriverId);
-        Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId);
+        Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId);
+        Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId, string ClientVkId);
         Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText);
     }
 }
