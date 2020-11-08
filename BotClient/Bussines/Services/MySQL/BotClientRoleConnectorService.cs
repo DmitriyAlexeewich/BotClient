@@ -53,7 +53,7 @@ namespace BotClient.Bussines.Services.MySQL
                 filters.Add(new QueryFilter()
                 {
                     Table = "BotClientRoleConnector",
-                    Column = "RoleId",
+                    Column = "IsComplete",
                     Filter = isComplete == true ? "1" : "0"
                 });
             }
@@ -102,7 +102,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetComplete(int Id)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                        $"`UpdateDate`='{DateTime.UtcNow}', " +
                         $"`IsComplete`='1' " +
                         "WHERE " +
                         $"`Id`='{Id}'";
@@ -112,7 +111,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetComplete(int BotId, int ClientId, int RoleId)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                    $"`UpdateDate`='{DateTime.UtcNow}', " +
                     $"`IsComplete`='1' " +
                     "WHERE " +
                     $"`BotId`='{BotId}' " +
@@ -126,7 +124,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetSuccess(int Id, bool isSuccess)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                        $"`UpdateDate`='{DateTime.UtcNow}', " +
                         $"`IsSuccess`='" + (isSuccess == true ? "1" : "0") + "' " +
                         "WHERE " +
                         $"`Id`='{Id}'";
@@ -136,7 +133,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetSuccess(int BotId, int ClientId, int RoleId, bool isSuccess)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                    $"`UpdateDate`='{DateTime.UtcNow}', " +
                     $"`IsSuccess`='" + (isSuccess == true ? "1" : "0") + "' " +
                     "WHERE " +
                     $"`BotId`='{BotId}' " +
@@ -150,7 +146,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetMissionPath(int Id, string MissionPath)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                        $"`UpdateDate`='{DateTime.UtcNow}', " +
                         $"`MissionPath`='{MissionPath}' " +
                         "WHERE " +
                         $"`Id`='{Id}'";
@@ -160,7 +155,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetMissionPath(int BotId, int ClientId, int RoleId, string MissionPath)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                        $"`UpdateDate`='{DateTime.UtcNow}', " +
                         $"`MissionPath`='{MissionPath}' " +
                         "WHERE " +
                         $"`BotId`='{BotId}' " +
@@ -174,7 +168,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetMissionId(int Id, int MissionId)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                        $"`UpdateDate`='{DateTime.UtcNow}', " +
                         $"`MissionId`='{MissionId}' " +
                         "WHERE " +
                         $"`Id`='{Id}'";
@@ -184,7 +177,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetHasNewMessage(int Id, bool hasNewMessage)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                           $"`UpdateDate`='{DateTime.UtcNow}', " +
                            $"`HasNewMessage`='{(hasNewMessage == true ? 1 : 0)}' " +
                            "WHERE " +
                            $"`Id`='{Id}'";
@@ -194,7 +186,6 @@ namespace BotClient.Bussines.Services.MySQL
         public async Task<bool> SetHasNewBotMessages(int Id, bool hasNewBotMessages)
         {
             var query = "UPDATE `BotClientRoleConnector` SET " +
-                               $"`UpdateDate`='{DateTime.UtcNow}', " +
                                $"`HasNewBotMessages`='{(hasNewBotMessages == true ? 1 : 0)}' " +
                                "WHERE " +
                                $"`Id`='{Id}'";

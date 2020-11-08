@@ -358,7 +358,7 @@ namespace BotClient.Bussines.Services
                 {
                     var webDriver = await GetWebDriverById(WebDriverId).ConfigureAwait(false);
                     if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
-                        && (webDriver.Status != EnumWebDriverStatus.Loading) && (webDriver.Status != EnumWebDriverStatus.Blocked))
+                        && (webDriver.Status != EnumWebDriverStatus.Loading) && (await hasWebHTMLElement(WebDriverId, Selector, Link).ConfigureAwait(false)))
                     {
                         var element = new WebHTMLElement(webDriver.WebDriver, Selector, Link, isRequired.Value, settings);
                         if (element.isAvailable)
@@ -437,7 +437,7 @@ namespace BotClient.Bussines.Services
                         switch (webDriver.WebDriverPlatform)
                         {
                             case EnumSocialPlatform.Vk:
-                                URL = "https://vk.com//" + URL;
+                                URL = "https://vk.com/" + URL;
                                 break;
                         }
                         webDriver.WebDriver.Navigate().GoToUrl(URL);
@@ -482,7 +482,7 @@ namespace BotClient.Bussines.Services
             {
                 try
                 {
-                    var js = (IJavaScriptExecutor)WebDriver;
+                    var js = (IJavaScriptExecutor)WebDriver.WebDriver;
                     object o = js.ExecuteScript("return document.readyState;");
                     var readyState = (string)o;
                     if (readyState == "complete" || readyState == "interactive")
@@ -490,9 +490,8 @@ namespace BotClient.Bussines.Services
                 }
                 catch
                 {
-                    return EnumWebHTMLPageStatus.Error;
+                    Thread.Sleep(1000);
                 }
-                Thread.Sleep(1000);
             }
             return EnumWebHTMLPageStatus.Loading;
         }

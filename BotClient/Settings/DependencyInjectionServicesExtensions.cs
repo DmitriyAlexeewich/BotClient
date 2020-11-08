@@ -17,6 +17,7 @@ namespace BotClient.Settings
         public static IServiceCollection DependencyInjectionAll(this IServiceCollection services)
         {
             services.AddSingleton<IWebDriverService, WebDriverService>();
+            services.AddSingleton<IWebElementService, WebElementService>();
             services.AddSingleton<ISettingsService, SettingsService>();
             services.AddSingleton<IMySQLService, MySQLService>();
             services.AddSingleton<IBotService, BotService>();
@@ -34,6 +35,8 @@ namespace BotClient.Settings
             services.AddSingleton<IClientCompositeService, ClientCompositeService>();
             services.AddSingleton<IMissionCompositeService, MissionCompositeService>();
             services.AddSingleton<IBotWorkService, BotWorkService>();
+            services.AddSingleton<IVkActionService, VkActionService>();
+
             return services;
         }
     }

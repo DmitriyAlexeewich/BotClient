@@ -13,6 +13,8 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> ClickToElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, EnumClickType ClickType, bool? isElementRequired = true);
         bool PrintTextToElement(WebHTMLElement Element, string Text);
         Task<bool> PrintTextToElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string Text, bool? isElementRequired = true);
+        bool SendKeyToElement(WebHTMLElement Element, string KeyName);
+        Task<bool> SendKeyToElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string KeyName, bool? isElementRequired = true);
         bool ClearElement(WebHTMLElement Element);
         Task<bool> ClearElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true);
         bool ScrollElement(WebHTMLElement Element);

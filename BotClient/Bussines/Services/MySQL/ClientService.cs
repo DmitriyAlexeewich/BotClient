@@ -54,7 +54,6 @@ namespace BotClient.Bussines.Services
         public async Task<bool> Update(ClientModel ClientData)
         {
             var query = "UPDATE `Client` SET " +
-                        $"`UpdateDate`='{DateTime.UtcNow}', " +
                         $"`VkId`='{ClientData.VkId}', " +
                         $"`FullName`='{ClientData.FullName}' " +
                         $"WHERE `Id`='{ClientData.Id}'";

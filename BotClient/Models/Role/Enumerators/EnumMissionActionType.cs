@@ -15,6 +15,7 @@ namespace BotClient.Models.Role.Enumerators
         SubscribeToGroup = 6,
         Repost = 7,
         SendMessage = 8,
-        End = 9
+        End = 9,
+        WaitAnswerMessage = 10
     }
 }

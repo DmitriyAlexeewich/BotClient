@@ -84,7 +84,6 @@ namespace BotClient.Bussines.Services
         public async Task<bool> Update(BotModel BotData)
         {
             var query = $"UPDATE `Bot` SET " +
-                $"`UpdateDate`='{DateTime.UtcNow}'," +
                 $"`Login`='{BotData.Login}'," +
                 $"`Password`='{BotData.Password}'," +
                 $"`IsMale`='{BotData.isMale}'," +
@@ -160,10 +159,11 @@ namespace BotClient.Bussines.Services
                     VkId = dataTable[i][8],
                     FullName = dataTable[i][9],
                     OnlineDate = DateTime.Parse(dataTable[i][10]),
-                    isDead = dataTable[i][11] == "True" ? true : false,
-                    isPrintBlock = dataTable[i][12] == "True" ? true : false,
-                    isLogin = dataTable[i][13] == "True" ? true : false,
-                    isUpdatedCusomizeInfo = dataTable[i][14] == "True" ? true : false,
+                    RoleId = int.Parse(dataTable[i][11]),
+                    isDead = dataTable[i][12] == "True" ? true : false,
+                    isPrintBlock = dataTable[i][13] == "True" ? true : false,
+                    isLogin = dataTable[i][14] == "True" ? true : false,
+                    isUpdatedCusomizeInfo = dataTable[i][15] == "True" ? true : false,
                 });
             }
             return bots;

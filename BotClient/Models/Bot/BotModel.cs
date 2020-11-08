@@ -19,6 +19,7 @@ namespace BotClient.Models.Bot
         public string VkId { get; set; }
         public string FullName { get; set; }
         public DateTime OnlineDate { get; set; }
+        public int RoleId { get; set; }
         public bool isDead { get; set; }
         public bool isPrintBlock { get; set; }
         public bool isLogin { get; set; }

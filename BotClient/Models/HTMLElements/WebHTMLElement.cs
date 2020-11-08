@@ -2,6 +2,7 @@
 using BotClient.Models.Settings;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,18 +104,41 @@ namespace BotClient.Models.HTMLElements
             try
             {
                 element.Click();
-                if (ClickType == EnumClickType.URLClick)
+            }
+            catch
+            {
+                try
                 {
-                    var loadingResult = WaitPageLoading();
-                    if (loadingResult != EnumWebHTMLPageStatus.Ready)
-                        return false;
+                    Actions actions = new Actions(webDriver);
+                    actions.MoveToElement(element).Click().Perform();
                 }
+                catch
+                {
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].click();", element);
+
+                }
+            }
+            if (ClickType == EnumClickType.URLClick)
+            {
+                var loadingResult = WaitPageLoading();
+                if (loadingResult != EnumWebHTMLPageStatus.Ready)
+                    return false;
+            }
+            return true;
+        }
+
+        public bool SendKey(string KeyName)
+        {
+            try
+            {
+                element.SendKeys(KeyName);
+                return true;
             }
             catch
             {
                 return false;
             }
-            return true;
         }
 
         public bool PrintText(string Text)
@@ -130,10 +154,7 @@ namespace BotClient.Models.HTMLElements
                     Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
                 }
                 if (printedText == Text)
-                {
-                    element.SendKeys(Keys.Return);
                     return true;
-                }
                 element.Clear();
             }
             return false;
@@ -241,9 +262,13 @@ namespace BotClient.Models.HTMLElements
                 Link = Link,
                 isRequired = isRequired
             };
-            var webHTMLElement = new WebHTMLElement(webDriver, elementModel, WebSettings, false);
-            if (webHTMLElement.isAvailable)
-                return webHTMLElement;
+            var childElement = FindWebElement(elementModel, false);
+            if (childElement != null)
+            {
+                var webHTMLElement = new WebHTMLElement(webDriver, SelectorType, Link, isRequired, childElement, WebSettings);
+                if (webHTMLElement.isAvailable)
+                    return webHTMLElement;
+            }
             return null;
         }
 

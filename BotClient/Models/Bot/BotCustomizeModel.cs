@@ -11,6 +11,7 @@ namespace BotClient.Models.Bot
         public DateTime CreateDate { get; set; }
         public DateTime UpdateDate { get; set; }
         public int BotId { get; set; }
+        public string Coutry { get; set; }
         public string City { get; set; }
         public string MobilePhone { get; set; }
         public string HomePhone { get; set; }

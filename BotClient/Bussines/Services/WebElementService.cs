@@ -38,6 +38,13 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
+        public bool SendKeyToElement(WebHTMLElement Element, string KeyName)
+        {
+            if (Element != null)
+                return Element.SendKey(KeyName);
+            return false;
+        }
+
         public bool ClearElement(WebHTMLElement Element)
         {
             if (Element != null)
@@ -55,6 +62,12 @@ namespace BotClient.Bussines.Services
         {
             var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
             return PrintTextToElement(element, Text);
+        }
+
+        public async Task<bool> SendKeyToElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string KeyName, bool? isElementRequired = true)
+        {
+            var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
+            return SendKeyToElement(element, KeyName);
         }
 
         public bool ScrollElement(WebHTMLElement Element)
