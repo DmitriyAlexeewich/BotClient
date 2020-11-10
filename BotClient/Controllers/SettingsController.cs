@@ -24,8 +24,8 @@ namespace BotClient.Controllers
             settingsService = SettingsService;
         }
 
-        [HttpPost("CreateLink")]
-        public async Task<IActionResult> CreateLink([FromBody] WebConnectionSettings Settings)
+        [HttpPost("CreateSettings")]
+        public async Task<IActionResult> CreateSettings([FromBody] WebConnectionSettings Settings)
         {
             if ((Settings.ParentServerIP != null) && (Settings.ServerId != null) && (Settings.Options != null))
             {
@@ -33,7 +33,7 @@ namespace BotClient.Controllers
             }
             return BadRequest("Invalid Settings");
         }
-
+        /*
         [HttpPost("SetServerId")]
         public async Task<IActionResult> SetServerId([FromQuery] Guid ServerId)
         {
@@ -43,7 +43,7 @@ namespace BotClient.Controllers
             }
             return BadRequest("Invalid ServerId");
         }
-
+        */
         [HttpPost("SetParentServerIP")]
         public async Task<IActionResult> SetParentServerIP([FromQuery] string ParentServerIP)
         {
@@ -131,7 +131,7 @@ namespace BotClient.Controllers
             var result = await settingsService.GetLogLines().ConfigureAwait(false);
             return Ok(result);
         }
-
+        /*
         [HttpPost("AddUpdateAlgoritm")]
         public async Task<IActionResult> AddUpdateAlgoritm([FromQuery] int AlgoritmId, [FromQuery] int SocialPlatformId, [FromBody] List<WebHTMLElementModel> Algoritm)
         {
@@ -161,7 +161,7 @@ namespace BotClient.Controllers
                 return BadRequest("None algoritm");
             return Ok(result);
         }
-
+        */
 
     }
 }

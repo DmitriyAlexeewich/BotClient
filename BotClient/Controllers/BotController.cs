@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
+using BotClient.Models.WebReports;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,16 +21,32 @@ namespace BotClient.Controllers
             botWorkService = BotWorkService;
         }
 
-        [HttpGet("StartBot")]
+        [HttpPost("StartBot")]
         public async Task<IActionResult> StartBot([FromBody] List<int> BotsId)
         {
-            return Ok(await botWorkService.StartBot(BotsId).ConfigureAwait(false));
+            var message = "Invalid BotsId. The list of bot IDs is empty";
+            if (BotsId != null)
+            {
+                if (BotsId.Count > 0)
+                    return Ok(await botWorkService.StartBot(BotsId).ConfigureAwait(false));
+                else
+                    message = "Invalid BotsId. Bot id list contains no elements";
+            }
+            return BadRequest(message);
         }
 
-        [HttpGet("StopBot")]
+        [HttpPost("StopBot")]
         public async Task<IActionResult> StopBot([FromQuery] List<int> BotsId)
         {
-            return Ok(await botWorkService.StopBot(BotsId).ConfigureAwait(false));
+            var message = "Invalid BotsId. The list of bot IDs is empty";
+            if (BotsId != null)
+            {
+                if (BotsId.Count > 0)
+                    return Ok(await botWorkService.StopBot(BotsId).ConfigureAwait(false));
+                else
+                    message = "Invalid BotsId. Bot id list contains no elements";
+            }
+            return BadRequest(message);
         }
 
         [HttpGet("GetBots")]

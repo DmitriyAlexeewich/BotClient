@@ -73,9 +73,9 @@ namespace BotClient.Bussines.Services.Composite
             return result;
         }
 
-        public async Task<bool> SetIsUpdatedCusomizeInfo(int Id, bool isUpdatedCusomizeInfo)
+        public async Task<bool> SetIsUpdatedCustomizeInfo(int Id, bool isUpdatedCusomizeInfo)
         {
-            var result = await botService.SetIsUpdatedCusomizeInfo(Id, isUpdatedCusomizeInfo).ConfigureAwait(false);
+            var result = await botService.SetIsUpdatedCustomizeInfo(Id, isUpdatedCusomizeInfo).ConfigureAwait(false);
             return result;
         }
 

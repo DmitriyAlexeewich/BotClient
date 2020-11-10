@@ -17,6 +17,6 @@ namespace BotClient.Bussines.Interfaces.Composite
         Task<bool> SetIsDead(int Id, bool isDead);
         Task<bool> SetIsPrintBlock(int Id, bool isPrintBlock);
         Task<bool> SetIsLogin(int Id, bool isLogin);
-        Task<bool> SetIsUpdatedCusomizeInfo(int Id, bool isUpdatedCusomizeInfo);
+        Task<bool> SetIsUpdatedCustomizeInfo(int Id, bool isUpdatedCusomizeInfo);
     }
 }

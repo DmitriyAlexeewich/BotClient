@@ -49,6 +49,9 @@ namespace BotClient.Bussines.Services
         public async Task<BotStartReport> StartBot(List<int> BotsId)
         {
             var result = new BotStartReport();
+
+            //Check bots data
+
             for (int i = 0; i < BotsId.Count; i++)
             {
                 var bufferBotData = await botCompositeService.GetBotById(BotsId[i]).ConfigureAwait(false);
@@ -69,6 +72,9 @@ namespace BotClient.Bussines.Services
                     result.ErrorBots.Add(bufferBotData);
                 }
             }
+
+            //Set WebDriver to success checked bots
+
             var webDrivers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
             int driverCounter = 0;
             for (int i = 0; i < bots.Count; i++)
@@ -78,6 +84,9 @@ namespace BotClient.Bussines.Services
                 if (driverCounter >= webDrivers.Count)
                     driverCounter = 0;
             }
+
+            //Start bots
+
             for (int i = 0; i < webDrivers.Count; i++)
                 RunBot(webDrivers[i].Id);
             return result;
@@ -88,14 +97,20 @@ namespace BotClient.Bussines.Services
             var result = new BotStopQueryReport();
             for (int i = 0; i < BotsId.Count; i++)
             {
+
+                //Check bot data
+
                 var bot = bots.FirstOrDefault(item => item.BotData.Id == BotsId[i]);
                 if (bot != null)
                 {
-                    bot.WorkStatus = EnumBotWorkStatus.StopQuery;
-                    result.Success++;
+
+                    //Set bot StopQuery status
+
+                    bots[bots.IndexOf(bot)].WorkStatus = EnumBotWorkStatus.StopQuery;
+                    result.BotCount++;
                 }
                 else
-                    result.Error++;
+                    result.ErrorBotCount++;
             }
             return result;
         }
@@ -118,12 +133,12 @@ namespace BotClient.Bussines.Services
                     if (!loginflag.hasError)
                     {
                         UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Run);
-                        if (webDriverBots[i].BotData.isUpdatedCusomizeInfo)
+                        if (webDriverBots[i].BotData.isUpdatedCustomizeInfo)
                         {
                             var cusomizeData = await botCompositeService.GetBotCustomize(webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             var cusomizeResult = await vkActionService.Customize(WebDriverId, cusomizeData).ConfigureAwait(false);
                             if (!cusomizeResult.hasError)
-                                await botCompositeService.SetIsUpdatedCusomizeInfo(webDriverBots[i].BotData.Id, false).ConfigureAwait(false);
+                                await botCompositeService.SetIsUpdatedCustomizeInfo(webDriverBots[i].BotData.Id, false).ConfigureAwait(false);
                         }
                         var botClientsRoleConnections = await clientCompositeService.GetBotClientRoleConnection(webDriverBots[i].BotData.Id, webDriverBots[i].RoleId).ConfigureAwait(false);
                         var botSchedule = new List<EnumBotActionType>();

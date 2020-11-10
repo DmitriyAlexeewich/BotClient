@@ -23,6 +23,6 @@ namespace BotClient.Models.Bot
         public bool isDead { get; set; }
         public bool isPrintBlock { get; set; }
         public bool isLogin { get; set; }
-        public bool isUpdatedCusomizeInfo { get; set; }
+        public bool isUpdatedCustomizeInfo { get; set; }
     }
 }

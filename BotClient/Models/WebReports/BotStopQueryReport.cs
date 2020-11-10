@@ -7,7 +7,7 @@ namespace BotClient.Models.WebReports
 {
     public class BotStopQueryReport
     {
-        public int Success { get; set; }
-        public int Error { get; set; }
+        public int BotCount { get; set; }
+        public int ErrorBotCount { get; set; }
     }
 }

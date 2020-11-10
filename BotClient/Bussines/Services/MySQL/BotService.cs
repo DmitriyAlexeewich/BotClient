@@ -95,7 +95,7 @@ namespace BotClient.Bussines.Services
                 $"`IsDead`='{(BotData.isDead == true ? 1 : 0)}'," +
                 $"`IsPrintBlock`='{(BotData.isPrintBlock == true ? 1 : 0)}'," +
                 $"`IsLogin`='{(BotData.isLogin == true ? 1 : 0)}'," +
-                $"`IsUpdatedCusomizeInfo`='{(BotData.isUpdatedCusomizeInfo == true ? 1 : 0)}'" +
+                $"`IsUpdatedCusomizeInfo`='{(BotData.isUpdatedCustomizeInfo == true ? 1 : 0)}'" +
                 $"WHERE `Id`='{BotData.Id}'";
             return await mySQLService.ExecuteNonQuery(query).ConfigureAwait(false);
         }
@@ -124,10 +124,10 @@ namespace BotClient.Bussines.Services
             return await mySQLService.ExecuteNonQuery(query).ConfigureAwait(false);
         }
 
-        public async Task<bool> SetIsUpdatedCusomizeInfo(int Id, bool isUpdatedCusomizeInfo)
+        public async Task<bool> SetIsUpdatedCustomizeInfo(int Id, bool isUpdatedCustomizeInfo)
         {
             var query = $"UPDATE `Bot` SET " +
-                        $"`IsUpdatedCusomizeInfo`='{(isUpdatedCusomizeInfo == true ? 1 : 0)}'" +
+                        $"`IsUpdatedCusomizeInfo`='{(isUpdatedCustomizeInfo == true ? 1 : 0)}'" +
                         $"WHERE `Id`='{Id}'";
             return await mySQLService.ExecuteNonQuery(query).ConfigureAwait(false);
         }
@@ -163,7 +163,7 @@ namespace BotClient.Bussines.Services
                     isDead = dataTable[i][12] == "True" ? true : false,
                     isPrintBlock = dataTable[i][13] == "True" ? true : false,
                     isLogin = dataTable[i][14] == "True" ? true : false,
-                    isUpdatedCusomizeInfo = dataTable[i][15] == "True" ? true : false,
+                    isUpdatedCustomizeInfo = dataTable[i][15] == "True" ? true : false,
                 });
             }
             return bots;
