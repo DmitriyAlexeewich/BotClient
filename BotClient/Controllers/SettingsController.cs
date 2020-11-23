@@ -109,16 +109,6 @@ namespace BotClient.Controllers
                               "ScrollCount must be greater than 1");
         }
 
-        [HttpPost("SetMySQLConnection")]
-        public async Task<IActionResult> SetMySQLConnection([FromBody] MySQLConnectionSettingsModel Settings)
-        {
-            if ((Settings.Host != String.Empty) && (Settings.DataBase != String.Empty) && (Settings.User != String.Empty) && (Settings.Password != String.Empty))
-            {
-                return Ok(await settingsService.SetMySQLConnection(Settings).ConfigureAwait(false));
-            }
-            return BadRequest("Invalid Settings");
-        }
-
         [HttpGet("GetServerSettings")]
         public async Task<IActionResult> GetServerSettings()
         {

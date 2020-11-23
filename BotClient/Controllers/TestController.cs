@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
-using BotClient.Bussines.Interfaces.Composite;
+using BotMySQL.Bussines.Interfaces.Composite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,30 +33,6 @@ namespace BotClient.Controllers
             webDriverService = WebDriverService;
             settingsService = SettingsService;
             vkActionService = VkActionService;
-        }
-
-        [HttpGet("GetBotById")]
-        public async Task<IActionResult> GetBotById([FromQuery] int Id)
-        {
-            return Ok(await botCompositeService.GetBotById(Id).ConfigureAwait(false));
-        }
-
-        [HttpGet("GetBotByVkId")]
-        public async Task<IActionResult> GetBotByVkId([FromQuery] string Id)
-        {
-            return Ok(await botCompositeService.GetBotByVkId(Id).ConfigureAwait(false));
-        }
-
-        [HttpGet("GetBotCustomize")]
-        public async Task<IActionResult> GetBotCustomize([FromQuery] int BotId)
-        {
-            return Ok(await botCompositeService.GetBotCustomize(BotId).ConfigureAwait(false));
-        }
-
-        [HttpGet("GetPatterns")]
-        public async Task<IActionResult> GetPatterns([FromQuery] int RoleId)
-        {
-            return Ok(await botCompositeService.GetPatterns(RoleId).ConfigureAwait(false));
         }
     }
 }

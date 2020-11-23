@@ -1,14 +1,12 @@
 ﻿using BotClient.Bussines.Interfaces;
-using BotClient.Bussines.Interfaces.Composite;
-using BotClient.Bussines.Interfaces.MySQL;
 using BotClient.Bussines.Services;
-using BotClient.Bussines.Services.Composite;
-using BotClient.Bussines.Services.MySQL;
+using BotMySQL.Bussines.Interfaces;
+using BotMySQL.Bussines.Interfaces.Composite;
+using BotMySQL.Bussines.Interfaces.MySQL;
+using BotMySQL.Bussines.Services;
+using BotMySQL.Bussines.Services.Composite;
+using BotMySQL.Bussines.Services.MySQL;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BotClient.Settings
 {
@@ -16,26 +14,28 @@ namespace BotClient.Settings
     {
         public static IServiceCollection DependencyInjectionAll(this IServiceCollection services)
         {
+            //bot client logic services
             services.AddSingleton<IWebDriverService, WebDriverService>();
             services.AddSingleton<IWebElementService, WebElementService>();
             services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<IBotWorkService, BotWorkService>();
+            services.AddSingleton<IVkActionService, VkActionService>();
             services.AddSingleton<IMySQLService, MySQLService>();
-            services.AddSingleton<IBotService, BotService>();
-            services.AddSingleton<IClientService, ClientService>();
+            //data services
+            services.AddSingleton<IBotCompositeService, BotCompositeService>();
+            services.AddSingleton<IClientCompositeService, ClientCompositeService>();
+            services.AddSingleton<IMissionCompositeService, MissionCompositeService>();
             services.AddSingleton<IBotClientRoleConnectorService, BotClientRoleConnectorService>();
             services.AddSingleton<IBotCustomizeService, BotCustomizeService>();
+            services.AddSingleton<IBotService, BotService>();
+            services.AddSingleton<IClientService, ClientService>();
             services.AddSingleton<IMessagesService, MessagesService>();
-            services.AddSingleton<IMissionNodeService, MissionNodeService>();
             services.AddSingleton<IMissionService, MissionService>();
+            services.AddSingleton<IMissionNodeService, MissionNodeService>();
             services.AddSingleton<INodePatternService, NodePatternService>();
             services.AddSingleton<IPatternService, PatternService>();
             services.AddSingleton<IRoleMissionConnectorService, RoleMissionConnectorService>();
             services.AddSingleton<IRoleService, RoleService>();
-            services.AddSingleton<IBotCompositeService, BotCompositeService>();
-            services.AddSingleton<IClientCompositeService, ClientCompositeService>();
-            services.AddSingleton<IMissionCompositeService, MissionCompositeService>();
-            services.AddSingleton<IBotWorkService, BotWorkService>();
-            services.AddSingleton<IVkActionService, VkActionService>();
 
             return services;
         }

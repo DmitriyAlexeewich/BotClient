@@ -1,17 +1,12 @@
 ﻿using BotClient.Bussines.Interfaces;
-using BotClient.Models.Bot;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
-using BotClient.Models.Enumerators;
-using BotClient.Models.HTMLElements;
 using BotClient.Models.HTMLElements.Enumerators;
-using BotClient.Models.HTMLWebDriver;
+using BotDataModels.Bot;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 

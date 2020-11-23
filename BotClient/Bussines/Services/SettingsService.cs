@@ -193,26 +193,6 @@ namespace BotClient.Bussines.Services
             }
         }
 
-        public async Task<SettingsReport> SetMySQLConnection(MySQLConnectionSettingsModel Settings)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.MySQLConnectionSettings = Settings;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex.Message);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
         public WebConnectionSettings GetServerSettings()
         {
             CreateConfigurationFile();

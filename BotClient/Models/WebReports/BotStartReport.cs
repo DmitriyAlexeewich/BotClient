@@ -1,4 +1,5 @@
 ﻿using BotClient.Models.Bot;
+using BotDataModels.Bot;
 using System;
 using System.Collections.Generic;
 using System.Linq;

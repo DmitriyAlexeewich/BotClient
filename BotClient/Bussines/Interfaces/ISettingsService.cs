@@ -26,8 +26,6 @@ namespace BotClient.Bussines.Interfaces
 
         Task<SettingsReport> SetScrollCount(int ScrollCount);
 
-        Task<SettingsReport> SetMySQLConnection(MySQLConnectionSettingsModel Settings);
-
         WebConnectionSettings GetServerSettings();
 
         Task<bool> AddLog(string CodeFileName, string Error);

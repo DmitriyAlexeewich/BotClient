@@ -1,10 +1,9 @@
-﻿using BotClient.Models.Bot;
-using BotClient.Models.Bot.Work;
+﻿using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
+using BotDataModels.Bot;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BotClient.Bussines.Interfaces
