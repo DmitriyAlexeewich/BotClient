@@ -26,5 +26,7 @@ namespace BotClient.Bussines.Interfaces
         Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId);
         Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId, string ClientVkId);
         Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText);
+        Task<bool> Logout(Guid WebDriverId);
+        Task<string> GetClientName(Guid WebDriverId);
     }
 }

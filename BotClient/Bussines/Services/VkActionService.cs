@@ -375,12 +375,7 @@ namespace BotClient.Bussines.Services
                 if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false))
                 {
                     var textBlock = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false);
-                    var printMessageResult = false;
-                    for (int i = 0; i < MessageText.Length; i++)
-                    {
-                        printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText[i].ToString());
-                        Thread.Sleep(random.Next(100, 500));
-                    }
+                    var printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText);
                     if ((printMessageResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_send", EnumClickType.ElementClick).ConfigureAwait(false)))
                     {
                         if (await hasCaptcha(WebDriverId).ConfigureAwait(false) == false)
@@ -480,15 +475,19 @@ namespace BotClient.Bussines.Services
                             var senderAttribute = webElementService.GetAttributeValue(messages[i], "data-peer");
                             if ((senderAttribute != null) && (senderAttribute.IndexOf(ClientVkId) != -1))
                             {
-                                var text = webElementService.GetElementINNERText(messages[i], true);
-                                if (text != null)
+                                var messageCont = webElementService.GetElementInElement(messages[i], EnumWebHTMLElementSelector.CSSSelector, ".im-mess--text.wall_module._im_log_body");
+                                if (messageCont != null)
                                 {
-                                    messageText.Add(new NewMessageModel()
+                                    var text = webElementService.GetElementINNERText(messageCont, true);
+                                    if (text != null)
                                     {
-                                        AttachedText = "",
-                                        ReceiptMessageDatePlatformFormat = "",
-                                        Text = text
-                                    });
+                                        messageText.Add(new NewMessageModel()
+                                        {
+                                            AttachedText = "",
+                                            ReceiptMessageDatePlatformFormat = "",
+                                            Text = text
+                                        });
+                                    }
                                 }
                             }
                             else
@@ -540,6 +539,22 @@ namespace BotClient.Bussines.Services
             await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
             await CloseModalWindow(WebDriverId).ConfigureAwait(false);
             return result;
+        }
+
+        public async Task<bool> Logout(Guid WebDriverId)
+        {
+            var result = false;
+            if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_link", EnumClickType.ElementClick))
+            {
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_mrow", EnumClickType.URLClick))
+                    result = true;
+            }
+            return result;
+        }
+
+        public async Task<string> GetClientName(Guid WebDriverId)
+        {
+            return await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".page_name", true).ConfigureAwait(false);
         }
 
         private async Task<bool> SaveCustomize(Guid WebDriverId, string BtnParentId)
@@ -596,7 +611,7 @@ namespace BotClient.Bussines.Services
 
         private async Task<bool> goToDialogByVkId(Guid WebDriverId, string VkId)
         {
-            var goToURLResult = await webDriverService.GoToURL(WebDriverId, $"https://vk.com/im?sel={VkId}").ConfigureAwait(false);
+            var goToURLResult = await webDriverService.GoToURL(WebDriverId, "im?sel=" + VkId).ConfigureAwait(false);
             return goToURLResult;
         }
     }

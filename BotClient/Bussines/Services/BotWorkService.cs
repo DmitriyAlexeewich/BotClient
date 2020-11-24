@@ -140,7 +140,7 @@ namespace BotClient.Bussines.Services
                         var botSchedule = new List<EnumBotActionType>();
                         var maxClientsRoleConnectionActionsCount = random.Next(5, 10);
                         for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
-                            botSchedule.Add(EnumBotActionType.RoleMission);
+                            botSchedule.Add(EnumBotActionType.RoleMission);/*
                         var maxSecondActionsCount = random.Next(0, (int)(1 + botSchedule.Count / 3));
                         if (maxSecondActionsCount < 1)
                             maxSecondActionsCount = 4;
@@ -149,7 +149,9 @@ namespace BotClient.Bussines.Services
                         var maxMessagesActionCount = botSchedule.Count;
                         for (int j = 0; j < maxMessagesActionCount; j++)
                             botSchedule.Add(EnumBotActionType.CheckMessage);
-                        botSchedule = Shuffle(botSchedule).ToList();
+                        botSchedule = Shuffle(botSchedule).ToList();*/
+                        var botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
+                        await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                         for (int j = 0; j < botSchedule.Count; j++)
                         {
                             var isActionError = false;
@@ -186,15 +188,21 @@ namespace BotClient.Bussines.Services
                                 UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
                                 break;
                             }
-                            var botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
+                            botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
                             if ((botData != null) && (botData.WorkStatus == EnumBotWorkStatus.StopQuery))
                                 break;
                         }
-                        //Execute LogOut
+                        if ((botData != null) && (botData.WorkStatus == EnumBotWorkStatus.StopQuery))
+                            UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Stop);
+                        else
+                            UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Free);
+                        var logoutresult = await Logout(WebDriverId).ConfigureAwait(false);
+                        if(!logoutresult)
+                            UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
                     }
                     else
                     {
-                        
+                        UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
                     }
                 }
             }
@@ -255,6 +263,11 @@ namespace BotClient.Bussines.Services
                                             stepResult = await webDriverService.GoToURL(WebDriverId, "id" + client.VkId).ConfigureAwait(false);
                                         else
                                             stepResult = await webDriverService.GoToURL(WebDriverId, client.VkId).ConfigureAwait(false);
+                                        if (stepResult)
+                                        {
+                                           client.FullName = await vkActionService.GetClientName(WebDriverId);
+                                           clientCompositeService.UpdateClientData(client);
+                                        }
                                         break;
                                     case EnumMissionActionType.GoToGroup:
                                         stepResult = await webDriverService.GoToURL(WebDriverId, nodes[i].Text).ConfigureAwait(false);
@@ -298,7 +311,7 @@ namespace BotClient.Bussines.Services
                                     clientCompositeService.SetBotClientRoleConnectionMissionId(BotClientRoleConnector.Id, nodes[i].MissionId);
                                     BotClientRoleConnector.MissionId = nodes[i].MissionId;
                                 }
-                                if (nodes[i].Path.Length < 0)
+                                if (nodes[i].Path.Length > 0)
                                     nodes[i].Path += ";";
                                 nodes[i].Path += nodes[i].NodeId;
                                 clientCompositeService.SetBotClientRoleConnectionMissionPath(BotClientRoleConnector.Id, nodes[i].Path);
@@ -374,7 +387,7 @@ namespace BotClient.Bussines.Services
                 for (int i = 0; i < newMessages.Count; i++)
                     newMessageText += newMessages[i].Text + " ";
                 newMessageText = newMessageText.Remove(newMessageText.Length - 1);
-                var standartPatterns = missionCompositeService.GetStandartPatterns(RoleId);//
+                var standartPatterns = missionCompositeService.GetStandartPatterns(RoleId);
                 for (int i = 0; i < standartPatterns.Count; i++)
                 {
                     if (isRegexMatch(newMessageText, standartPatterns[i].Text, standartPatterns[i].isRegex, standartPatterns[i].isInclude))
@@ -399,6 +412,10 @@ namespace BotClient.Bussines.Services
                                 var botMessage = RandMess(patternAction[0].Text);
                                 var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage).ConfigureAwait(false);
                                 var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
+                                if (botClientRoleConnector.MissionPath.Length > 0)
+                                    botClientRoleConnector.MissionPath += ";";
+                                botClientRoleConnector.MissionPath += nodes[i].NodeId;
+                                clientCompositeService.SetBotClientRoleConnectionMissionPath(botClientRoleConnector.Id, botClientRoleConnector.MissionPath);
                                 return saveResult;
                             }
                         }
@@ -485,6 +502,12 @@ namespace BotClient.Bussines.Services
             if (Text.Length > 0)
                 Text = Text.Remove(Text.Length - 1);
             return Text;
+        }
+
+        private async Task<bool> Logout(Guid WebDriverId)
+        {
+            var result = await vkActionService.Logout(WebDriverId).ConfigureAwait(false);
+            return result;
         }
     }
 }

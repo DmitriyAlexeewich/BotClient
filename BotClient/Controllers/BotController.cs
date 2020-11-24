@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.WebReports;
+using BotMySQL.Bussines.Interfaces.Composite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,10 +16,12 @@ namespace BotClient.Controllers
     {
 
         private readonly IBotWorkService botWorkService;
+        private readonly IBotCompositeService t;
 
-        public BotController(IBotWorkService BotWorkService)
+        public BotController(IBotWorkService BotWorkService, IBotCompositeService T)
         {
             botWorkService = BotWorkService;
+            t = T;
         }
 
         [HttpPost("StartBot")]
@@ -53,6 +56,12 @@ namespace BotClient.Controllers
         public async Task<IActionResult> GetBots()
         {
             return Ok(await botWorkService.GetBots().ConfigureAwait(false));
+        }
+
+        [HttpGet("GetBot")]
+        public async Task<IActionResult> GetBot()
+        {
+            return Ok(t.GetBotById(5));
         }
     }
 }
