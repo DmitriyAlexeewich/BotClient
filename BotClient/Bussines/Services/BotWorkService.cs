@@ -114,6 +114,8 @@ namespace BotClient.Bussines.Services
 
         public async Task<List<BotWorkStatusModel>> GetBots()
         {
+            if (bots == null)
+                return new List<BotWorkStatusModel>();
             return bots;
         }
 
@@ -175,7 +177,7 @@ namespace BotClient.Bussines.Services
                                         if (roleMissionResult)
                                             clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
                                         else
-                                            clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
+                                            clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, false);
                                         clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
                                     }
                                     break;
@@ -333,7 +335,7 @@ namespace BotClient.Bussines.Services
             var dialog = await vkActionService.GetDialogWithNewMessages(WebDriverId).ConfigureAwait(false);
             while (dialog != null)
             {
-                var botClientRoleConnector = clientCompositeService.GetBotClientRoleConnectionByBotClientVkId(BotId, dialog.ClientVkId);
+                var botClientRoleConnector = clientCompositeService.GetBotClientRoleConnectionByBotClientVkId(BotId, dialog.ClientVkId, true);
                 if (botClientRoleConnector != null)
                 {
                     var readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector, dialog.ClientVkId).ConfigureAwait(false);
@@ -343,7 +345,7 @@ namespace BotClient.Bussines.Services
                 dialog = await vkActionService.GetDialogWithNewMessages(WebDriverId).ConfigureAwait(false);
             }
             var botDialogsWithNewBotMessages = clientCompositeService.GetBotClientRoleConnectionWithNewBotMessages(BotId);
-            if (botDialogsWithNewBotMessages != null)
+            if ((botDialogsWithNewBotMessages != null) && (botDialogsWithNewBotMessages.Count > 0))
             {
                 for (int i = 0; i < botDialogsWithNewBotMessages.Count; i++)
                 {
@@ -398,25 +400,34 @@ namespace BotClient.Bussines.Services
                         return saveResult;
                     }
                 }
-                var nodes = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, null, botClientRoleConnector.MissionPath);
-                if ((nodes != null) && (nodes.Count > 0))
+                if (!botClientRoleConnector.isScenarioComplete)
                 {
-                    var nodePatterns = missionCompositeService.GetNodePatterns(botClientRoleConnector.MissionId, nodes[0].PatternId);
-                    for (int i = 0; i < nodePatterns.Count; i++)
+                    var nodes = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, null, botClientRoleConnector.MissionPath);
+                    if ((nodes != null) && (nodes.Count > 0))
                     {
-                        if (isRegexMatch(newMessageText, nodePatterns[i].PatternText, nodePatterns[i].isRegex, nodePatterns[i].isInclude))
+                        var nodePatterns = missionCompositeService.GetNodePatterns(botClientRoleConnector.MissionId, nodes[0].PatternId);
+                        for (int i = 0; i < nodePatterns.Count; i++)
                         {
-                            var patternAction = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, nodePatterns[i].PatternId, null);
-                            if ((patternAction != null) && (patternAction.Count > 0) && (patternAction[0].Type == EnumMissionActionType.WaitAnswerMessage))
+                            if (isRegexMatch(newMessageText, nodePatterns[i].PatternText, nodePatterns[i].isRegex, nodePatterns[i].isInclude))
                             {
-                                var botMessage = RandMess(patternAction[0].Text);
-                                var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage).ConfigureAwait(false);
-                                var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
-                                if (botClientRoleConnector.MissionPath.Length > 0)
-                                    botClientRoleConnector.MissionPath += ";";
-                                botClientRoleConnector.MissionPath += nodes[i].NodeId;
-                                clientCompositeService.SetBotClientRoleConnectionMissionPath(botClientRoleConnector.Id, botClientRoleConnector.MissionPath);
-                                return saveResult;
+                                var patternAction = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, nodePatterns[i].NodeId, null);
+                                if ((patternAction != null) && (patternAction.Count > 0) && (patternAction[0].Type == EnumMissionActionType.SendMessage))
+                                {
+                                    var botMessage = RandMess(patternAction[0].Text);
+                                    var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage).ConfigureAwait(false);
+                                    var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
+                                    if (botClientRoleConnector.MissionPath.Length > 0)
+                                        botClientRoleConnector.MissionPath += ";";
+                                    botClientRoleConnector.MissionPath += nodes[i].NodeId + ";" + patternAction[0].NodeId;
+                                    clientCompositeService.SetBotClientRoleConnectionMissionPath(botClientRoleConnector.Id, botClientRoleConnector.MissionPath);
+                                    var nextNode = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, null, botClientRoleConnector.MissionPath);
+                                    if ((nextNode != null) && (nextNode.Count > 0) && (nextNode[0].Type == EnumMissionActionType.End))
+                                    {
+                                        clientCompositeService.SetBotClientRoleConnectionMissionPath(botClientRoleConnector.Id, botClientRoleConnector.MissionPath + ";" + nextNode[0].NodeId);
+                                        clientCompositeService.SetBotClientRoleConnectionScenarioComplete(botClientRoleConnector.Id, true);
+                                    }
+                                    return saveResult;
+                                }
                             }
                         }
                     }
@@ -430,12 +441,12 @@ namespace BotClient.Bussines.Services
         {
             var result = false;
             var createMessageResult = clientCompositeService.CreateMessage(BotClientRoleConnectorId, ClientMessage, false);
-            if ((!createMessageResult.HasError) && (createMessageResult.Result != null))
+            if ((!createMessageResult.HasError) && (createMessageResult.Result) && (BotAnswer != null))
             {
                 if (isSendAnswerMessageResultSuccess)
                 {
                     createMessageResult = clientCompositeService.CreateMessage(BotClientRoleConnectorId, BotAnswer);
-                    if ((!createMessageResult.HasError) && (createMessageResult.Result != null))
+                    if ((!createMessageResult.HasError) && (createMessageResult.Result))
                         result = true;
                 }
                 else

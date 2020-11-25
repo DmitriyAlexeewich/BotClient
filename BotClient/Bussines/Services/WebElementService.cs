@@ -150,7 +150,7 @@ namespace BotClient.Bussines.Services
             var childs = Element.GetChildElements(SelectorType, Link, isRequired.Value);
             if ((childs != null) && (childs.Count > 0))
                 return childs;
-            return null;
+            return new List<WebHTMLElement>();
         }
 
         public async Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
@@ -162,7 +162,7 @@ namespace BotClient.Bussines.Services
                 if ((childs != null) && (childs.Count > 0))
                     return childs;
             }
-            return null;
+            return new List<WebHTMLElement>();
         }
 
     }

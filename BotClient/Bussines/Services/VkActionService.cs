@@ -498,7 +498,7 @@ namespace BotClient.Bussines.Services
                     }
                 }
             }
-            return null;
+            return new List<NewMessageModel>();
         }
 
         public async Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText)
@@ -514,9 +514,8 @@ namespace BotClient.Bussines.Services
             {
                 webElementService.ClearElement(inputElement);
                 webElementService.PrintTextToElement(inputElement, MessageText);
-                var sendBtn = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".im-chat-input--txt-wrap._im_text_wrap",
-                    EnumWebHTMLElementSelector.CSSSelector, ".im-send-btn.im-chat-input--send.im-send-btn_static._im_send.im-send-btn_send").ConfigureAwait(false);
-                if ((sendBtn != null) && (webElementService.ClickToElement(sendBtn, EnumClickType.ElementClick)))
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, 
+                    ".im-send-btn.im-chat-input--send._im_send.im-send-btn_send", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
                     if (!(await hasCaptcha(WebDriverId).ConfigureAwait(false)))
                     {
@@ -527,7 +526,7 @@ namespace BotClient.Bussines.Services
                         };
                     }
                 }
-                else if((webElementService.PrintTextToElement(inputElement, Keys.Return)) && (!(await hasCaptcha(WebDriverId).ConfigureAwait(false))))
+                else if((webElementService.SendKeyToElement(inputElement, Keys.Return)) && (!(await hasCaptcha(WebDriverId).ConfigureAwait(false))))
                 {
                     return new AlgoritmResult()
                     {

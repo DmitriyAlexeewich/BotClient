@@ -78,7 +78,7 @@ namespace BotClient.Models.HTMLElements
             }
         }
 
-        public EnumWebHTMLPageStatus WaitPageLoading()
+        public EnumWebHTMLPageStatus WaitPageLoading(string OldURL)
         {
             for (int i = 0; i < WebSettings.HTMLPageWaitingTime; i++)
             {
@@ -87,7 +87,7 @@ namespace BotClient.Models.HTMLElements
                     var js = (IJavaScriptExecutor)webDriver;
                     object o = js.ExecuteScript("return document.readyState;");
                     var readyState = (string)o;
-                    if (readyState == "complete" || readyState == "interactive")
+                    if ((readyState == "complete" || readyState == "interactive") && (OldURL != webDriver.Url))
                         return EnumWebHTMLPageStatus.Ready;
                 }
                 catch
@@ -101,6 +101,7 @@ namespace BotClient.Models.HTMLElements
 
         public bool Click(EnumClickType ClickType)
         {
+            var oldURL = webDriver.Url;
             try
             {
                 element.Click();
@@ -121,7 +122,7 @@ namespace BotClient.Models.HTMLElements
             }
             if (ClickType == EnumClickType.URLClick)
             {
-                var loadingResult = WaitPageLoading();
+                var loadingResult = WaitPageLoading(oldURL);
                 if (loadingResult != EnumWebHTMLPageStatus.Ready)
                     return false;
             }
@@ -285,9 +286,7 @@ namespace BotClient.Models.HTMLElements
                         result.Add(bufferElement);
                 }
             }
-            if (result.Count > 0)
-                return result;
-            return null;
+            return result;
         }
 
         private IWebElement FindWebElement(WebHTMLElementModel ElementModel, bool? isParentElementIsDriver = true)

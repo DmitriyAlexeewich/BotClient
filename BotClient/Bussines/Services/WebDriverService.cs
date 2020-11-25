@@ -322,14 +322,14 @@ namespace BotClient.Bussines.Services
             {
                 settingsService.AddLog("WebDriverService", ex.Message);
             }
-            if (result.Count > 0)
-                return result;
-            return null;
+            return result;
         }
         //---
         */
         public async Task<List<HTMLWebDriver>> GetWebDrivers()
         {
+            if (webDrivers == null)
+                return new List<HTMLWebDriver>();
             return webDrivers;
         }
 
@@ -478,6 +478,7 @@ namespace BotClient.Bussines.Services
 
         private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver)
         {
+            var oldURL = WebDriver.WebDriver.Url;
             for (int i = 0; i < WebDriver.WebSettings.HTMLPageWaitingTime; i++)
             {
                 try
@@ -485,7 +486,7 @@ namespace BotClient.Bussines.Services
                     var js = (IJavaScriptExecutor)WebDriver.WebDriver;
                     object o = js.ExecuteScript("return document.readyState;");
                     var readyState = (string)o;
-                    if (readyState == "complete" || readyState == "interactive")
+                    if ((readyState == "complete" || readyState == "interactive") && (oldURL != WebDriver.WebDriver.Url))
                         return EnumWebHTMLPageStatus.Ready;
                 }
                 catch

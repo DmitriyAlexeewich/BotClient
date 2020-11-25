@@ -251,7 +251,7 @@ namespace BotClient.Bussines.Services
             {
                 return JsonConvert.DeserializeObject<List<WebHTMLElementModel>>(File.ReadAllText(algoritmJSONFilePath));
             }
-            return null;
+            return new List<WebHTMLElementModel>();
         }
 
         private void CreateErrorLogFile()
