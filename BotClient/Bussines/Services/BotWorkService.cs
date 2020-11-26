@@ -52,6 +52,9 @@ namespace BotClient.Bussines.Services
 
             try
             {
+                var noBots = false;
+                if (bots.Count < 1)
+                    noBots = true;
                 for (int i = 0; i < BotsId.Count; i++)
                 {
                     var bufferBotData = botCompositeService.GetBotById(BotsId[i]);
@@ -86,11 +89,16 @@ namespace BotClient.Bussines.Services
                 }
 
                 //Start bots
-                var t = new List<Task>();
-                for (int i = 0; i < webDrivers.Count; i++)
-                    t.Add(RunBot(webDrivers[i].Id));
-                while()
-                var f = 1;
+
+                if (noBots)
+                {
+                    for (int i = 0; i < webDrivers.Count; i++)
+                    {
+                        var j = i;
+                        Task.Run(() => { RunBot(webDrivers[j].Id); });
+                    }
+                }
+
             }
             catch(Exception ex)
             {
@@ -146,11 +154,10 @@ namespace BotClient.Bussines.Services
             return bots;
         }
 
-        private async Task RunBot(HTMLWebDriver webDriver)
+        private async Task RunBot(Guid WebDriverId)
         {
             try
             {
-                var WebDriverId = webDriver.Id;
                 var webDriverBots = bots.Where(item => item.WebDriverId == WebDriverId).ToList();
                 while (webDriverBots.Count > 0)
                 {
@@ -235,6 +242,7 @@ namespace BotClient.Bussines.Services
                             UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
                         }
                     }
+                    webDriverBots = bots.Where(item => item.WebDriverId == WebDriverId).ToList();
                 }
             }
             catch (Exception ex)

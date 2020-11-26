@@ -18,6 +18,7 @@ namespace BotClient.Models.HTMLWebDriver
         [JsonIgnore]
         public WebConnectionSettings WebSettings { get; }
         public EnumSocialPlatform WebDriverPlatform { get; }
+        public bool hasBots { get; set; }
 
         private Exception _exception = new Exception();
 

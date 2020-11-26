@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotMySQL.Bussines.Interfaces.Composite;
@@ -33,6 +34,22 @@ namespace BotClient.Controllers
             webDriverService = WebDriverService;
             settingsService = SettingsService;
             vkActionService = VkActionService;
+        }
+
+        [HttpGet("Test")]
+        public async Task<IActionResult> Test()
+        {
+            for (int i=0; i < 2; i++)
+            {
+                var t = i;
+                Task.Run(() => { Test(t); });
+            }
+            return Ok();
+        }
+
+        void Test(int i)
+        {
+            Thread.Sleep(10000 + i);
         }
     }
 }

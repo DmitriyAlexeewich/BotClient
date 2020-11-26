@@ -86,3 +86,7 @@ C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\staticweb
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.dll
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.pdb
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.genruntimeconfig.cache
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotDataModels.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotMySQL.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotDataModels.pdb
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotMySQL.pdb
