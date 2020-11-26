@@ -5,11 +5,9 @@ using BotClient.Models.HTMLElements.Enumerators;
 using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -328,25 +326,48 @@ namespace BotClient.Bussines.Services
         */
         public async Task<List<HTMLWebDriver>> GetWebDrivers()
         {
-            if (webDrivers == null)
-                return new List<HTMLWebDriver>();
-            return webDrivers;
+            try
+            {
+                if (webDrivers == null)
+                    return new List<HTMLWebDriver>();
+                return webDrivers;
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex.Message);
+            }
+            return new List<HTMLWebDriver>();
         }
 
         public async Task<HTMLWebDriver> GetWebDriverById(Guid WebDriverId)
         {
-            var webDriver = webDrivers.FirstOrDefault(item => item.Id == WebDriverId);
-            if (webDriver != null)
-                return webDriver;
+            try
+            {
+                var webDriver = webDrivers.FirstOrDefault(item => item.Id == WebDriverId);
+                if (webDriver != null)
+                    return webDriver;
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex.Message);
+            }
             return null;
         }
 
         public async Task<bool> hasWebDriver(Guid WebDriverId)
         {
-            var webDriver = webDrivers.FirstOrDefault(item => item.Id == WebDriverId);
-            if (webDriver == null)
-                return false;
-            return true;
+            try
+            {
+                var webDriver = webDrivers.FirstOrDefault(item => item.Id == WebDriverId);
+                if (webDriver == null)
+                    return false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex.Message);
+            }
+            return false;
         }
 
         public async Task<WebHTMLElement> GetElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true)
@@ -434,6 +455,7 @@ namespace BotClient.Bussines.Services
                         && (webDriver.Status != EnumWebDriverStatus.Loading))
                     {
                         webDriver.Status = EnumWebDriverStatus.Loading;
+                        var oldURL = webDriver.WebDriver.Url;
                         switch (webDriver.WebDriverPlatform)
                         {
                             case EnumSocialPlatform.Vk:
@@ -441,7 +463,7 @@ namespace BotClient.Bussines.Services
                                 break;
                         }
                         webDriver.WebDriver.Navigate().GoToUrl(URL);
-                        var loadResult = WaitPageLoading(webDriver);
+                        var loadResult = WaitPageLoading(webDriver, oldURL);
                         if (loadResult == EnumWebHTMLPageStatus.Ready)
                         {
                             webDriver.Status = EnumWebDriverStatus.Blocked;
@@ -476,43 +498,61 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver)
+        private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver, string OldURL)
         {
-            var oldURL = WebDriver.WebDriver.Url;
-            for (int i = 0; i < WebDriver.WebSettings.HTMLPageWaitingTime; i++)
+            bool urlNotChanged = false;
+            if (OldURL == WebDriver.WebDriver.Url)
+                urlNotChanged = true;
+            try
             {
-                try
+                for (int i = 0; i < WebDriver.WebSettings.HTMLPageWaitingTime; i++)
                 {
-                    var js = (IJavaScriptExecutor)WebDriver.WebDriver;
-                    object o = js.ExecuteScript("return document.readyState;");
-                    var readyState = (string)o;
-                    if ((readyState == "complete" || readyState == "interactive") && (oldURL != WebDriver.WebDriver.Url))
-                        return EnumWebHTMLPageStatus.Ready;
+                    try
+                    {
+                        var js = (IJavaScriptExecutor)WebDriver.WebDriver;
+                        object o = js.ExecuteScript("return document.readyState;");
+                        var readyState = (string)o;
+                        if ((readyState == "complete" || readyState == "interactive") && ((urlNotChanged) || (OldURL != WebDriver.WebDriver.Url)))
+                            return EnumWebHTMLPageStatus.Ready;
+                    }
+                    catch
+                    {
+                        Thread.Sleep(1000);
+                    }
                 }
-                catch
-                {
-                    Thread.Sleep(1000);
-                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex.Message);
             }
             return EnumWebHTMLPageStatus.Loading;
         }
 
         private Tuple<HTMLWebDriver, DriverReport> StartWebDriver(EnumSocialPlatform SocialPlatform)
         {
-            var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settingsService.GetServerSettings());
-            var loadingResult = WaitPageLoading(bufferWebDriver);
-            var driverReport = new DriverReport()
+            try
             {
-                ServerId = settingsService.GetServerSettings().ServerId,
-                DriverId = bufferWebDriver.Id,
-                DriverStatus = loadingResult == EnumWebHTMLPageStatus.Ready ? bufferWebDriver.Status : EnumWebDriverStatus.Error
-            };
-            if (bufferWebDriver.Status == EnumWebDriverStatus.Error)
-            {
-                driverReport.HasError = true;
-                driverReport.ExceptionMessage = bufferWebDriver.ExceptionMessage;
+                var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settingsService.GetServerSettings());
+                var oldURL = bufferWebDriver.WebDriver.Url;
+                var loadingResult = WaitPageLoading(bufferWebDriver, oldURL);
+                var driverReport = new DriverReport()
+                {
+                    ServerId = settingsService.GetServerSettings().ServerId,
+                    DriverId = bufferWebDriver.Id,
+                    DriverStatus = loadingResult == EnumWebHTMLPageStatus.Ready ? bufferWebDriver.Status : EnumWebDriverStatus.Error
+                };
+                if (bufferWebDriver.Status == EnumWebDriverStatus.Error)
+                {
+                    driverReport.HasError = true;
+                    driverReport.ExceptionMessage = bufferWebDriver.ExceptionMessage;
+                }
+                return Tuple.Create(bufferWebDriver, driverReport);
             }
-            return Tuple.Create(bufferWebDriver,driverReport);
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex.Message);
+            }
+            return null;
         }
 
     }

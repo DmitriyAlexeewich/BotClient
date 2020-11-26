@@ -20,7 +20,7 @@ namespace BotClient.Bussines.Services
 
         public bool ClickToElement(WebHTMLElement Element, EnumClickType ClickType)
         {
-            if (Element != null)
+            if ((Element != null) && (ClickType != null) && (ClickType != 0))
                 return Element.Click(ClickType);
             return false;
         }
@@ -33,14 +33,14 @@ namespace BotClient.Bussines.Services
 
         public bool PrintTextToElement(WebHTMLElement Element, string Text)
         {
-            if (Element != null)
+            if ((Element != null) && (Text.Length > 0))
                 return Element.PrintText(Text);
             return false;
         }
 
         public bool SendKeyToElement(WebHTMLElement Element, string KeyName)
         {
-            if (Element != null)
+            if ((Element != null) && (KeyName.Length > 0))
                 return Element.SendKey(KeyName);
             return false;
         }
@@ -85,7 +85,7 @@ namespace BotClient.Bussines.Services
 
         public bool CompareElementAttribute(WebHTMLElement Element, string AttributeName, string AttributeValue)
         {
-            if (Element != null)
+            if ((Element != null) && (AttributeName.Length > 0) && (AttributeValue.Length > 0))
                 return Element.CheckAttribute(AttributeName, AttributeValue);
             return false;
         }
@@ -111,7 +111,7 @@ namespace BotClient.Bussines.Services
 
         public string GetAttributeValue(WebHTMLElement Element, string AttributeName)
         {
-            if (Element != null)
+            if ((Element != null) && (AttributeName.Length > 0))
                 return Element.GetAttributeValue(AttributeName);
             return null;
         }
@@ -138,7 +138,7 @@ namespace BotClient.Bussines.Services
         public async Task<WebHTMLElement> GetElementInElement(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelector, string ParentLink, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true)
         {
             var parentElement = await webDriverService.GetElement(WebDriverId, ParentSelector, ParentLink).ConfigureAwait(false);
-            if (parentElement != null)
+            if ((parentElement != null) && (Selector != 0) && (Link.Length > 0))
             {
                 return GetElementInElement(parentElement, Selector, Link, isRequired);
             }
@@ -147,9 +147,12 @@ namespace BotClient.Bussines.Services
 
         public List<WebHTMLElement> GetChildElements(WebHTMLElement Element, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
         {
-            var childs = Element.GetChildElements(SelectorType, Link, isRequired.Value);
-            if ((childs != null) && (childs.Count > 0))
-                return childs;
+            if ((SelectorType != 0) && (Link.Length > 0))
+            {
+                var childs = Element.GetChildElements(SelectorType, Link, isRequired.Value);
+                if ((childs != null) && (childs.Count > 0))
+                    return childs;
+            }
             return new List<WebHTMLElement>();
         }
 

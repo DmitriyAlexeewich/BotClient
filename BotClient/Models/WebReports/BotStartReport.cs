@@ -13,5 +13,6 @@ namespace BotClient.Models.WebReports
         public int ErrorBotCount { get; set; }
         public List<BotModel> Bots { get; set; } = new List<BotModel>();
         public List<BotModel> ErrorBots { get; set; } = new List<BotModel>();
+        public string ExceptionMessage { get; set; }
     }
 }

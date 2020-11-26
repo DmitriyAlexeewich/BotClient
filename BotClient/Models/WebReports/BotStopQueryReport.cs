@@ -9,5 +9,6 @@ namespace BotClient.Models.WebReports
     {
         public int BotCount { get; set; }
         public int ErrorBotCount { get; set; }
+        public string Exception { get; set; }
     }
 }

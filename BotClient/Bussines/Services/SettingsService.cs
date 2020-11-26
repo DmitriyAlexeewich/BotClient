@@ -201,25 +201,40 @@ namespace BotClient.Bussines.Services
 
         public async Task<bool> AddLog(string CodeFileName, string Error)
         {
-            CreateErrorLogFile();
-            if (!File.Exists(errorLogFilePath))
+            try
             {
-                File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Error);
-                return true;
+                CreateErrorLogFile();
+                if (!File.Exists(errorLogFilePath))
+                {
+                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Error);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
             }
             return false;
         }
 
         public async Task<List<string>> GetLogLines()
         {
-            CreateErrorLogFile();
-            var result = new List<string>();
-            if (!File.Exists(errorLogFilePath))
+            try
             {
-                result = File.ReadAllLines(@errorLogFilePath).ToList();
+                CreateErrorLogFile();
+                var result = new List<string>();
+                if (!File.Exists(errorLogFilePath))
+                {
+                    result = File.ReadAllLines(@errorLogFilePath).ToList();
+                    return result;
+                }
                 return result;
             }
-            return result;
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
+            }
+            return new List<string>();
         }
 
         public async Task<SettingsReport> AddUpdateAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform, List<WebHTMLElementModel> Algoritm)
@@ -246,31 +261,52 @@ namespace BotClient.Bussines.Services
 
         public async Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform)
         {
-            var algoritmJSONFilePath = algoritmFilePath + Platform.ToString() + "\\" + AlgoritmName.ToString() + ".json";
-            if (File.Exists(algoritmJSONFilePath))
+            try
             {
-                return JsonConvert.DeserializeObject<List<WebHTMLElementModel>>(File.ReadAllText(algoritmJSONFilePath));
+                var algoritmJSONFilePath = algoritmFilePath + Platform.ToString() + "\\" + AlgoritmName.ToString() + ".json";
+                if (File.Exists(algoritmJSONFilePath))
+                {
+                    return JsonConvert.DeserializeObject<List<WebHTMLElementModel>>(File.ReadAllText(algoritmJSONFilePath));
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
             }
             return new List<WebHTMLElementModel>();
         }
 
         private void CreateErrorLogFile()
         {
-            if (!File.Exists(errorLogFilePath))
+            try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(errorLogFilePath));
-                File.Create(@errorLogFilePath);
+                if (!File.Exists(errorLogFilePath))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(errorLogFilePath));
+                    File.Create(@errorLogFilePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
             }
         }
 
         private void CreateConfigurationFile()
         {
-            if (!File.Exists(configurationFilePath))
+            try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(configurationFilePath));
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                if (!File.Exists(configurationFilePath))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(configurationFilePath));
+                    File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                }
+                webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
             }
-            webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
+            }
         }
     }
 }
