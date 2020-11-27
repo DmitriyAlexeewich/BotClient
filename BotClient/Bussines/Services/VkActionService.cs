@@ -2,6 +2,7 @@
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
+using BotClient.Models.HTMLElements;
 using BotClient.Models.HTMLElements.Enumerators;
 using BotDataModels.Bot;
 using OpenQA.Selenium;
@@ -180,7 +181,13 @@ namespace BotClient.Bussines.Services
                                 {
                                     Thread.Sleep(180000);
                                     if (random.Next(1, 10) > 5)
-                                        await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
+                                    {
+                                        var audioVkId = await GetAudioVkId(WebDriverId).ConfigureAwait(false);
+                                        var addBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add").ConfigureAwait(false);
+                                        var addBtnAttribute = webElementService.GetAttributeValue(element, "class");
+                                        if(addBtnAttribute.IndexOf("audio_row__added") == -1)
+                                            await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
+                                    }
                                     result = new AlgoritmResult()
                                     {
                                         ActionResultMessage = EnumActionResult.Success,
@@ -211,6 +218,7 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                var closeResult = false;
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_vid", EnumClickType.URLClick).ConfigureAwait(false))
                 {
                     var element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".videocat_autoplay_video_wrap").ConfigureAwait(false);
@@ -219,9 +227,9 @@ namespace BotClient.Bussines.Services
                         element = webElementService.GetElementInElement(element, EnumWebHTMLElementSelector.TagName, "a");
                         if (webElementService.ClickToElement(element, EnumClickType.URLClick))
                         {
-                            Thread.Sleep(5000);
+                            Thread.Sleep(180000);
                             element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "VideoLayerInfo__topControls", EnumWebHTMLElementSelector.TagName, "div");
-                            webElementService.ClickToElement(element, EnumClickType.URLClick);
+                            closeResult = webElementService.ClickToElement(element, EnumClickType.URLClick);
                             result = new AlgoritmResult()
                             {
                                 ActionResultMessage = EnumActionResult.Success,
@@ -230,8 +238,13 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                if (!closeResult)
+                {
+                    closeResult = await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                    closeResult = await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                    if (!closeResult)
+                        await webDriverService.GoToURL(WebDriverId, "feed").ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -573,40 +586,35 @@ namespace BotClient.Bussines.Services
                 var goToDialogByVkIdResult = await goToDialogByVkId(WebDriverId, ClientVkId).ConfigureAwait(false);
                 if (goToDialogByVkIdResult)
                 {
-                    var messagesCont = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._im_peer_history.im-page-chat-contain").ConfigureAwait(false);
-                    if (messagesCont != null)
+                    var messages = await GetMessages(WebDriverId).ConfigureAwait(false);
+                    if ((messages != null) && (messages.Count > 0))
                     {
-                        var messages = webElementService.GetChildElements(messagesCont, EnumWebHTMLElementSelector.CSSSelector, ".im-mess-stack._im_mess_stack");
-                        if ((messages != null) && (messages.Count > 0))
+                        var messageText = new List<NewMessageModel>();
+                        for (int i = 0; i < messages.Count; i++)
                         {
-                            var messageText = new List<NewMessageModel>();
-                            messages.Reverse();
-                            for (int i = 0; i < messages.Count; i++)
+                            var senderAttribute = webElementService.GetAttributeValue(messages[i], "data-peer");
+                            if ((senderAttribute != null) && (senderAttribute.IndexOf(ClientVkId) != -1))
                             {
-                                var senderAttribute = webElementService.GetAttributeValue(messages[i], "data-peer");
-                                if ((senderAttribute != null) && (senderAttribute.IndexOf(ClientVkId) != -1))
+                                var messageCont = webElementService.GetElementInElement(messages[i], EnumWebHTMLElementSelector.CSSSelector, ".im-mess--text.wall_module._im_log_body");
+                                if (messageCont != null)
                                 {
-                                    var messageCont = webElementService.GetElementInElement(messages[i], EnumWebHTMLElementSelector.CSSSelector, ".im-mess--text.wall_module._im_log_body");
-                                    if (messageCont != null)
+                                    var text = webElementService.GetElementINNERText(messageCont, true);
+                                    if (text != null)
                                     {
-                                        var text = webElementService.GetElementINNERText(messageCont, true);
-                                        if (text != null)
+                                        messageText.Add(new NewMessageModel()
                                         {
-                                            messageText.Add(new NewMessageModel()
-                                            {
-                                                AttachedText = "",
-                                                ReceiptMessageDatePlatformFormat = "",
-                                                Text = text
-                                            });
-                                        }
+                                            AttachedText = "",
+                                            ReceiptMessageDatePlatformFormat = "",
+                                            Text = text
+                                        });
                                     }
                                 }
-                                else
-                                    break;
                             }
-                            if (messageText.Count > 0)
-                                return messageText;
+                            else
+                                break;
                         }
+                        if (messageText.Count > 0)
+                            return messageText;
                     }
                 }
             }
@@ -617,7 +625,7 @@ namespace BotClient.Bussines.Services
             return new List<NewMessageModel>();
         }
 
-        public async Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText)
+        public async Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText, string ClientVkId)
         {
             var result = new AlgoritmResult()
             {
@@ -628,29 +636,29 @@ namespace BotClient.Bussines.Services
             {
                 var inputElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.XPath,
                             "/html/body/div[11]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div[1]/div[3]/div[2]/div[4]/div[2]/div[4]/div[1]/div[3]").ConfigureAwait(false);
+                var sendResult = false;
                 if (inputElement != null)
                 {
                     webElementService.ClearElement(inputElement);
                     webElementService.PrintTextToElement(inputElement, MessageText);
                     if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
                         ".im-send-btn.im-chat-input--send._im_send.im-send-btn_send", EnumClickType.ElementClick).ConfigureAwait(false))
+                        sendResult = true;
+                    else if (webElementService.SendKeyToElement(inputElement, Keys.Return))
+                        sendResult = true;
+                }
+                if (sendResult)
+                {
+                    var messages = await GetMessages(WebDriverId).ConfigureAwait(false);
+                    if ((messages != null) && (messages.Count > 0))
                     {
-                        if (!(await hasCaptcha(WebDriverId).ConfigureAwait(false)))
+                        var senderAttribute = webElementService.GetAttributeValue(messages[0], "data-peer");
+                        if ((senderAttribute != null) && (senderAttribute.IndexOf(ClientVkId) == -1))
                         {
-                            return new AlgoritmResult()
-                            {
-                                ActionResultMessage = EnumActionResult.Success,
-                                hasError = false
-                            };
+                            result.ActionResultMessage = EnumActionResult.Success;
+                            result.hasError = false;
+                            return result;
                         }
-                    }
-                    else if ((webElementService.SendKeyToElement(inputElement, Keys.Return)) && (!(await hasCaptcha(WebDriverId).ConfigureAwait(false))))
-                    {
-                        return new AlgoritmResult()
-                        {
-                            ActionResultMessage = EnumActionResult.Success,
-                            hasError = false
-                        };
                     }
                 }
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
@@ -670,7 +678,7 @@ namespace BotClient.Bussines.Services
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_link", EnumClickType.ElementClick))
                 {
-                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_mrow", EnumClickType.URLClick))
+                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_logout_link", EnumClickType.URLClick))
                         result = true;
                 }
             }
@@ -787,6 +795,36 @@ namespace BotClient.Bussines.Services
                 settingsService.AddLog("VkActionService", ex.Message);
             }
             return result;
+        }
+
+        private async Task<List<WebHTMLElement>> GetMessages(Guid WebDriverId)
+        {
+            var messagesCont = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._im_peer_history.im-page-chat-contain").ConfigureAwait(false);
+            if (messagesCont != null)
+            {
+                var messages = webElementService.GetChildElements(messagesCont, EnumWebHTMLElementSelector.CSSSelector, ".im-mess-stack._im_mess_stack");
+                if ((messages != null) && (messages.Count > 0))
+                {
+                    messages.Reverse();
+                    return messages;
+                }
+            }
+            return new List<WebHTMLElement>();
+        }
+
+        private async Task<int> GetAudioVkId(Guid WebDriverId)
+        {
+            var webDriver = await webDriverService.GetWebDriverById(WebDriverId).ConfigureAwait(false);
+            if (webDriver != null)
+            {
+                var audioURL = webDriver.WebDriver.Url;
+                audioURL = audioURL.Remove(audioURL.IndexOf("?section"));
+                var audioURLPart = audioURL.Split("audios")[1];
+                var parseResult = -1;
+                if ((audioURLPart.Length > 1) && (int.TryParse(audioURLPart, out parseResult)) && (parseResult > 0))
+                    return parseResult;
+            }
+            return -1;
         }
     }
 }

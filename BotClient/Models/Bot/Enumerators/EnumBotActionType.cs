@@ -10,7 +10,6 @@ namespace BotClient.Models.Bot
         ListenMusic = 1,
         WatchVideo = 2,
         News = 3,
-        RoleMission = 4,
-        CheckMessage = 5
+        RoleMission = 4
     }
 }

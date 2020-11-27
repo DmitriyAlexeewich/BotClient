@@ -193,6 +193,26 @@ namespace BotClient.Bussines.Services
             }
         }
 
+        public async Task<SettingsReport> SetErrorChancePerTenWords(int ErrorChancePerTenWords)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.ErrorChancePerTenWords = ErrorChancePerTenWords;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
         public WebConnectionSettings GetServerSettings()
         {
             CreateConfigurationFile();

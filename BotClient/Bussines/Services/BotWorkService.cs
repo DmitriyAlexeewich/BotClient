@@ -12,6 +12,7 @@ using BotMySQL.Bussines.Interfaces.Composite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -183,9 +184,6 @@ namespace BotClient.Bussines.Services
                                 maxSecondActionsCount = 4;
                             for (int j = 0; j < maxSecondActionsCount; j++)
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
-                            var maxMessagesActionCount = botSchedule.Count;
-                            for (int j = 0; j < maxMessagesActionCount; j++)
-                                botSchedule.Add(EnumBotActionType.CheckMessage);
                             botSchedule = Shuffle(botSchedule).ToList();
                             botSchedule = Simplify(botSchedule).ToList();
                             var botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
@@ -216,15 +214,13 @@ namespace BotClient.Bussines.Services
                                             clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
                                         }
                                         break;
-                                    case EnumBotActionType.CheckMessage:
-                                        await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
-                                        break;
                                 }
                                 if (isActionError)
                                 {
                                     UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
                                     break;
                                 }
+                                await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                                 botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
                                 if ((botData != null) && (botData.WorkStatus == EnumBotWorkStatus.StopQuery))
                                     break;
@@ -465,7 +461,7 @@ namespace BotClient.Bussines.Services
                                     {
                                         var newBotMessage = RandMess(messages[j].Text);
                                         if(newBotMessage != null)
-                                            sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage).ConfigureAwait(false);
+                                            sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage, client.VkId).ConfigureAwait(false);
                                     }
                                     if (!sendAnswerMessageResult.hasError)
                                     {
@@ -504,7 +500,7 @@ namespace BotClient.Bussines.Services
                             var botMessage = RandMess(standartPatterns[i].AnswerText);
                             if (botMessage != null)
                             {
-                                var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage).ConfigureAwait(false);
+                                var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId).ConfigureAwait(false);
                                 var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
                                 return saveResult;
                             }
@@ -527,7 +523,7 @@ namespace BotClient.Bussines.Services
                                         var botMessage = RandMess(patternAction[0].Text);
                                         if (botMessage != null)
                                         {
-                                            var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage).ConfigureAwait(false);
+                                            var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId).ConfigureAwait(false);
                                             var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
                                             if (botClientRoleConnector.MissionPath.Length > 0)
                                                 botClientRoleConnector.MissionPath += ";";
@@ -684,6 +680,133 @@ namespace BotClient.Bussines.Services
                 settingsService.AddLog("BotWorkService", ex.Message);
             }
             return result;
+        }
+
+        private async Task<string> SetMessageKeyboardError(string Text)
+        {
+            var words = Text.Split(" ");
+            var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
+            var errorChance = Math.Round((double)(words.Length / settingsErrorChancePerTenWords));
+            if (random.Next(0, 100) < errorChance)
+            {
+                char[][] keyboard = new char[3][]
+                {
+                    new char[12] { 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ' },
+                    new char[11] { 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э' },
+                    new char[9] { 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю' }
+                };
+                var wordsIndexes = new List<int>();
+                for (int i = 0; i < errorChance; i++)
+                {
+                    wordsIndexes.Add(random.Next(0, words.Length - 1));
+                    while (true)
+                    {
+                        if (wordsIndexes.Count(item => item == wordsIndexes[wordsIndexes.Count - 1]) > 1)
+                            wordsIndexes[i] = random.Next(0, words.Length - 1);
+                        else
+                            break;
+                    }
+                }
+                var regex = new Regex(@"[^a-zA-ZА-Яа-я0-9]", RegexOptions.IgnoreCase);
+                for (int i = 0; i < wordsIndexes.Count; i++)
+                {
+                    if (regex.IsMatch(words[wordsIndexes[i]]))
+                    {
+                        var word = words[wordsIndexes[i]];
+                        var characterIndex = random.Next(0, word.Length - 1);
+                        for (int j = 0; j < keyboard.Length; j++)
+                        {
+                            for (int k = 0; k < keyboard[j].Length; k++)
+                            {
+                                if (word[characterIndex] == keyboard[j][k])
+                                {
+                                    var x = 0;
+                                    var y = 0;
+                                    if ((j + k) == 0)
+                                    {
+                                        x = random.Next(0, 2);
+                                        y = random.Next(0, 2);
+                                        if ((y == 0) && (x == 0))
+                                            x = 1;
+                                    }
+                                    else if ((j == 0) && (k == 11))
+                                    {
+                                        y = random.Next(0, 2);
+                                        x = 10;
+                                    }
+                                    else if ((j == 1) && (k == 0))
+                                    {
+                                        x = random.Next(0, 2);
+                                        y = random.Next(0, 3);
+                                    }
+                                    else if ((j == 1) && (k == 10))
+                                    {
+                                        x = random.Next(9, 12);
+                                        y = random.Next(0, 2);
+                                        if ((y == 1) && (x != 9))
+                                            x = 9;
+                                    }
+                                    else if ((j == 1) && (k == 9))
+                                    {
+                                        x = random.Next(8, 11);
+                                        y = random.Next(0, 3);
+                                        if ((y == 2) && (x > 8))
+                                            x = 8;
+                                    }
+                                    else if ((j == 2) && (k == 0))
+                                    {
+                                        y = random.Next(1, 3);
+                                        x = random.Next(0, 2);
+                                    }
+                                    else if ((j == 2) && (k == 8))
+                                    {
+                                        y = random.Next(1, 3);
+                                        x = random.Next(7, 10);
+                                        if (y == 2)
+                                            x = 7;
+                                    }
+                                    else if (j == 0)
+                                    {
+                                        y = random.Next(0, 2);
+                                        x = random.Next(k - 1, k + 2);
+                                    }
+                                    else if (j == 2)
+                                    {
+                                        y = random.Next(1, 3);
+                                        x = random.Next(k - 1, k + 2);
+                                    }
+                                    else
+                                    {
+                                        y = random.Next(0, 3);
+                                        x = random.Next(k - 1, k + 2);
+                                    }
+                                    StringBuilder sb = new StringBuilder(word);
+                                    sb[characterIndex] = keyboard[y][x];
+                                    word = sb.ToString();
+                                }
+                            }
+                        }
+                        words[wordsIndexes[i]] = word;
+                    }
+                }
+                string newText = "";
+                if (words.Length > 0)
+                {
+                    for (int i = 0; i < words.Length; i++)
+                    {
+                        newText += words[i];
+                        if (i == words.Length - 1)
+                            newText += " ";
+                    }
+                    return newText;
+                }
+            }
+            return Text;
+        }
+
+        private async Task<string> SetCaps(string Text)
+        {
+            
         }
     }
 }

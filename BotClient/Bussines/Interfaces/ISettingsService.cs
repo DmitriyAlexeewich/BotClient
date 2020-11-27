@@ -25,6 +25,7 @@ namespace BotClient.Bussines.Interfaces
         Task<SettingsReport> SetHTMLElementWaitingTime(int HTMLElementWaitingTime);
 
         Task<SettingsReport> SetScrollCount(int ScrollCount);
+        Task<SettingsReport> SetErrorChancePerTenWords(int ErrorChancePerTenWords);
 
         WebConnectionSettings GetServerSettings();
 

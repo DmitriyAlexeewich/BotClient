@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30406.217
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotClient", "BotClient\BotClient.csproj", "{394B7CE6-E1C1-4605-BBE7-24911A350B8E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1A341415-6FFB-43C9-87E6-711C0539686C} = {1A341415-6FFB-43C9-87E6-711C0539686C}
+		{6FDDCF39-274B-47F0-A376-EE616A547AB2} = {6FDDCF39-274B-47F0-A376-EE616A547AB2}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotDataModels", "..\BotDataModels\BotDataModels\BotDataModels.csproj", "{1A341415-6FFB-43C9-87E6-711C0539686C}"
 EndProject

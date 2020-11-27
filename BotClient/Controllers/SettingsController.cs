@@ -27,7 +27,11 @@ namespace BotClient.Controllers
         [HttpPost("CreateSettings")]
         public async Task<IActionResult> CreateSettings([FromBody] WebConnectionSettings Settings)
         {
-            if ((Settings.ParentServerIP != null) && (Settings.ServerId != null) && (Settings.Options != null))
+            if ((Settings.ParentServerIP != null) && (Settings.ParentServerIP.Length > 0) && (Settings.ServerId != null) && (Settings.Options != null)
+                && (Settings.Options.Count > 0) && (Settings.KeyWaitingTimeMin >= 0) && (Settings.KeyWaitingTimeMax > 0) 
+                && (Settings.KeyWaitingTimeMin < Settings.KeyWaitingTimeMax) && (Settings.HTMLPageWaitingTime >= 60) 
+                && (Settings.HTMLElementWaitingTime >= 1) && (Settings.ScrollCount >= 1) && (Settings.ErrorChancePerTenWords >= 1) 
+                && (Settings.ErrorChancePerTenWords <= 100))
             {
                 return Ok(await settingsService.CreateLink(Settings).ConfigureAwait(false));
             }
@@ -90,12 +94,12 @@ namespace BotClient.Controllers
         [HttpPost("SetHTMLElementWaitingTime")]
         public async Task<IActionResult> SetHTMLElementWaitingTime([FromQuery] int HTMLElementWaitingTime)
         {
-            if (HTMLElementWaitingTime >= 60)
+            if ((HTMLElementWaitingTime >= 1))
             {
                 return Ok(await settingsService.SetHTMLElementWaitingTime(HTMLElementWaitingTime).ConfigureAwait(false));
             }
             return BadRequest("Invalid HTMLElementWaitingTime. " +
-                              "HTMLElementWaitingTime must be greater than 60");
+                              "HTMLElementWaitingTime must be greater than 0");
         }
 
         [HttpPost("SetScrollCount")]
@@ -106,7 +110,18 @@ namespace BotClient.Controllers
                 return Ok(await settingsService.SetScrollCount(ScrollCount).ConfigureAwait(false));
             }
             return BadRequest("Invalid ScrollCount. " +
-                              "ScrollCount must be greater than 1");
+                              "ScrollCount must be greater than 0");
+        }
+
+        [HttpPost("SetErrorChancePerTenWords")]
+        public async Task<IActionResult> SetErrorChancePerTenWords([FromQuery] int ErrorChancePerTenWords)
+        {
+            if ((ErrorChancePerTenWords >= 1) && (ErrorChancePerTenWords <= 100))
+            {
+                return Ok(await settingsService.SetErrorChancePerTenWords(ErrorChancePerTenWords).ConfigureAwait(false));
+            }
+            return BadRequest("Invalid ErrorChancePerTenWords. " +
+                              "ErrorChancePerTenWords must be greater than 0 and must be less than or equal to 100");
         }
 
         [HttpGet("GetServerSettings")]
