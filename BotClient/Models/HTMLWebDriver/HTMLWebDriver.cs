@@ -24,22 +24,30 @@ namespace BotClient.Models.HTMLWebDriver
 
         public HTMLWebDriver(EnumSocialPlatform SocialPlatform, WebConnectionSettings ConnectionSettings)
         {
-            var options = new ChromeOptions();
-            for (int i = 0; i < ConnectionSettings.Options.Count; i++)
-                options.AddArgument(ConnectionSettings.Options[i]);
-            WebDriver = new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromMinutes(10));
-            WebDriver.Manage().Timeouts().PageLoad.Add(TimeSpan.FromMinutes(10));
-            switch (SocialPlatform)
+            try
             {
-                case EnumSocialPlatform.Vk:
-                    WebDriver.Navigate().GoToUrl("https://vk.com/");
-                    break;
-                default:
-                    break;
+                var options = new ChromeOptions();
+                for (int i = 0; i < ConnectionSettings.Options.Count; i++)
+                    options.AddArgument(ConnectionSettings.Options[i]);
+                WebDriver = new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromMinutes(10));
+                WebDriver.Manage().Timeouts().PageLoad.Add(TimeSpan.FromMinutes(10));
+                switch (SocialPlatform)
+                {
+                    case EnumSocialPlatform.Vk:
+                        WebDriver.Navigate().GoToUrl("https://vk.com/");
+                        break;
+                    default:
+                        break;
+                }
+                Status = EnumWebDriverStatus.Start;
+                WebSettings = ConnectionSettings;
+                WebDriverPlatform = SocialPlatform;
             }
-            Status = EnumWebDriverStatus.Start;
-            WebSettings = ConnectionSettings;
-            WebDriverPlatform = SocialPlatform;
+            catch (Exception ex)
+            {
+                _exception = ex;
+                Status = EnumWebDriverStatus.Error;
+            }
         }
     }
 }
