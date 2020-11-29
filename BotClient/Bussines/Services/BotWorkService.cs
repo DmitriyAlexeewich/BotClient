@@ -165,7 +165,7 @@ namespace BotClient.Bussines.Services
                     for (int i = 0; i < webDriverBots.Count; i++)
                     {
                         var loginflag = await vkActionService.Login(WebDriverId, webDriverBots[i].BotData.Login, webDriverBots[i].BotData.Password).ConfigureAwait(false);
-                        if (!loginflag.hasError)
+                        if ((!loginflag.hasError) && (await vkActionService.isLoginSuccess(WebDriverId).ConfigureAwait(false)))
                         {
                             UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Run);
                             if (webDriverBots[i].BotData.isUpdatedCustomizeInfo)
@@ -176,9 +176,6 @@ namespace BotClient.Bussines.Services
                                     botCompositeService.SetIsUpdatedCustomizeInfo(webDriverBots[i].BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();
-                            var maxClientsRoleConnectionActionsCount = random.Next(5, 10);
-                            for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
-                                botSchedule.Add(EnumBotActionType.RoleMission);
                             var maxSecondActionsCount = random.Next(0, (int)(1 + botSchedule.Count / 3));
                             if (maxSecondActionsCount < 1)
                                 maxSecondActionsCount = 4;
@@ -186,7 +183,18 @@ namespace BotClient.Bussines.Services
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
                             botSchedule = Shuffle(botSchedule).ToList();
                             botSchedule = Simplify(botSchedule).ToList();
+                            var nowTime = DateTime.Now;
+                            var startTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 8, 0, 0);
+                            var endTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 23, 0, 0);
+                            if ((nowTime > startTime) && (nowTime < endTime))
+                            {
+                                var maxClientsRoleConnectionActionsCount = random.Next(5, 10);
+                                for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
+                                    botSchedule.Add(EnumBotActionType.RoleMission);
+                                botSchedule = Shuffle(botSchedule).ToList();
+                            }
                             var botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
+                            await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
                                 var isActionError = false;
@@ -238,7 +246,7 @@ namespace BotClient.Bussines.Services
                             UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
                         }
                     }
-                    webDriverBots = bots.Where(item => item.WebDriverId == WebDriverId).ToList();
+                    webDriverBots = bots.Where(item => item.WebDriverId == WebDriverId && item.WorkStatus == EnumBotWorkStatus.Free).ToList();
                 }
             }
             catch (Exception ex)
@@ -803,10 +811,11 @@ namespace BotClient.Bussines.Services
             }
             return Text;
         }
-
+        /*
         private async Task<string> SetCaps(string Text)
         {
             
         }
+        */
     }
 }

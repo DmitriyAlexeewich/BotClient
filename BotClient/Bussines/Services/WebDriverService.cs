@@ -26,34 +26,27 @@ namespace BotClient.Bussines.Services
 
         public async Task Start(int BrowserCount, EnumSocialPlatform SocialPlatform)
         {
-            try
+            for (int i = 0; i < webDrivers.Count; i++)
             {
-                for (int i = 0; i < webDrivers.Count; i++)
+                webDrivers[i].WebDriver.Quit();
+            }
+            webDrivers = new List<HTMLWebDriver>();
+            List<DriverReport> result = new List<DriverReport>();
+            for (int i = 0; i < BrowserCount; i++)
+            {
+                var startResult = StartWebDriver(SocialPlatform);
+                webDrivers.Add(startResult.Item1);
+                result.Add(startResult.Item2);
+                if (startResult.Item2.HasError)
                 {
-                    webDrivers[i].WebDriver.Quit();
-                }
-                webDrivers = new List<HTMLWebDriver>();
-                List<DriverReport> result = new List<DriverReport>();
-                for (int i = 0; i < BrowserCount; i++)
-                {
-                    var startResult = StartWebDriver(SocialPlatform);
-                    webDrivers.Add(startResult.Item1);
-                    result.Add(startResult.Item2);
-                    if (startResult.Item2.HasError)
-                    {
-                        webDrivers = new List<HTMLWebDriver>();
-                        await settingsService.AddLog("WebDriver", startResult.Item2.ExceptionMessage).ConfigureAwait(false);
-                        break;
-                    }
-                }
-                for (int i = 0; i < webDrivers.Count; i++)
-                {
-                    webDrivers[i].Status = EnumWebDriverStatus.Ready;
+                    webDrivers = new List<HTMLWebDriver>();
+                    await settingsService.AddLog("WebDriver", startResult.Item2.ExceptionMessage).ConfigureAwait(false);
+                    break;
                 }
             }
-            catch(Exception ex)
+            for (int i = 0; i < webDrivers.Count; i++)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                webDrivers[i].Status = EnumWebDriverStatus.Ready;
             }
         }
 
@@ -530,29 +523,21 @@ namespace BotClient.Bussines.Services
 
         private Tuple<HTMLWebDriver, DriverReport> StartWebDriver(EnumSocialPlatform SocialPlatform)
         {
-            try
+            var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settingsService.GetServerSettings());
+            var oldURL = bufferWebDriver.WebDriver.Url;
+            var loadingResult = WaitPageLoading(bufferWebDriver, oldURL);
+            var driverReport = new DriverReport()
             {
-                var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settingsService.GetServerSettings());
-                var oldURL = bufferWebDriver.WebDriver.Url;
-                var loadingResult = WaitPageLoading(bufferWebDriver, oldURL);
-                var driverReport = new DriverReport()
-                {
-                    ServerId = settingsService.GetServerSettings().ServerId,
-                    DriverId = bufferWebDriver.Id,
-                    DriverStatus = loadingResult == EnumWebHTMLPageStatus.Ready ? bufferWebDriver.Status : EnumWebDriverStatus.Error
-                };
-                if (bufferWebDriver.Status == EnumWebDriverStatus.Error)
-                {
-                    driverReport.HasError = true;
-                    driverReport.ExceptionMessage = bufferWebDriver.ExceptionMessage;
-                }
-                return Tuple.Create(bufferWebDriver, driverReport);
-            }
-            catch (Exception ex)
+                ServerId = settingsService.GetServerSettings().ServerId,
+                DriverId = bufferWebDriver.Id,
+                DriverStatus = loadingResult == EnumWebHTMLPageStatus.Ready ? bufferWebDriver.Status : EnumWebDriverStatus.Error
+            };
+            if (bufferWebDriver.Status == EnumWebDriverStatus.Error)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                driverReport.HasError = true;
+                driverReport.ExceptionMessage = bufferWebDriver.ExceptionMessage;
             }
-            return null;
+            return Tuple.Create(bufferWebDriver, driverReport);
         }
 
     }

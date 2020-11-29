@@ -224,7 +224,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 CreateErrorLogFile();
-                if (!File.Exists(errorLogFilePath))
+                if (File.Exists(errorLogFilePath))
                 {
                     File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Error);
                     return true;

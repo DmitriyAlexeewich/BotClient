@@ -31,7 +31,7 @@ namespace BotClient.Controllers
             {
                 if ((EnumSocialPlatform)SocialPlatform != 0)
                 {
-                    Task.Run(() => { webDriverService.Start(BrowserCount, (EnumSocialPlatform)SocialPlatform); });
+                    await webDriverService.Start(BrowserCount, (EnumSocialPlatform)SocialPlatform).ConfigureAwait(false);
                     return Ok(new DriverStartReport()
                     {
                         IsSuccess = true,
