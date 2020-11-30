@@ -501,6 +501,26 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
+        public async Task GetScreenshot(Guid WebDriverId, string DestinationFolder, string ScreenshotName)
+        {
+            try
+            {
+                var webDriver = await GetWebDriverById(WebDriverId).ConfigureAwait(false);
+                if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
+                    && (webDriver.Status != EnumWebDriverStatus.Loading))
+                {
+
+                    Screenshot image = ((ITakesScreenshot)webDriver).GetScreenshot();
+                    image.SaveAsFile($"{await settingsService.GetScreenshotFolderPath().ConfigureAwait(false)}" +
+                                     $"{DestinationFolder}\\{ScreenshotName}.png", ScreenshotImageFormat.Png);
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex.Message);
+            }
+        }
+
         private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver, string OldURL)
         {
             bool urlNotChanged = false;

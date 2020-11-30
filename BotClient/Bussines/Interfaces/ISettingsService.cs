@@ -36,5 +36,7 @@ namespace BotClient.Bussines.Interfaces
         Task<SettingsReport> AddUpdateAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform, List<WebHTMLElementModel> Algoritm);
 
         Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform);
+
+        Task<string> GetScreenshotFolderPath();
     }
 }

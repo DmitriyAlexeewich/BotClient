@@ -8856,25 +8856,20 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\stalk\\.nuget\\packages\\": {},
-    "C:\\Microsoft\\Xamarin\\NuGet\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
-      "packagesPath": "C:\\Users\\stalk\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\obj\\publish\\win-x86\\",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\publish\\win-x86\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Microsoft\\Xamarin\\NuGet\\"
-      ],
       "configFilePaths": [
-        "C:\\Users\\stalk\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp3.1"
@@ -8936,20 +8931,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Runtime.win-x86",
-            "version": "[3.1.9, 3.1.9]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Runtime.win-x86",
-            "version": "[3.1.9, 3.1.9]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x86",
-            "version": "[3.1.9, 3.1.9]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -8958,7 +8939,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {
@@ -9088,33 +9069,6 @@
     {
       "code": "NU1605",
       "level": "Error",
-      "message": "Обнаружено понижение версии пакета System.Globalization с 4.3.0 на 4.0.11. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Net.Primitives 4.0.11 -> runtime.win.System.Net.Primitives 4.3.0 -> System.Globalization (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Globalization (>= 4.0.11)",
-      "libraryId": "System.Globalization",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v3.1/win-x86"
-      ]
-    },
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Обнаружено понижение версии пакета System.Runtime.Extensions с 4.3.0 на 4.1.0. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Net.Primitives 4.0.11 -> runtime.win.System.Net.Primitives 4.3.0 -> System.Runtime.Extensions (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Runtime.Extensions (>= 4.1.0)",
-      "libraryId": "System.Runtime.Extensions",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v3.1/win-x86"
-      ]
-    },
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Обнаружено понижение версии пакета System.Threading с 4.3.0 на 4.0.11. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Net.Primitives 4.0.11 -> runtime.win.System.Net.Primitives 4.3.0 -> System.Threading (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Threading (>= 4.0.11)",
-      "libraryId": "System.Threading",
-      "targetGraphs": [
-        ".NETCoreApp,Version=v3.1/win-x86"
-      ]
-    },
-    {
-      "code": "NU1605",
-      "level": "Error",
       "message": "Обнаружено понижение версии пакета System.Diagnostics.Debug с 4.3.0 на 4.0.11. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.IO.FileSystem 4.0.1 -> runtime.win.System.IO.FileSystem 4.3.0 -> System.Diagnostics.Debug (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Diagnostics.Debug (>= 4.0.11)",
       "libraryId": "System.Diagnostics.Debug",
       "targetGraphs": [
@@ -9143,6 +9097,33 @@
       "code": "NU1605",
       "level": "Error",
       "message": "Обнаружено понижение версии пакета System.Threading с 4.3.0 на 4.0.11. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.IO.FileSystem 4.0.1 -> runtime.win.System.IO.FileSystem 4.3.0 -> System.Threading (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Threading (>= 4.0.11)",
+      "libraryId": "System.Threading",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1/win-x86"
+      ]
+    },
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Обнаружено понижение версии пакета System.Globalization с 4.3.0 на 4.0.11. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Net.Primitives 4.0.11 -> runtime.win.System.Net.Primitives 4.3.0 -> System.Globalization (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Globalization (>= 4.0.11)",
+      "libraryId": "System.Globalization",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1/win-x86"
+      ]
+    },
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Обнаружено понижение версии пакета System.Runtime.Extensions с 4.3.0 на 4.1.0. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Net.Primitives 4.0.11 -> runtime.win.System.Net.Primitives 4.3.0 -> System.Runtime.Extensions (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Runtime.Extensions (>= 4.1.0)",
+      "libraryId": "System.Runtime.Extensions",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1/win-x86"
+      ]
+    },
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Обнаружено понижение версии пакета System.Threading с 4.3.0 на 4.0.11. Чтобы выбрать другую версию, создайте ссылку на пакет напрямую из проекта. \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Net.Primitives 4.0.11 -> runtime.win.System.Net.Primitives 4.3.0 -> System.Threading (>= 4.3.0) \r\n BotClient -> MySql.Data 8.0.22 -> BouncyCastle.NetCore 1.8.3 -> NETStandard.Library 1.6.0 -> System.Threading (>= 4.0.11)",
       "libraryId": "System.Threading",
       "targetGraphs": [
         ".NETCoreApp,Version=v3.1/win-x86"

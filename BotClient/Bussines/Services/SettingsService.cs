@@ -23,14 +23,17 @@ namespace BotClient.Bussines.Services
             configurationFilePath = configuration.GetSection("ConfigurationFilePath").Value;
             errorLogFilePath = configuration.GetSection("ErrorLogFilePath").Value;
             algoritmFilePath = configuration.GetSection("AlgoritmFilePath").Value;
+            screenshotPath = configuration.GetSection("ScreenshotPath").Value;
             CreateConfigurationFile();
             CreateErrorLogFile();
+            CreateScreenshotFolder();
         }
 
         private WebConnectionSettings webConnectionSettings = new WebConnectionSettings();
         private string configurationFilePath = string.Empty;
         private string errorLogFilePath = string.Empty;
         private string algoritmFilePath = string.Empty;
+        private string screenshotPath = string.Empty;
 
         public async Task<SettingsReport> CreateLink(WebConnectionSettings settings)
         {
@@ -296,6 +299,11 @@ namespace BotClient.Bussines.Services
             return new List<WebHTMLElementModel>();
         }
 
+        public async Task<string> GetScreenshotFolderPath()
+        {
+            return screenshotPath;
+        }
+
         private void CreateErrorLogFile()
         {
             try
@@ -305,6 +313,19 @@ namespace BotClient.Bussines.Services
                     Directory.CreateDirectory(Path.GetDirectoryName(errorLogFilePath));
                     File.Create(@errorLogFilePath);
                 }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex.Message);
+            }
+        }
+
+        private void CreateScreenshotFolder()
+        {
+            try
+            {
+                if (!Directory.Exists(screenshotPath))
+                    Directory.CreateDirectory(Path.GetDirectoryName(screenshotPath));
             }
             catch (Exception ex)
             {
