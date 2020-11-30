@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,7 +47,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService",ex.Message);
+                AddLog("SettingsService",ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -66,7 +67,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -86,7 +87,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -106,7 +107,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -127,7 +128,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -147,7 +148,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -167,7 +168,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -187,7 +188,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -207,7 +208,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -222,20 +223,20 @@ namespace BotClient.Bussines.Services
             return webConnectionSettings;
         }
 
-        public async Task<bool> AddLog(string CodeFileName, string Error)
+        public async Task<bool> AddLog(string CodeFileName, Exception Ex)
         {
             try
             {
                 CreateErrorLogFile();
                 if (File.Exists(errorLogFilePath))
                 {
-                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Error);
+                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- \n" + Ex.ToString());
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
             }
             return false;
         }
@@ -255,7 +256,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
             }
             return new List<string>();
         }
@@ -273,7 +274,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
                 return new SettingsReport()
                 {
                     HasError = true,
@@ -294,14 +295,25 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
             }
             return new List<WebHTMLElementModel>();
         }
 
-        public async Task<string> GetScreenshotFolderPath()
+        public async Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId)
         {
-            return screenshotPath;
+            try
+            {
+                var screenshotFolderPath = $"{screenshotPath}{BotClientRoleConnectionId}";
+                if (!Directory.Exists(screenshotFolderPath))
+                    Directory.CreateDirectory(Path.GetDirectoryName(screenshotFolderPath));
+                return screenshotPath;
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return null;
         }
 
         private void CreateErrorLogFile()
@@ -316,7 +328,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
             }
         }
 
@@ -329,7 +341,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
             }
         }
 
@@ -346,7 +358,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                AddLog("SettingsService", ex.Message);
+                AddLog("SettingsService", ex);
             }
         }
     }

@@ -54,7 +54,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -68,7 +68,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return false;
         }
@@ -151,7 +151,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -204,7 +204,7 @@ namespace BotClient.Bussines.Services
             catch
             (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -248,7 +248,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -275,7 +275,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -314,7 +314,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -347,7 +347,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -376,7 +376,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -403,7 +403,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -449,7 +449,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -487,7 +487,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -510,12 +510,10 @@ namespace BotClient.Bussines.Services
                         hasError = false
                     };
                 }
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -574,7 +572,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return null;
         }
@@ -620,7 +618,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return new List<NewMessageModel>();
         }
@@ -666,7 +664,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -684,7 +682,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -697,7 +695,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return "";
         }
@@ -722,7 +720,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return false;
         }
@@ -735,7 +733,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return false;
         }
@@ -755,7 +753,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return false;
         }
@@ -778,7 +776,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }
@@ -792,7 +790,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("VkActionService", ex.Message);
+                settingsService.AddLog("VkActionService", ex);
             }
             return result;
         }

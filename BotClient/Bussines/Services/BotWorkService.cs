@@ -106,7 +106,7 @@ namespace BotClient.Bussines.Services
             catch(Exception ex)
             {
                 result.ExceptionMessage = ex.Message;
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -138,7 +138,7 @@ namespace BotClient.Bussines.Services
             catch (Exception ex)
             {
                 result.Exception = ex.Message;
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -152,7 +152,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return bots;
         }
@@ -203,7 +203,6 @@ namespace BotClient.Bussines.Services
                                     botSchedule = Shuffle(botSchedule).ToList();
                                 }
                             }
-                            botSchedule[0] = EnumBotActionType.RoleMission;
                             await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
@@ -267,7 +266,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
         }
 
@@ -287,7 +286,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return list;
         }
@@ -338,7 +337,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return false;
         }
@@ -353,7 +352,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
         }
 
@@ -460,6 +459,7 @@ namespace BotClient.Bussines.Services
                                     if ((!goToDialogResult.hasError) && (goToDialogResult.ActionResultMessage == EnumActionResult.Success))
                                         await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.Id.ToString(), 
                                                                              DateTime.Now.ToString("yyyy-MM-dd")).ConfigureAwait(false);
+                                    
                                 }
                             }
                             return stepResult;
@@ -470,7 +470,7 @@ namespace BotClient.Bussines.Services
             catch
             (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return false;
         }
@@ -529,7 +529,7 @@ namespace BotClient.Bussines.Services
             catch
             (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return true;
         }
@@ -601,7 +601,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return false;
         }
@@ -627,7 +627,7 @@ namespace BotClient.Bussines.Services
             catch
             (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -652,24 +652,32 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return false;
         }
 
         private string RandOriginalMessage(string message)
         {
-            var maxAttept = random.Next(3, 6);
-            for (int i = 0; i < maxAttept; i++)
+            try
             {
-                var randomMessage = RandMessage(message);
-                if (randomMessages.FirstOrDefault(item => item == randomMessage) == null)
+                var maxAttept = random.Next(3, 6);
+                for (int i = 0; i < maxAttept; i++)
                 {
-                    randomMessages.Add(randomMessage);
-                    return randomMessage;
+                    var randomMessage = RandMessage(message);
+                    if (randomMessages.FirstOrDefault(item => item == randomMessage) == null)
+                    {
+                        randomMessages.Add(randomMessage);
+                        return randomMessage;
+                    }
                 }
+                return RandMessage(message);
             }
-            return RandMessage(message);
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+            return null;
         }
 
         private string RandMessage(string message)
@@ -707,7 +715,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return null;
         }
@@ -731,7 +739,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return null;
         }
@@ -745,7 +753,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex.Message);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -874,24 +882,31 @@ namespace BotClient.Bussines.Services
 
         private async Task SetBotSchedule(List<int> BotsId)
         {
-            int ourRoleActions = BotsId.Count * random.Next(8, 13);
-            for (int i = 0; i < BotsId.Count; i++)
+            try
             {
-                var actionsCount = random.Next(8, 13);
-                if (actionsCount > (ourRoleActions - actionsCount))
-                    actionsCount = random.Next(8, ourRoleActions);
-                var connection = botRoleActions.FirstOrDefault(item => item.BotId == BotsId[i]);
-                if (connection != null)
-                    botRoleActions[botRoleActions.IndexOf(connection)].RoleActionCount = actionsCount;
-                else
+                int ourRoleActions = BotsId.Count * random.Next(8, 13);
+                for (int i = 0; i < BotsId.Count; i++)
                 {
-                    botRoleActions.Add(new BotRoleActionsDaySchedule()
+                    var actionsCount = random.Next(8, 13);
+                    if (actionsCount > (ourRoleActions - actionsCount))
+                        actionsCount = random.Next(8, ourRoleActions);
+                    var connection = botRoleActions.FirstOrDefault(item => item.BotId == BotsId[i]);
+                    if (connection != null)
+                        botRoleActions[botRoleActions.IndexOf(connection)].RoleActionCount = actionsCount;
+                    else
                     {
-                        BotId = BotsId[i],
-                        RoleActionCount = actionsCount
-                    });
+                        botRoleActions.Add(new BotRoleActionsDaySchedule()
+                        {
+                            BotId = BotsId[i],
+                            RoleActionCount = actionsCount
+                        });
+                    }
+                    ourRoleActions -= actionsCount;
                 }
-                ourRoleActions -= actionsCount;
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
             }
         }
 

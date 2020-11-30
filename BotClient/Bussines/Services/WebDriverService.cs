@@ -7,6 +7,7 @@ using BotClient.Models.WebReports;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex.Message).ConfigureAwait(false);
+                await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
             }
         }
 
@@ -79,7 +80,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex.Message).ConfigureAwait(false);
+                await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
             }
         }
         /*
@@ -337,7 +338,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return new List<HTMLWebDriver>();
         }
@@ -352,7 +353,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }
@@ -368,7 +369,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -392,7 +393,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }
@@ -419,7 +420,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -442,7 +443,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -477,7 +478,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -496,7 +497,7 @@ namespace BotClient.Bussines.Services
             }
             catch(Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -510,14 +511,16 @@ namespace BotClient.Bussines.Services
                     && (webDriver.Status != EnumWebDriverStatus.Loading))
                 {
 
-                    Screenshot image = ((ITakesScreenshot)webDriver).GetScreenshot();
-                    image.SaveAsFile($"{await settingsService.GetScreenshotFolderPath().ConfigureAwait(false)}" +
-                                     $"{DestinationFolder}\\{ScreenshotName}.png", ScreenshotImageFormat.Png);
+                    Screenshot image = ((ITakesScreenshot)webDriver.WebDriver).GetScreenshot();
+                    ScreenshotName = ScreenshotName.Replace('-', '_');
+                    var folderPath = await settingsService.GetScreenshotFolderPath(DestinationFolder);
+                    if(folderPath != null)
+                        image.SaveAsFile($"{folderPath}\\{ScreenshotName}.png", ScreenshotImageFormat.Png);
                 }
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
         }
 
@@ -546,7 +549,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return EnumWebHTMLPageStatus.Loading;
         }
@@ -580,7 +583,7 @@ namespace BotClient.Bussines.Services
             }
             catch(Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex.Message);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }

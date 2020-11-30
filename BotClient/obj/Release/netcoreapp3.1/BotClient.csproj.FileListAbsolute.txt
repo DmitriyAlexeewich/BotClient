@@ -90,3 +90,4 @@ D:\Users\stalk\source\repos\BotClient\BotClient\obj\Release\netcoreapp3.1\static
 D:\Users\stalk\source\repos\BotClient\BotClient\obj\Release\netcoreapp3.1\BotClient.dll
 D:\Users\stalk\source\repos\BotClient\BotClient\obj\Release\netcoreapp3.1\BotClient.pdb
 D:\Users\stalk\source\repos\BotClient\BotClient\obj\Release\netcoreapp3.1\BotClient.genruntimeconfig.cache
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Release\netcoreapp3.1\hosting.json

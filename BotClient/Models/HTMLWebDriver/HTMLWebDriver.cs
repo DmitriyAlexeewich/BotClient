@@ -14,7 +14,7 @@ namespace BotClient.Models.HTMLWebDriver
         public EnumWebDriverStatus Status { get; set; } = EnumWebDriverStatus.Start;
         [JsonIgnore]
         public IWebDriver WebDriver { get; }
-        public string ExceptionMessage { get { return _exception.Message; } }
+        public Exception ExceptionMessage { get { return _exception; } }
         [JsonIgnore]
         public WebConnectionSettings WebSettings { get; }
         public EnumSocialPlatform WebDriverPlatform { get; }

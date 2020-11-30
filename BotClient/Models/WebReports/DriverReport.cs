@@ -15,7 +15,7 @@ namespace BotClient.Models.WebReports
         public string IP { get; } = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1].ToString();
         public Url URL { get; set; }
         public string LocalDateTime { get; } = DateTime.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss \"GMT\" zzz");
-        public string ExceptionMessage { get; set; }
+        public Exception ExceptionMessage { get; set; }
         public List<ActionReport> ActionsReport { get; set; } = new List<ActionReport>();
     }
 }

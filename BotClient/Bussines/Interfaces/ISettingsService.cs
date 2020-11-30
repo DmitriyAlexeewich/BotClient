@@ -25,11 +25,12 @@ namespace BotClient.Bussines.Interfaces
         Task<SettingsReport> SetHTMLElementWaitingTime(int HTMLElementWaitingTime);
 
         Task<SettingsReport> SetScrollCount(int ScrollCount);
+
         Task<SettingsReport> SetErrorChancePerTenWords(int ErrorChancePerTenWords);
 
         WebConnectionSettings GetServerSettings();
 
-        Task<bool> AddLog(string CodeFileName, string Error);
+        Task<bool> AddLog(string CodeFileName, Exception Ex);
 
         Task<List<string>> GetLogLines();
 
@@ -37,6 +38,6 @@ namespace BotClient.Bussines.Interfaces
 
         Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform);
 
-        Task<string> GetScreenshotFolderPath();
+        Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId);
     }
 }
