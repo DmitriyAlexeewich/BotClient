@@ -3,6 +3,7 @@ using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLElements;
 using BotClient.Models.Settings;
 using BotClient.Models.WebReports;
+using BotDataModels.Client;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -306,8 +307,8 @@ namespace BotClient.Bussines.Services
             {
                 var screenshotFolderPath = $"{screenshotPath}{BotClientRoleConnectionId}";
                 if (!Directory.Exists(screenshotFolderPath))
-                    Directory.CreateDirectory(Path.GetDirectoryName(screenshotFolderPath));
-                return screenshotPath;
+                    Directory.CreateDirectory(@screenshotFolderPath);
+                return screenshotFolderPath;
             }
             catch (Exception ex)
             {
@@ -316,13 +317,32 @@ namespace BotClient.Bussines.Services
             return null;
         }
 
+        public async Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots)
+        {
+            try
+            {
+                for (int i = 0; i < DialogScreenshots.Count; i++)
+                {
+                    var path = await GetScreenshotFolderPath(DialogScreenshots[i].BotClientRoleConnectionId.ToString()).ConfigureAwait(false);
+                    if(!Directory.Exists(path))
+                        Directory.Delete(path, true);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return false;
+        }
+
         private void CreateErrorLogFile()
         {
             try
             {
                 if (!File.Exists(errorLogFilePath))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(errorLogFilePath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(@errorLogFilePath));
                     File.Create(@errorLogFilePath);
                 }
             }
@@ -337,7 +357,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 if (!Directory.Exists(screenshotPath))
-                    Directory.CreateDirectory(Path.GetDirectoryName(screenshotPath));
+                    Directory.CreateDirectory(@screenshotPath);
             }
             catch (Exception ex)
             {

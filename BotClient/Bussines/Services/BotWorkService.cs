@@ -9,6 +9,7 @@ using BotClient.Models.WebReports;
 using BotDataModels.Role;
 using BotDataModels.Role.Enumerators;
 using BotMySQL.Bussines.Interfaces.Composite;
+using BotMySQL.Bussines.Interfaces.MySQL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,13 +27,15 @@ namespace BotClient.Bussines.Services
         private readonly IWebDriverService webDriverService;
         private readonly ISettingsService settingsService;
         private readonly IVkActionService vkActionService;
+        private readonly IDialogScreenshotService dialogScreenshotService;
 
         public BotWorkService(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
                               IMissionCompositeService MissionCompositeService,
                               IWebDriverService WebDriverService,
                               ISettingsService SettingsService,
-                              IVkActionService VkActionService)
+                              IVkActionService VkActionService,
+                              IDialogScreenshotService DialogScreenshotService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -40,6 +43,7 @@ namespace BotClient.Bussines.Services
             webDriverService = WebDriverService;
             settingsService = SettingsService;
             vkActionService = VkActionService;
+            dialogScreenshotService = DialogScreenshotService;
         }
 
         private List<BotWorkStatusModel> bots = new List<BotWorkStatusModel>();
@@ -61,7 +65,7 @@ namespace BotClient.Bussines.Services
                 for (int i = 0; i < BotsId.Count; i++)
                 {
                     var bufferBotData = botCompositeService.GetBotById(BotsId[i]);
-                    if ((!bufferBotData.isDead) && (!bufferBotData.isPrintBlock))
+                    if ((bufferBotData != null) && (!bufferBotData.isDead) && (!bufferBotData.isPrintBlock))
                     {
                         bots.Add(new BotWorkStatusModel()
                         {
@@ -179,7 +183,7 @@ namespace BotClient.Bussines.Services
                                     botCompositeService.SetIsUpdatedCustomizeInfo(webDriverBots[i].BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();
-                            var maxSecondActionsCount = random.Next(0, (int)(1 + botSchedule.Count / 3));
+                            var maxSecondActionsCount = random.Next(1, (int)(10));
                             if (maxSecondActionsCount < 1)
                                 maxSecondActionsCount = 4;
                             for (int j = 0; j < maxSecondActionsCount; j++)
@@ -256,11 +260,27 @@ namespace BotClient.Bussines.Services
                         }
                     }
                     webDriverBots = bots.Where(item => item.WebDriverId == WebDriverId && item.WorkStatus == EnumBotWorkStatus.Free).ToList();
-                    if (currentDay != DateTime.Now)
+                    if (currentDay > DateTime.Now)
                     {
                         currentDay = DateTime.Now;
                         await SetBotSchedule(webDriverBots.Select(item => item.BotData.Id).ToList()).ConfigureAwait(false);
                         randomMessages = new List<string>();
+                        for (int i = 0; i < webDriverBots.Count; i++)
+                        {
+                            var deleteDay = DateTime.Now;
+                            deleteDay = deleteDay.AddDays(-2);
+                            var screenshots = dialogScreenshotService.GetByBotId(webDriverBots[i].BotData.Id, false);
+                            if ((screenshots != null) && (screenshots.Count > 0))
+                            {
+                                screenshots = screenshots.Where(item => item.UpdateDate < deleteDay && item.ScreenshotsCount < 2).ToList();
+                                var deleteResult = await settingsService.DeleteScreenshotFolder(screenshots).ConfigureAwait(false);
+                                if (deleteResult)
+                                {
+                                    var screenshotsId = screenshots.Select(item => item.Id).ToList();
+                                    dialogScreenshotService.SetIsDeleted(screenshotsId);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -449,19 +469,6 @@ namespace BotClient.Bussines.Services
                                 else
                                     break;
                             }
-                            if (stepResult)
-                            {
-                                var previousNodes = Split(nodes, i);
-                                if ((previousNodes != null) && (previousNodes.Count > 0) 
-                                    && (previousNodes.FirstOrDefault(item => item.Type == EnumMissionActionType.SendMessage) != null))
-                                {
-                                    var goToDialogResult = await vkActionService.GoToDialog(WebDriverId, client.VkId);
-                                    if ((!goToDialogResult.hasError) && (goToDialogResult.ActionResultMessage == EnumActionResult.Success))
-                                        await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.Id.ToString(), 
-                                                                             DateTime.Now.ToString("yyyy-MM-dd")).ConfigureAwait(false);
-                                    
-                                }
-                            }
                             return stepResult;
                         }
                     }
@@ -514,7 +521,7 @@ namespace BotClient.Bussines.Services
                                     {
                                         var newBotMessage = RandOriginalMessage(messages[j].Text);
                                         if(newBotMessage != null)
-                                            sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage, client.VkId).ConfigureAwait(false);
+                                            sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage, client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
                                     }
                                     if (!sendAnswerMessageResult.hasError)
                                     {
@@ -553,8 +560,8 @@ namespace BotClient.Bussines.Services
                             var botMessage = RandOriginalMessage(standartPatterns[i].AnswerText);
                             if (botMessage != null)
                             {
-                                var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId).ConfigureAwait(false);
-                                var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
+                                var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
+                                var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
                                 return saveResult;
                             }
                             return false;
@@ -576,8 +583,8 @@ namespace BotClient.Bussines.Services
                                         var botMessage = RandOriginalMessage(patternAction[0].Text);
                                         if (botMessage != null)
                                         {
-                                            var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId).ConfigureAwait(false);
-                                            var saveResult = await SaveNewMessage(botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
+                                            var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
+                                            var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
                                             if (botClientRoleConnector.MissionPath.Length > 0)
                                                 botClientRoleConnector.MissionPath += ";";
                                             botClientRoleConnector.MissionPath += nodes[i].NodeId + ";" + patternAction[0].NodeId;
@@ -596,7 +603,7 @@ namespace BotClient.Bussines.Services
                             }
                         }
                     }
-                    return await SaveNewMessage(botClientRoleConnector.Id, false, newMessageText, null).ConfigureAwait(false);
+                    return await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, false, newMessageText, null).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -606,7 +613,7 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        private async Task<bool> SaveNewMessage(int BotClientRoleConnectorId, bool isSendAnswerMessageResultSuccess, string ClientMessage, string BotAnswer)
+        private async Task<bool> SaveNewMessage(Guid WebDriverId, int BotClientRoleConnectorId, bool isSendAnswerMessageResultSuccess, string ClientMessage, string BotAnswer)
         {
             var result = false;
             try
@@ -884,12 +891,16 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                int ourRoleActions = BotsId.Count * random.Next(8, 13);
+                var ourRoleActions = BotsId.Count * random.Next(8, 13);
                 for (int i = 0; i < BotsId.Count; i++)
                 {
                     var actionsCount = random.Next(8, 13);
                     if (actionsCount > (ourRoleActions - actionsCount))
+                    {
+                        if (ourRoleActions <= 10)
+                            ourRoleActions = random.Next(10, 13);
                         actionsCount = random.Next(8, ourRoleActions);
+                    }
                     var connection = botRoleActions.FirstOrDefault(item => item.BotId == BotsId[i]);
                     if (connection != null)
                         botRoleActions[botRoleActions.IndexOf(connection)].RoleActionCount = actionsCount;

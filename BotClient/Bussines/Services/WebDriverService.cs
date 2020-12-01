@@ -4,6 +4,8 @@ using BotClient.Models.HTMLElements;
 using BotClient.Models.HTMLElements.Enumerators;
 using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
+using BotDataModels.Client;
+using BotMySQL.Bussines.Interfaces.MySQL;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -17,10 +19,13 @@ namespace BotClient.Bussines.Services
     public class WebDriverService : IWebDriverService
     {
         private readonly ISettingsService settingsService;
+        private readonly IDialogScreenshotService dialogScreenshotService;
 
-        public WebDriverService(ISettingsService SettingsService)
+        public WebDriverService(ISettingsService SettingsService,
+                                IDialogScreenshotService DialogScreenshotService)
         {
             settingsService = SettingsService;
+            dialogScreenshotService = DialogScreenshotService;
         }
 
         List<HTMLWebDriver> webDrivers = new List<HTMLWebDriver>();
@@ -502,7 +507,7 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        public async Task GetScreenshot(Guid WebDriverId, string DestinationFolder, string ScreenshotName)
+        public async Task GetScreenshot(Guid WebDriverId, int BotClientRoleConnectionId, string ScreenshotName)
         {
             try
             {
@@ -510,12 +515,19 @@ namespace BotClient.Bussines.Services
                 if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
                     && (webDriver.Status != EnumWebDriverStatus.Loading))
                 {
-
                     Screenshot image = ((ITakesScreenshot)webDriver.WebDriver).GetScreenshot();
                     ScreenshotName = ScreenshotName.Replace('-', '_');
-                    var folderPath = await settingsService.GetScreenshotFolderPath(DestinationFolder);
-                    if(folderPath != null)
+                    var folderPath = await settingsService.GetScreenshotFolderPath(BotClientRoleConnectionId.ToString());
+                    if (folderPath != null)
+                    {
                         image.SaveAsFile($"{folderPath}\\{ScreenshotName}.png", ScreenshotImageFormat.Png);
+                        var dialogScreenshotCreate = new DialogScreenshotCreateModel()
+                        {
+                            BotClientRoleConnectionId = BotClientRoleConnectionId,
+                            ScreenshotCount = 1
+                        };
+                        dialogScreenshotService.CreateDialogScreenshot(dialogScreenshotCreate);
+                    }
                 }
             }
             catch (Exception ex)

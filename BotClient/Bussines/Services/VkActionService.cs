@@ -623,7 +623,7 @@ namespace BotClient.Bussines.Services
             return new List<NewMessageModel>();
         }
 
-        public async Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText, string ClientVkId)
+        public async Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText, string ClientVkId, int BotClientRoleConnectorId)
         {
             var result = new AlgoritmResult()
             {
@@ -647,6 +647,7 @@ namespace BotClient.Bussines.Services
                 }
                 if (sendResult)
                 {
+                    await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnectorId, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                     var messages = await GetMessages(WebDriverId).ConfigureAwait(false);
                     if ((messages != null) && (messages.Count > 0))
                     {

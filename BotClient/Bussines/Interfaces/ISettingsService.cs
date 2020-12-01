@@ -2,6 +2,7 @@
 using BotClient.Models.HTMLElements;
 using BotClient.Models.Settings;
 using BotClient.Models.WebReports;
+using BotDataModels.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -39,5 +40,7 @@ namespace BotClient.Bussines.Interfaces
         Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform);
 
         Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId);
+
+        Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots);
     }
 }

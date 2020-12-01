@@ -36,6 +36,7 @@ namespace BotClient.Settings
             services.AddSingleton<IPatternService, PatternService>();
             services.AddSingleton<IRoleMissionConnectorService, RoleMissionConnectorService>();
             services.AddSingleton<IRoleService, RoleService>();
+            services.AddSingleton<IDialogScreenshotService, DialogScreenshotService>();
 
             return services;
         }

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.WebReports;
 using BotMySQL.Bussines.Interfaces.Composite;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +18,16 @@ namespace BotClient.Controllers
     {
 
         private readonly IBotWorkService botWorkService;
-        private readonly IBotCompositeService t;
+        private readonly IBotCompositeService botCompositeService;
+        private readonly IWebHostEnvironment appEnvironment;
 
-        public BotController(IBotWorkService BotWorkService, IBotCompositeService T)
+        public BotController(IBotWorkService BotWorkService, 
+                             IBotCompositeService BotCompositeService,
+                             IWebHostEnvironment AppEnvironment)
         {
             botWorkService = BotWorkService;
-            t = T;
+            botCompositeService = BotCompositeService;
+            appEnvironment = AppEnvironment;
         }
 
         [HttpPost("StartBot")]
@@ -61,7 +67,20 @@ namespace BotClient.Controllers
         [HttpGet("GetBot")]
         public async Task<IActionResult> GetBot()
         {
-            return Ok(t.GetBotById(5));
+            return Ok(botCompositeService.GetBotById(5));
+        }
+
+        [HttpGet("GetScreenshot")]
+        public async Task<IActionResult> GetScreenshot()
+        {
+            string file_path = "C:\\Screenshot\\41244\\2020_12_01.png";
+            // Тип файла - content-type
+            string file_type = "image/png";
+            // Имя файла - необязательно
+            string file_name = "2020_12_01.png";
+            var t = new List<PhysicalFileResult>();
+            t.Add(PhysicalFile(file_path, file_type, file_name));
+            return Ok(t);
         }
     }
 }
