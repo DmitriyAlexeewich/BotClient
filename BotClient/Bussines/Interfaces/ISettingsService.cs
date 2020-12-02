@@ -33,6 +33,8 @@ namespace BotClient.Bussines.Interfaces
 
         Task<bool> AddLog(string CodeFileName, Exception Ex);
 
+        Task<bool> AddLog(string CodeFileName, string Ex);
+
         Task<List<string>> GetLogLines();
 
         Task<SettingsReport> AddUpdateAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform, List<WebHTMLElementModel> Algoritm);

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
+using BotClient.Models.Client;
 using BotClient.Models.WebReports;
 using BotMySQL.Bussines.Interfaces.Composite;
 using Microsoft.AspNetCore.Hosting;
@@ -19,15 +20,18 @@ namespace BotClient.Controllers
 
         private readonly IBotWorkService botWorkService;
         private readonly IBotCompositeService botCompositeService;
-        private readonly IWebHostEnvironment appEnvironment;
+        private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
         public BotController(IBotWorkService BotWorkService, 
                              IBotCompositeService BotCompositeService,
-                             IWebHostEnvironment AppEnvironment)
+                             IWebHostEnvironment WebHostEnvironment,
+                             IHttpContextAccessor HttpContextAccessor)
         {
             botWorkService = BotWorkService;
             botCompositeService = BotCompositeService;
-            appEnvironment = AppEnvironment;
+            webHostEnvironment = WebHostEnvironment;
+            httpContextAccessor = HttpContextAccessor;
         }
 
         [HttpPost("StartBot")]
@@ -70,17 +74,38 @@ namespace BotClient.Controllers
             return Ok(botCompositeService.GetBotById(5));
         }
 
-        [HttpGet("GetScreenshot")]
-        public async Task<IActionResult> GetScreenshot()
+        [HttpGet("GetActions")]
+        public async Task<IActionResult> GetActions()
         {
-            string file_path = "C:\\Screenshot\\41244\\2020_12_01.png";
-            // Тип файла - content-type
-            string file_type = "image/png";
-            // Имя файла - необязательно
-            string file_name = "2020_12_01.png";
-            var t = new List<PhysicalFileResult>();
-            t.Add(PhysicalFile(file_path, file_type, file_name));
-            return Ok(t);
+            return Ok(await botWorkService.GetBotRoleActions().ConfigureAwait(false));
+        }
+
+        [HttpGet("GetUsedMessages")]
+        public async Task<IActionResult> GetUsedMessages()
+        {
+            return Ok(await botWorkService.GetRandomMessages().ConfigureAwait(false));
+        }
+
+        [HttpPost("GetScreenshotsLink")]
+        public async Task<IActionResult> GetScreenshot(List<GetScreenshotURLModel> Dialogs)
+        {
+            var links = new List<string>();
+            for (int i = 0; i < Dialogs.Count; i++)
+            {
+                if(Dialogs[i].DialogId > 0)
+                    links.Add($"http://{httpContextAccessor.HttpContext.Request.Host.Value}/Bot/DownloadScreenshot/{Dialogs[i].DialogId}");
+            }
+            return Ok(links);
+        }
+
+        [HttpGet("DownloadScreenshot/{Id}")]
+        public async Task<IActionResult> DownloadScreenshot(int Id)
+        {
+            var screenshotDirectory = new DirectoryInfo("C:\\Screenshot\\" + Id);
+            var screenshotFile = (from item in screenshotDirectory.GetFiles()
+                                  orderby item.LastWriteTime descending
+                                  select item).First();
+            return PhysicalFile(screenshotFile.FullName, "image/png", screenshotFile.Name);
         }
     }
 }

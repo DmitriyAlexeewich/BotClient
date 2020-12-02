@@ -83,8 +83,6 @@ C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotMySQL.
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csprojAssemblyReference.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.AssemblyInfoInputs.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.AssemblyInfo.cs
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csproj.CoreCompileInputs.cache
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.RazorTargetAssemblyInfo.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csproj.CopyComplete
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\staticwebassets\BotClient.StaticWebAssets.Manifest.cache
@@ -92,3 +90,5 @@ C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\staticweb
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.dll
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.pdb
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.genruntimeconfig.cache
+C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.MvcApplicationPartsAssemblyInfo.cache

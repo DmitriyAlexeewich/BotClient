@@ -179,7 +179,7 @@ namespace BotClient.Bussines.Services
                             {
                                 if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                                 {
-                                    Thread.Sleep(180000);
+                                    Thread.Sleep(180000 + random.Next(-60000, 60000));
                                     if (random.Next(1, 10) > 5)
                                     {
                                         var audioVkId = await GetAudioVkId(WebDriverId).ConfigureAwait(false);
@@ -227,7 +227,7 @@ namespace BotClient.Bussines.Services
                         element = webElementService.GetElementInElement(element, EnumWebHTMLElementSelector.TagName, "a");
                         if (webElementService.ClickToElement(element, EnumClickType.URLClick))
                         {
-                            Thread.Sleep(180000);
+                            Thread.Sleep(180000 + random.Next(-60000, 60000));
                             element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "VideoLayerInfo__topControls", EnumWebHTMLElementSelector.TagName, "div");
                             closeResult = webElementService.ClickToElement(element, EnumClickType.URLClick);
                             result = new AlgoritmResult()

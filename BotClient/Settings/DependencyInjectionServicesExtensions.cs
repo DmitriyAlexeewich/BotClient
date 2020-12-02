@@ -6,6 +6,8 @@ using BotMySQL.Bussines.Interfaces.MySQL;
 using BotMySQL.Bussines.Services;
 using BotMySQL.Bussines.Services.Composite;
 using BotMySQL.Bussines.Services.MySQL;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BotClient.Settings
@@ -21,6 +23,7 @@ namespace BotClient.Settings
             services.AddSingleton<IBotWorkService, BotWorkService>();
             services.AddSingleton<IVkActionService, VkActionService>();
             services.AddSingleton<IMySQLService, MySQLService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             //data services
             services.AddSingleton<IBotCompositeService, BotCompositeService>();
             services.AddSingleton<IClientCompositeService, ClientCompositeService>();

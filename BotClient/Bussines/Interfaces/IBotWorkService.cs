@@ -12,5 +12,7 @@ namespace BotClient.Bussines.Interfaces
         Task<BotStartReport> StartBot(List<int> BotsId);
         Task<BotStopQueryReport> StopBot(List<int> BotsId);
         Task<List<BotWorkStatusModel>> GetBots();
+        Task<List<BotRoleActionsDaySchedule>> GetBotRoleActions();
+        Task<List<string>> GetRandomMessages();
     }
 }

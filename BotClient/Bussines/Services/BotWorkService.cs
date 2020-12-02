@@ -161,6 +161,16 @@ namespace BotClient.Bussines.Services
             return bots;
         }
 
+        public async Task<List<BotRoleActionsDaySchedule>> GetBotRoleActions()
+        {
+            return botRoleActions;
+        }
+
+        public async Task<List<string>> GetRandomMessages()
+        {
+            return randomMessages;
+        }
+
         private async Task RunBot(Guid WebDriverId)
         {
             try
@@ -174,6 +184,10 @@ namespace BotClient.Bussines.Services
                         var loginflag = await vkActionService.Login(WebDriverId, webDriverBots[i].BotData.Login, webDriverBots[i].BotData.Password).ConfigureAwait(false);
                         if ((!loginflag.hasError) && (await vkActionService.isLoginSuccess(WebDriverId).ConfigureAwait(false)))
                         {
+                            var updateOnlineDateResult = botCompositeService.UpdateOnlineDate(webDriverBots[i].BotData.Id, DateTime.Now);
+                            if (updateOnlineDateResult.HasError)
+                                await settingsService.AddLog("BotWorkService", updateOnlineDateResult.ExceptionMessage).ConfigureAwait(false);
+
                             UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Run);
                             if (webDriverBots[i].BotData.isUpdatedCustomizeInfo)
                             {
@@ -183,9 +197,7 @@ namespace BotClient.Bussines.Services
                                     botCompositeService.SetIsUpdatedCustomizeInfo(webDriverBots[i].BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();
-                            var maxSecondActionsCount = random.Next(1, (int)(10));
-                            if (maxSecondActionsCount < 1)
-                                maxSecondActionsCount = 4;
+                            var maxSecondActionsCount = random.Next(1, 4);
                             for (int j = 0; j < maxSecondActionsCount; j++)
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
                             botSchedule = Shuffle(botSchedule).ToList();

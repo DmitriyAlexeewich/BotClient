@@ -231,7 +231,25 @@ namespace BotClient.Bussines.Services
                 CreateErrorLogFile();
                 if (File.Exists(errorLogFilePath))
                 {
-                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- \n" + Ex.ToString());
+                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Environment.NewLine + Ex.ToString());
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return false;
+        }
+
+        public async Task<bool> AddLog(string CodeFileName, string Ex)
+        {
+            try
+            {
+                CreateErrorLogFile();
+                if (File.Exists(errorLogFilePath))
+                {
+                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Environment.NewLine + Ex);
                     return true;
                 }
             }

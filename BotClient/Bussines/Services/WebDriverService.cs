@@ -526,7 +526,9 @@ namespace BotClient.Bussines.Services
                             BotClientRoleConnectionId = BotClientRoleConnectionId,
                             ScreenshotCount = 1
                         };
-                        dialogScreenshotService.CreateDialogScreenshot(dialogScreenshotCreate);
+                        var createDialogScreenshotResult = dialogScreenshotService.CreateDialogScreenshot(dialogScreenshotCreate);
+                        if(createDialogScreenshotResult.HasError)
+                            settingsService.AddLog("WebDriverService", createDialogScreenshotResult.ExceptionMessage);
                     }
                 }
             }

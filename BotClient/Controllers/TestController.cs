@@ -40,15 +40,6 @@ namespace BotClient.Controllers
         [HttpGet("Test")]
         public async Task<IActionResult> Test()
         {
-            try
-            {
-                Random rand = new Random();
-                rand.Next(10, 0);
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("1", ex).ConfigureAwait(false);
-            }
             return Ok();
         }
     }
