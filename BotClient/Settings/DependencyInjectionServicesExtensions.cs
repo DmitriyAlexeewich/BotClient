@@ -40,6 +40,8 @@ namespace BotClient.Settings
             services.AddSingleton<IRoleMissionConnectorService, RoleMissionConnectorService>();
             services.AddSingleton<IRoleService, RoleService>();
             services.AddSingleton<IDialogScreenshotService, DialogScreenshotService>();
+            services.AddSingleton<IBotMusicService, BotMusicService>();
+            services.AddSingleton<IBotNewsService, BotNewsService>();
 
             return services;
         }

@@ -16,5 +16,9 @@ namespace BotClient.Models.Settings
         public int HTMLElementWaitingTime { get; set; }
         public int ScrollCount { get; set; }
         public int ErrorChancePerTenWords { get; set; }
+        public int MusicWaitingTime { get; set; }
+        public int MusicWaitingDeltaTime { get; set; }
+        public int VideoWaitingTime { get; set; }
+        public int VideoWaitingDeltaTime { get; set; }
     }
 }

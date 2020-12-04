@@ -197,15 +197,11 @@ namespace BotClient.Bussines.Services
                                     botCompositeService.SetIsUpdatedCustomizeInfo(webDriverBots[i].BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();
-                            var maxSecondActionsCount = random.Next(1, 4);
-                            for (int j = 0; j < maxSecondActionsCount; j++)
-                                botSchedule.Add((EnumBotActionType)random.Next(1, 4));
-                            botSchedule = Shuffle(botSchedule).ToList();
-                            botSchedule = Simplify(botSchedule).ToList();
                             var botData = bots.FirstOrDefault(item => item.BotData.Id == webDriverBots[i].BotData.Id);
                             var nowTime = DateTime.Now;
                             var startTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 8, 0, 0);
                             var endTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 23, 0, 0);
+                            var maxSecondActionsCount = random.Next(1, 4);
                             if ((nowTime > startTime) && (nowTime < endTime))
                             {
                                 var maxClientsRoleConnectionActions = botRoleActions.FirstOrDefault(item => item.BotId == botData.BotData.Id);
@@ -216,7 +212,19 @@ namespace BotClient.Bussines.Services
                                     botRoleActions[botRoleActions.IndexOf(maxClientsRoleConnectionActions)] = maxClientsRoleConnectionActions;
                                     for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
                                         botSchedule.Add(EnumBotActionType.RoleMission);
-                                    botSchedule = Shuffle(botSchedule).ToList();
+                                }
+                            }
+                            else
+                                maxSecondActionsCount = random.Next(10, 20);
+                            for (int j = 0; j < maxSecondActionsCount; j++)
+                                botSchedule.Add((EnumBotActionType)random.Next(1, 4));
+                            botSchedule = Shuffle(botSchedule).ToList();
+                            for (int j = 0; j < botSchedule.Count; j++)
+                            {
+                                if ((j > 0) && (botSchedule[j] != EnumBotActionType.RoleMission))
+                                {
+                                    while (botSchedule[j] == botSchedule[j - 1])
+                                        botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
                                 }
                             }
                             await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
@@ -226,7 +234,7 @@ namespace BotClient.Bussines.Services
                                 switch (botSchedule[j])
                                 {
                                     case EnumBotActionType.ListenMusic:
-                                        await vkActionService.ListenMusic(WebDriverId).ConfigureAwait(false);
+                                        await ListenMusic(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.WatchVideo:
                                         await vkActionService.WatchVideo(WebDriverId).ConfigureAwait(false);
@@ -323,26 +331,6 @@ namespace BotClient.Bussines.Services
             return list;
         }
 
-        private IList<T> Simplify<T>(IList<T> list)
-        {
-            while (true)
-            {
-                bool isSimplyfied = true;
-                for (int i = 0; i < list.Count; i++)
-                {
-                    if ((i > 0) && (list[i - 1].Equals(list[i])))
-                    {
-                        list.Remove(list[i]);
-                        isSimplyfied = false;
-                        break;
-                    }
-                }
-                if (isSimplyfied)
-                    break;
-            }
-            return list;
-        }
-
         private IList<T> Split<T>(IList<T> list, int Index)
         {
             List<T> previous = new List<T>();
@@ -385,6 +373,27 @@ namespace BotClient.Bussines.Services
             catch (Exception ex)
             {
                 settingsService.AddLog("BotWorkService", ex);
+            }
+        }
+
+        private async Task ListenMusic(Guid WebDriverId, int BotId)
+        {
+            var music = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
+            var randListenAttept = random.Next(1, 10);
+            var hasBotMusic = botCompositeService.hasBotMusic(BotId, music.SongName);
+            for (int i = 0; i < randListenAttept; i++)
+            {
+                if ((music != null) && (!hasBotMusic))
+                    break;
+                else
+                    music = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
+                hasBotMusic = botCompositeService.hasBotMusic(BotId, music.SongName);
+            }
+            if (music != null)
+            {
+                var stopResult = await vkActionService.StopMusic(WebDriverId, hasBotMusic).ConfigureAwait(false);
+                if ((!stopResult.hasError) && (stopResult.ActionResultMessage == EnumActionResult.Success) && (!hasBotMusic))
+                    botCompositeService.CreateBotMusic(BotId, music.Artist, music.SongName);
             }
         }
 

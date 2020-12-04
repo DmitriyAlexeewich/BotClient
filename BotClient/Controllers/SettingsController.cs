@@ -124,6 +124,30 @@ namespace BotClient.Controllers
                               "ErrorChancePerTenWords must be greater than 0 and must be less than or equal to 100");
         }
 
+        [HttpPost("SetMusicWaitingTime")]
+        public async Task<IActionResult> SetMusicWaitingTime([FromQuery] int MusicWaitingTime, [FromQuery] int MusicWaitingDeltaTime)
+        {
+            if ((MusicWaitingTime >= 60) && (MusicWaitingTime <= 360) && (MusicWaitingDeltaTime > 0) && (MusicWaitingDeltaTime <= 240))
+            {
+                return Ok(await settingsService.SetMusicWaitingTime(MusicWaitingTime * 1000, MusicWaitingDeltaTime * 1000).ConfigureAwait(false));
+            }
+            return BadRequest("Invalid MusicWaitingTime or MusicWaitingDeltaTime. " +
+                              "MusicWaitingTime must be greater than 60 and be less than 360. " +
+                              "MusicWaitingDeltaTime must be greater than 0 and 240.");
+        }
+
+        [HttpPost("SetVideoWaitingTime")]
+        public async Task<IActionResult> SetVideoWaitingTime([FromQuery] int VideoWaitingTime, [FromQuery] int VideoWaitingDeltaTime)
+        {
+            if ((VideoWaitingTime >= 60) && (VideoWaitingTime <= 360) && (VideoWaitingDeltaTime > 0) && (VideoWaitingDeltaTime <= 240))
+            {
+                return Ok(await settingsService.SetVideoWaitingTime(VideoWaitingTime * 1000, VideoWaitingDeltaTime * 1000).ConfigureAwait(false));
+            }
+            return BadRequest("Invalid VideoWaitingTime or VideoWaitingDeltaTime. " +
+                              "VideoWaitingTime must be greater than 60 and be less than 360. " +
+                              "VideoWaitingDeltaTime must be greater than 0 and 240.");
+        }
+
         [HttpGet("GetServerSettings")]
         public async Task<IActionResult> GetServerSettings()
         {

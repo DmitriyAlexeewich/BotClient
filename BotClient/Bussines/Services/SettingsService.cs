@@ -218,6 +218,48 @@ namespace BotClient.Bussines.Services
             }
         }
 
+        public async Task<SettingsReport> SetMusicWaitingTime(int MusicWaitingTime, int MusicWaitingDeltaTime)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.MusicWaitingTime = MusicWaitingTime;
+                webConnectionSettings.MusicWaitingDeltaTime = MusicWaitingDeltaTime;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetVideoWaitingTime(int VideoWaitingTime, int VideoWaitingDeltaTime)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.VideoWaitingTime = VideoWaitingTime;
+                webConnectionSettings.VideoWaitingDeltaTime = VideoWaitingDeltaTime;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
         public WebConnectionSettings GetServerSettings()
         {
             CreateConfigurationFile();
