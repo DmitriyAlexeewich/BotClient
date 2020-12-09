@@ -1,4 +1,5 @@
 ﻿using BotClient.Bussines.Interfaces;
+using BotClient.Models.Bot;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
@@ -177,6 +178,16 @@ namespace BotClient.Bussines.Services
                                 if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                                 {
                                     var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
+                                    for (int i = 0; i < 60; i++)
+                                    {
+                                        var bufferMusic = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
+                                        if (bufferMusic != music)
+                                        {
+                                            music = bufferMusic;
+                                            break;
+                                        }
+                                        Thread.Sleep(1000);
+                                    }
                                     return music;
                                 }
                             }
@@ -198,11 +209,11 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                var currentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                                    ".audio_page_player_title_song_title", true).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
                     ".audio_page_player_ctrl.audio_page_player_next", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
-                    var currentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-                                        ".audio_page_player_title_song_title", true).ConfigureAwait(false);
                     var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
                     return music;
                 }
@@ -227,15 +238,17 @@ namespace BotClient.Bussines.Services
                                                                          EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
                 if (element != null)
                 {
-                    var MusicWaitingDeltaTime = settingsService.GetServerSettings().MusicWaitingDeltaTime;
-                    Thread.Sleep(settingsService.GetServerSettings().MusicWaitingTime + random.Next(-MusicWaitingDeltaTime, MusicWaitingDeltaTime));
                     if ((random.Next(1, 10) > 5) && (!hasBotMusic))
                     {
                         var addBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add").ConfigureAwait(false);
                         var addBtnAttribute = webElementService.GetAttributeValue(element, "class");
                         if (addBtnAttribute.IndexOf("audio_row__added") == -1)
                             await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
+                        await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                            ".audio_page_player_ctrl.audio_page_player_play._audio_page_player_play.audio_playing", EnumClickType.ElementClick);
                     }
+                    var MusicWaitingDeltaTime = settingsService.GetServerSettings().MusicWaitingDeltaTime;
+                    Thread.Sleep(settingsService.GetServerSettings().MusicWaitingTime + random.Next(-MusicWaitingDeltaTime, MusicWaitingDeltaTime));
                     result = new AlgoritmResult()
                     {
                         ActionResultMessage = EnumActionResult.Success,
@@ -279,6 +292,150 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
+                if (!closeResult)
+                {
+                    closeResult = await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                    closeResult = await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                    if (!closeResult)
+                        await webDriverService.GoToURL(WebDriverId, "feed").ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> GoToVideoCatalog(Guid WebDriverId)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true,
+            };
+            try
+            {
+                var closeResult = false;
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_vid", EnumClickType.URLClick).ConfigureAwait(false))
+                {
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false,
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> FindVideo(Guid WebDriverId, string SearchWord)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true,
+            };
+            try
+            {
+                var element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "video_search_input").ConfigureAwait(false);
+                if ((element != null) && (webElementService.PrintTextToElement(element, SearchWord)))
+                {
+                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                        ".ui_search_button_search._ui_search_button_search", EnumClickType.URLClick).ConfigureAwait(false))
+                    {
+                        result = new AlgoritmResult()
+                        {
+                            ActionResultMessage = EnumActionResult.Success,
+                            hasError = false,
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<List<BotVkVideo>> GetVideos(Guid WebDriverId)
+        {
+            var result = new List<BotVkVideo>();
+            try
+            {
+                if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".video_item__thumb_link").ConfigureAwait(false))
+                {
+                    var elements = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".video_item__thumb_link").ConfigureAwait(false);
+                    if ((elements != null) && (elements.Count > 0))
+                    {
+                        for (int i = 0; i < elements.Count; i++)
+                        {
+                            var attribute = webElementService.GetAttributeValue(elements[i], "href");
+                            if (attribute != null)
+                            {
+                                result.Add(new BotVkVideo()
+                                {
+                                     URL = attribute,
+                                     HTMLElement = elements[i]
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> ClickVideo(Guid WebDriverId, WebHTMLElement Element)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true,
+            };
+            try
+            {
+                if (webElementService.ClickToElement(Element, EnumClickType.URLClick))
+                {
+                    result.hasError = false;
+                    result.ActionResultMessage = EnumActionResult.Success;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> CloseVideo(Guid WebDriverId)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true,
+            };
+            try
+            {
+                var videoWaitingDeltaTime = settingsService.GetServerSettings().VideoWaitingDeltaTime;
+                Thread.Sleep(settingsService.GetServerSettings().VideoWaitingTime + random.Next(-videoWaitingDeltaTime, videoWaitingDeltaTime));
+                var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "VideoLayerInfo__topControls", EnumWebHTMLElementSelector.TagName, "div");
+                var closeResult = webElementService.ClickToElement(element, EnumClickType.URLClick);
+                result = new AlgoritmResult()
+                {
+                    ActionResultMessage = EnumActionResult.Success,
+                    hasError = false,
+                };
                 if (!closeResult)
                 {
                     closeResult = await CloseModalWindow(WebDriverId).ConfigureAwait(false);
@@ -854,33 +1011,42 @@ namespace BotClient.Bussines.Services
 
         private async Task<BotMusicModel> GetMusic(Guid WebDriverId, string CurrentSongName)
         {
+            BotMusicModel result = null;
             for (int i = 0; i < 60; i++)
             {
-                var nextSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-                ".audio_page_player_title_song_title", true).ConfigureAwait(false);
-                if (nextSongName != null)
+                for (int j = 0; j < 60; j++)
                 {
-                    if (CurrentSongName == null)
-                        break;
-                    else if (nextSongName == CurrentSongName)
-                        break;
+                    var nextSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                    ".audio_page_player_title_song_title", true).ConfigureAwait(false);
+                    if (nextSongName != null)
+                    {
+                        if ((CurrentSongName == null) || ((CurrentSongName != null) && (CurrentSongName.Length < 1)))
+                            break;
+                        else if (nextSongName != CurrentSongName)
+                            break;
+                    }
+                    Thread.Sleep(1000);
+                }
+                CurrentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                ".audio_page_player_title_song_title", true).ConfigureAwait(false);
+                var currentArtist = "";
+                if (CurrentSongName != null)
+                {
+                    currentArtist = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                    ".audio_page_player_title_performer", true).ConfigureAwait(false);
+                }
+                if ((currentArtist != null) && (CurrentSongName != null) && (currentArtist.Length > 0) && (CurrentSongName.Length > 0))
+                {
+                    result = new BotMusicModel()
+                    {
+                        Artist = currentArtist,
+                        SongName = CurrentSongName
+                    };
+                    break;
                 }
                 Thread.Sleep(1000);
             }
-            CurrentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-            ".audio_page_player_title_song_title", true).ConfigureAwait(false);
-            if (CurrentSongName != null)
-            {
-                var currentArtist = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-                ".audio_page_player_title_performer", true).ConfigureAwait(false);
-                var result = new BotMusicModel()
-                {
-                    Artist = currentArtist == null ? "" : currentArtist,
-                    SongName = CurrentSongName
-                };
-                return result;
-            }
-            return null;
+            return result;
         }
         
     }

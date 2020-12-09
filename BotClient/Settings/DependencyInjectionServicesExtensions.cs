@@ -42,6 +42,8 @@ namespace BotClient.Settings
             services.AddSingleton<IDialogScreenshotService, DialogScreenshotService>();
             services.AddSingleton<IBotMusicService, BotMusicService>();
             services.AddSingleton<IBotNewsService, BotNewsService>();
+            services.AddSingleton<IBotVideoService, BotVideoService>();
+            services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
 
             return services;
         }

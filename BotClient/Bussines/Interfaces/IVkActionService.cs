@@ -1,6 +1,8 @@
-﻿using BotClient.Models.Bot.Work;
+﻿using BotClient.Models.Bot;
+using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
+using BotClient.Models.HTMLElements;
 using BotDataModels.Bot;
 using System;
 using System.Collections.Generic;
@@ -17,6 +19,11 @@ namespace BotClient.Bussines.Interfaces
         Task<BotMusicModel> GetNextMusic(Guid WebDriverId);
         Task<AlgoritmResult> StopMusic(Guid WebDriverId, bool hasBotMusic);
         Task<AlgoritmResult> WatchVideo(Guid WebDriverId);
+        Task<AlgoritmResult> GoToVideoCatalog(Guid WebDriverId);
+        Task<AlgoritmResult> FindVideo(Guid WebDriverId, string SearchWord);
+        Task<List<BotVkVideo>> GetVideos(Guid WebDriverId);
+        Task<AlgoritmResult> ClickVideo(Guid WebDriverId, WebHTMLElement Element);
+        Task<AlgoritmResult> CloseVideo(Guid WebDriverId);
         Task<AlgoritmResult> News(Guid WebDriverId);
         Task<AlgoritmResult> AvatarLike(Guid WebDriverId);
         Task<AlgoritmResult> NewsLike(Guid WebDriverId, EnumNewsLikeType NewsLikeType);

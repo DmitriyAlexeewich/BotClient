@@ -28,6 +28,8 @@ namespace BotClient.Bussines.Services
         private readonly ISettingsService settingsService;
         private readonly IVkActionService vkActionService;
         private readonly IDialogScreenshotService dialogScreenshotService;
+        private readonly IVideoDictionaryService videoDictionaryService;
+
 
         public BotWorkService(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -35,7 +37,8 @@ namespace BotClient.Bussines.Services
                               IWebDriverService WebDriverService,
                               ISettingsService SettingsService,
                               IVkActionService VkActionService,
-                              IDialogScreenshotService DialogScreenshotService)
+                              IDialogScreenshotService DialogScreenshotService,
+                              IVideoDictionaryService VideoDictionaryService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -44,6 +47,7 @@ namespace BotClient.Bussines.Services
             settingsService = SettingsService;
             vkActionService = VkActionService;
             dialogScreenshotService = DialogScreenshotService;
+            videoDictionaryService = VideoDictionaryService;
         }
 
         private List<BotWorkStatusModel> bots = new List<BotWorkStatusModel>();
@@ -227,6 +231,7 @@ namespace BotClient.Bussines.Services
                                         botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
                                 }
                             }
+                            await ListenMusic(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
@@ -379,21 +384,57 @@ namespace BotClient.Bussines.Services
         private async Task ListenMusic(Guid WebDriverId, int BotId)
         {
             var music = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
-            var randListenAttept = random.Next(1, 10);
-            var hasBotMusic = botCompositeService.hasBotMusic(BotId, music.SongName);
+            var randListenAttept = random.Next(10, 20);
+            var hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
             for (int i = 0; i < randListenAttept; i++)
             {
                 if ((music != null) && (!hasBotMusic))
                     break;
                 else
                     music = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
-                hasBotMusic = botCompositeService.hasBotMusic(BotId, music.SongName);
+                hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
             }
             if (music != null)
             {
                 var stopResult = await vkActionService.StopMusic(WebDriverId, hasBotMusic).ConfigureAwait(false);
                 if ((!stopResult.hasError) && (stopResult.ActionResultMessage == EnumActionResult.Success) && (!hasBotMusic))
                     botCompositeService.CreateBotMusic(BotId, music.Artist, music.SongName);
+            }
+        }
+
+        private async Task WatchVideo(Guid WebDriverId, int BotId)
+        {
+            var goToCatalogResult = await vkActionService.GoToVideoCatalog(WebDriverId).ConfigureAwait(false);
+            if ((!goToCatalogResult.hasError) && (goToCatalogResult.ActionResultMessage == EnumActionResult.Success))
+            {
+                var botWords = botCompositeService.GetBotVideos(BotId);
+                var maxWordId = videoDictionaryService.GetMaxId();
+                var randomWordId = 0;
+                for (int i = 0; i < 100; i++)
+                {
+                    randomWordId = random.Next(0, maxWordId);
+                    if (botWords.FirstOrDefault(item => item.WordId == randomWordId) == null)
+                        break;
+                }
+                var word = videoDictionaryService.GetAll(randomWordId, 1);
+                if (word.Count > 0)
+                {
+                    var findVideoResult = await vkActionService.FindVideo(WebDriverId, word[0].Word).ConfigureAwait(false);
+                    if ((!findVideoResult.hasError) && (findVideoResult.ActionResultMessage == EnumActionResult.Success))
+                    {
+                        var videos = await vkActionService.GetVideos(WebDriverId).ConfigureAwait(false);
+                        if (videos.Count > 0)
+                        {
+                            var randomVideoIndex = random.Next(0, videos.Count);
+                            var clickVideoResult = await vkActionService.ClickVideo(WebDriverId, videos[randomVideoIndex].HTMLElement).ConfigureAwait(false);
+                            if ((!clickVideoResult.hasError) && (clickVideoResult.ActionResultMessage == EnumActionResult.Success))
+                            {
+                                var stopVideo = await vkActionService.CloseVideo(WebDriverId).ConfigureAwait(false);
+                                botCompositeService.CreateBotVideos(BotId, word[0].Id, videos[randomVideoIndex].URL);
+                            }
+                        }
+                    }
+                }
             }
         }
 
