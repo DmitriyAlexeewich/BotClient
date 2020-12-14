@@ -33,6 +33,8 @@ namespace BotClient.Bussines.Interfaces
 
         Task<SettingsReport> SetVideoWaitingTime(int VideoWaitingTime, int VideoWaitingDeltaTime);
 
+        Task<SettingsReport> SetVideoLoadingWaitingTime(int VideoLoadingWaitingTime);
+
         WebConnectionSettings GetServerSettings();
 
         Task<bool> AddLog(string CodeFileName, Exception Ex);

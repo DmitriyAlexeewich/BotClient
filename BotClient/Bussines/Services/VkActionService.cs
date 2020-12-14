@@ -177,16 +177,18 @@ namespace BotClient.Bussines.Services
                                     ".audio_page_player_title_song_title", true).ConfigureAwait(false);
                                 if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                                 {
+                                    var musicLoadingWaitingTime = settingsService.GetServerSettings().MusicLoadingWaitingTime;
                                     var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
                                     for (int i = 0; i < 60; i++)
                                     {
                                         var bufferMusic = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
-                                        if (bufferMusic != music)
+                                        if ((bufferMusic != music) && (bufferMusic != null))
                                         {
                                             music = bufferMusic;
                                             break;
                                         }
                                         Thread.Sleep(1000);
+                                        musicLoadingWaitingTime -= 1000;
                                     }
                                     return music;
                                 }
@@ -215,6 +217,13 @@ namespace BotClient.Bussines.Services
                     ".audio_page_player_ctrl.audio_page_player_next", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
                     var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
+                    for (int i = 0; i < 60; i++)
+                    {
+                        if (music != null)
+                            break;
+                        music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
+                        Thread.Sleep(1000);
+                    }
                     return music;
                 }
             }
@@ -368,24 +377,31 @@ namespace BotClient.Bussines.Services
             var result = new List<BotVkVideo>();
             try
             {
-                if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".video_item__thumb_link").ConfigureAwait(false))
+                var videosContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "video_search_global_videos_list").ConfigureAwait(false);
+                var waitingVideo = settingsService.GetServerSettings().VideoWaitingTime;
+                while (waitingVideo > 0)
                 {
-                    var elements = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".video_item__thumb_link").ConfigureAwait(false);
-                    if ((elements != null) && (elements.Count > 0))
+                    var videos = webElementService.GetChildElements(videosContainer, EnumWebHTMLElementSelector.CSSSelector, ".video_item__thumb_link");
+                    if ((videos != null) && (videos.Count > 0))
                     {
-                        for (int i = 0; i < elements.Count; i++)
+                        for (int i = 0; i < videos.Count; i++)
                         {
-                            var attribute = webElementService.GetAttributeValue(elements[i], "href");
+                            var attribute = webElementService.GetAttributeValue(videos[i], "href");
                             if (attribute != null)
                             {
-                                result.Add(new BotVkVideo()
+                                var botVKVideo = new BotVkVideo()
                                 {
-                                     URL = attribute,
-                                     HTMLElement = elements[i]
-                                });
+                                    URL = attribute,
+                                    HTMLElement = videos[i]
+                                };
+                                if (result.IndexOf(botVKVideo) == -1)
+                                    result.Add(botVKVideo);
                             }
                         }
+                        break;
                     }
+                    Thread.Sleep(1000);
+                    waitingVideo -= 1000;
                 }
             }
             catch (Exception ex)
@@ -487,6 +503,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "profile_photo_link",
                                                                             EnumWebHTMLElementSelector.TagName, "img").ConfigureAwait(false);
                 var attribute = webElementService.GetAttributeValue(element, "src");
@@ -526,6 +544,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id,
                                                                             "page_wall_posts", EnumWebHTMLElementSelector.CSSSelector, "._post_content").ConfigureAwait(false);
                 if (element != null)
@@ -559,6 +579,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "friend_status",
                                                                           EnumWebHTMLElementSelector.TagName, "button").ConfigureAwait(false);
                 if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
@@ -588,6 +610,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "public_subscribe", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
                     result = new AlgoritmResult()
@@ -615,6 +639,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id,
                                                                             "page_wall_posts", EnumWebHTMLElementSelector.CSSSelector, "._post_content").ConfigureAwait(false);
                 if (element != null)
@@ -661,6 +687,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
                     if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false))
@@ -890,6 +918,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 return await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".page_name", true).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -926,35 +956,43 @@ namespace BotClient.Bussines.Services
 
         private async Task<bool> CloseModalWindow(Guid WebDriverId)
         {
+            var result = false;
             try
             {
-                return await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
+                var webDriver = await webDriverService.GetWebDriverById(WebDriverId).ConfigureAwait(false);
+                if (webDriver.WebDriver.Url.IndexOf("vk.com/im") == -1)
+                    result = await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
+                result = true;
             }
             catch (Exception ex)
             {
                 settingsService.AddLog("VkActionService", ex);
             }
-            return false;
+            return result;
         }
 
         private async Task<bool> CloseMessageBlockWindow(Guid WebDriverId)
         {
+            var result = false;
             try
-            {
+            {//box_x_button //popup_box_container
                 var element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer_wrap").ConfigureAwait(false);
                 var attribute = webElementService.GetAttributeValue(element, "style");
                 if ((attribute != null) && (attribute.IndexOf("block;", StringComparison.Ordinal) != -1))
                 {
-                    return await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                    result = await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                 }
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "vkconnect_continue_button", EnumClickType.ElementClick).ConfigureAwait(false))
-                    return true;
+                    result = true;
+                element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container").ConfigureAwait(false);
+                if (element != null)
+                    result = webElementService.ClickToElement(element, EnumClickType.ElementClick);
             }
             catch (Exception ex)
             {
                 settingsService.AddLog("VkActionService", ex);
             }
-            return false;
+            return result;
         }
 
         private async Task<bool> hasCaptcha(Guid WebDriverId)

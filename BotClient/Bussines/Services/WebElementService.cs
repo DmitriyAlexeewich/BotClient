@@ -131,8 +131,12 @@ namespace BotClient.Bussines.Services
 
         public WebHTMLElement GetElementInElement(WebHTMLElement Element, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true)
         {
-            var element = Element.GetElement(Selector, Link, isRequired.Value);
-            return element;
+            if ((Element != null) && (Selector != null) && (Link != null) && (Link.Length > 0))
+            {
+                var element = Element.GetElement(Selector, Link, isRequired.Value);
+                return element;
+            }
+            return null;
         }
         
         public async Task<WebHTMLElement> GetElementInElement(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelector, string ParentLink, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true)
@@ -147,7 +151,7 @@ namespace BotClient.Bussines.Services
 
         public List<WebHTMLElement> GetChildElements(WebHTMLElement Element, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
         {
-            if ((SelectorType != 0) && (Link.Length > 0))
+            if ((Element != null) && (SelectorType != 0) && (Link.Length > 0))
             {
                 var childs = Element.GetChildElements(SelectorType, Link, isRequired.Value);
                 if ((childs != null) && (childs.Count > 0))

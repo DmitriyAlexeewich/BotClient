@@ -148,6 +148,17 @@ namespace BotClient.Controllers
                               "VideoWaitingDeltaTime must be greater than 0 and 240.");
         }
 
+        [HttpPost("SetVideoLoadingWaitingTime")]
+        public async Task<IActionResult> SetVideoLoadingWaitingTime([FromQuery] int VideoLoadingWaitingTime)
+        {
+            if (VideoLoadingWaitingTime >= 60)
+            {
+                return Ok(await settingsService.SetVideoLoadingWaitingTime(VideoLoadingWaitingTime * 1000).ConfigureAwait(false));
+            }
+            return BadRequest("Invalid VideoLoadingWaitingTime. " +
+                              "VideoLoadingWaitingTime must be greater than 60.");
+        }
+
         [HttpGet("GetServerSettings")]
         public async Task<IActionResult> GetServerSettings()
         {

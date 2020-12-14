@@ -260,6 +260,26 @@ namespace BotClient.Bussines.Services
             }
         }
 
+        public async Task<SettingsReport> SetVideoLoadingWaitingTime(int VideoLoadingWaitingTime)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.VideoLoadingWaitingTime = VideoLoadingWaitingTime;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
         public WebConnectionSettings GetServerSettings()
         {
             CreateConfigurationFile();

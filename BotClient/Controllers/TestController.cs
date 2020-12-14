@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
+using BotClient.Models.Bot;
 using BotMySQL.Bussines.Interfaces.Composite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -37,9 +39,13 @@ namespace BotClient.Controllers
             vkActionService = VkActionService;
         }
 
-        [HttpGet("Test")]
-        public async Task<IActionResult> Test()
+        [HttpPost("Test")]
+        public async Task<IActionResult> Test([FromBody] string Text)
         {
+            var constantText = new List<MessageConstantText>();
+            var textNumbers = new List<MessageConstantText>();
+            var regex = new Regex(@"(\(\w*\))");
+            var t = regex.Matches(Text);
             return Ok();
         }
     }

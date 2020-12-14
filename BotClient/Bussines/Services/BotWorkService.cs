@@ -231,7 +231,7 @@ namespace BotClient.Bussines.Services
                                         botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
                                 }
                             }
-                            await ListenMusic(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
+                            botSchedule[0] = EnumBotActionType.ListenMusic;
                             await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
@@ -242,7 +242,7 @@ namespace BotClient.Bussines.Services
                                         await ListenMusic(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.WatchVideo:
-                                        await vkActionService.WatchVideo(WebDriverId).ConfigureAwait(false);
+                                        await WatchVideo(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.News:
                                         await vkActionService.News(WebDriverId).ConfigureAwait(false);
@@ -385,14 +385,17 @@ namespace BotClient.Bussines.Services
         {
             var music = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
             var randListenAttept = random.Next(10, 20);
-            var hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
+            var hasBotMusic = false;
+            if (music != null)
+                hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
             for (int i = 0; i < randListenAttept; i++)
             {
                 if ((music != null) && (!hasBotMusic))
                     break;
                 else
                     music = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
-                hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
+                if (music != null)
+                    hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
             }
             if (music != null)
             {
@@ -423,6 +426,8 @@ namespace BotClient.Bussines.Services
                     if ((!findVideoResult.hasError) && (findVideoResult.ActionResultMessage == EnumActionResult.Success))
                     {
                         var videos = await vkActionService.GetVideos(WebDriverId).ConfigureAwait(false);
+                        for (int i = 0; i < botWords.Count; i++)
+                            videos.RemoveAll(item => item.URL == botWords[i].URL);
                         if (videos.Count > 0)
                         {
                             var randomVideoIndex = random.Next(0, videos.Count);
@@ -753,6 +758,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                var RandomMessageConstantTextes = new List<MessageConstantText>();
+                var random = new Random();
                 int LastOpen = 0;
                 for (int i = 0; i < message.Length; i++)
                 {
@@ -776,10 +783,23 @@ namespace BotClient.Bussines.Services
                         }
                         oldstring = oldstring.Remove(oldstring.Length - 1);
                         oldstring += ")";
-                        message = message.Replace(oldstring, Elements[random.Next(0, Elements.Count)]);
+                        if (Elements.Count > 1)
+                            message = message.Replace(oldstring, Elements[random.Next(0, Elements.Count)]);
+                        else
+                        {
+                            var randomMessageConstantText = new MessageConstantText()
+                            {
+                                TextGuid = new Guid(),
+                                Text = $"({Elements[0]})"
+                            };
+                            RandomMessageConstantTextes.Add(randomMessageConstantText);
+                            message = message.Replace(oldstring, randomMessageConstantText.TextGuid.ToString());
+                        }
                         i = -1;
                     }
                 }
+                for (int i = 0; i < RandomMessageConstantTextes.Count; i++)
+                    message = message.Replace(RandomMessageConstantTextes[i].TextGuid.ToString(), RandomMessageConstantTextes[i].Text);
                 return message;
             }
             catch (Exception ex)
@@ -847,7 +867,11 @@ namespace BotClient.Bussines.Services
                     while (true)
                     {
                         if (wordsIndexes.Count(item => item == wordsIndexes[wordsIndexes.Count - 1]) > 1)
-                            wordsIndexes[i] = random.Next(0, words.Length - 1);
+                        {
+                            var randomIndex = random.Next(0, words.Length - 1);
+                            if(words[randomIndex].IndexOf("(") == -1)
+                                wordsIndexes[i] = randomIndex;
+                        }
                         else
                             break;
                     }
@@ -982,12 +1006,49 @@ namespace BotClient.Bussines.Services
                 settingsService.AddLog("BotWorkService", ex);
             }
         }
-
-        /*
+                
         private async Task<string> SetCaps(string Text)
         {
-            
+            var words = Text.Split(" ");
+            var settingsCapsChancePerThousandWords = settingsService.GetServerSettings().CapsChancePerThousandWords;
+            var capsChance = Math.Round((double)(words.Length / settingsCapsChancePerThousandWords));
+            if (random.Next(0, 100) < capsChance)
+            {
+                while (true)
+                {
+                    var randIndex = random.Next(0, words.Length);
+                    var regex = new Regex(@"[^a-zA-ZА-Яа-я0-9]", RegexOptions.IgnoreCase);
+                    if ((words[randIndex].IndexOf("(") == -1) && (regex.IsMatch(words[randIndex])))
+                    {
+                        words[randIndex] = words[randIndex].ToUpper();
+                        break;
+                    }
+                }
+                string newText = "";
+                if (words.Length > 0)
+                {
+                    for (int i = 0; i < words.Length; i++)
+                    {
+                        newText += words[i];
+                        if (i == words.Length - 1)
+                            newText += " ";
+                    }
+                    return newText;
+                }
+            }
+            return Text;
         }
-        */
+        
+        private async Task ReplaceNumberToWord(string Text)
+        {
+            var constantText = new List<MessageConstantText>();
+            var textNumbers = new List<MessageConstantText>();
+            var regex = new Regex(@"(\(\w*\))");
+            var t = regex.Matches(Text);
+            while (regex.IsMatch(Text))
+            {
+                break;
+            }
+        }
     }
 }
