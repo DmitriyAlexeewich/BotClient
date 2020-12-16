@@ -467,9 +467,9 @@ namespace BotClient.Bussines.Services
                                     {
                                         case EnumMissionActionType.GoToProfile:
                                             if (OnlyInteger(client.VkId))
-                                                stepResult = await webDriverService.GoToURL(WebDriverId, "id" + client.VkId).ConfigureAwait(false);
+                                                stepResult = await vkActionService.GoToProfile(WebDriverId, "id" + client.VkId).ConfigureAwait(false);
                                             else
-                                                stepResult = await webDriverService.GoToURL(WebDriverId, client.VkId).ConfigureAwait(false);
+                                                stepResult = await vkActionService.GoToProfile(WebDriverId, client.VkId).ConfigureAwait(false);
                                             if (stepResult)
                                             {
                                                 client.FullName = await vkActionService.GetClientName(WebDriverId);
@@ -477,7 +477,7 @@ namespace BotClient.Bussines.Services
                                             }
                                             break;
                                         case EnumMissionActionType.GoToGroup:
-                                            stepResult = await webDriverService.GoToURL(WebDriverId, nodes[i].Text).ConfigureAwait(false);
+                                            stepResult = await vkActionService.GoToProfile(WebDriverId, nodes[i].Text).ConfigureAwait(false);
                                             break;
                                         case EnumMissionActionType.AvatarLike:
                                             var avatarResult = await vkActionService.AvatarLike(WebDriverId).ConfigureAwait(false);
@@ -789,7 +789,7 @@ namespace BotClient.Bussines.Services
                         {
                             var randomMessageConstantText = new MessageConstantText()
                             {
-                                TextGuid = new Guid(),
+                                TextGuid = Guid.NewGuid(),
                                 Text = $"({Elements[0]})"
                             };
                             RandomMessageConstantTextes.Add(randomMessageConstantText);
@@ -1039,15 +1039,63 @@ namespace BotClient.Bussines.Services
             return Text;
         }
         
-        private async Task ReplaceNumberToWord(string Text)
+        public async Task ReplaceNumberToWord(string Text)
         {
             var constantText = new List<MessageConstantText>();
             var textNumbers = new List<MessageConstantText>();
             var regex = new Regex(@"(\(\w*\))");
-            var t = regex.Matches(Text);
-            while (regex.IsMatch(Text))
+            var matches = regex.Matches(Text);
+            for (int i = 0; i < matches.Count; i++)
             {
-                break;
+                if (matches[i].Length > 0)
+                {
+                    var messageConstantText = new MessageConstantText()
+                    {
+                        Text = matches[i].Value,
+                        TextGuid = Guid.NewGuid()
+                    };
+                    constantText.Add(messageConstantText);
+                    Text = regex.Replace(Text, messageConstantText.TextGuid.ToString(), 1);
+                }
+            }
+            regex = new Regex(@"[0-9]*");
+            matches = regex.Matches(Text);
+            for (int i = 0; i < matches.Count; i++)
+            {
+                if (matches[i].Length > 0)
+                {
+                    var messageConstantText = new MessageConstantText()
+                    {
+                        Text = matches[i].Value,
+                        TextGuid = Guid.NewGuid()
+                    };
+                    textNumbers.Add(messageConstantText);
+                    Text = regex.Replace(Text, messageConstantText.TextGuid.ToString(), 1);
+                }
+            }
+            if (textNumbers.Count > 0)
+            {
+                var randomIndex = random.Next(0, textNumbers.Count);
+                string[,] NumArray = {
+                        {"один","два","три","четыре","пять","шесть","семь","восемь","девять"},
+                        {"десять","двадцать", "тридцать", "сорок","пятьдесят","шестьдесят", "семьдесят", "восемьдесят", "девяносто"},
+                        {"сто","двести", "триста", "четыреста","пятьсот","шестьсот", "семьсот", "восемьсот", "девятьсот"}};
+                string[,] TenArray = {
+                        { "тысяча", "тысячи", "тысяч"},
+                        { "миллион","миллиона","миллионов"},
+                        { "миллиард","миллиарда","миллиардов"}};
+                var words = new List<string>();
+                for (int i = 0; i < textNumbers[randomIndex].Text.Length; i++)
+                {
+                    var intValue = -1;
+                    if ((int.TryParse(textNumbers[randomIndex].Text[i].ToString(), out intValue)) && (intValue > 0))
+                    {
+                        words.Add(NumArray[2 - (i - (i / 3) * 3), intValue - 1]);
+                        if (words.Count % 3 == 0)
+                            words.Add(TenArray[i / 3, 0]);
+                    }
+                }
+                var t = 1;
             }
         }
     }

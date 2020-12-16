@@ -19,6 +19,7 @@ namespace BotClient.Bussines.Interfaces
         Task<BotMusicModel> GetNextMusic(Guid WebDriverId);
         Task<AlgoritmResult> StopMusic(Guid WebDriverId, bool hasBotMusic);
         Task<AlgoritmResult> WatchVideo(Guid WebDriverId);
+        Task<bool> GoToProfile(Guid WebDriverId, string Link);
         Task<AlgoritmResult> GoToVideoCatalog(Guid WebDriverId);
         Task<AlgoritmResult> FindVideo(Guid WebDriverId, string SearchWord);
         Task<List<BotVkVideo>> GetVideos(Guid WebDriverId);

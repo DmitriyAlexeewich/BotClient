@@ -23,13 +23,15 @@ namespace BotClient.Controllers
         private readonly IWebDriverService webDriverService;
         private readonly ISettingsService settingsService;
         private readonly IVkActionService vkActionService;
+        private readonly IBotWorkService botWorkService;
 
         public TestController(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
                               IMissionCompositeService MissionCompositeService,
                               IWebDriverService WebDriverService,
                               ISettingsService SettingsService,
-                              IVkActionService VkActionService)
+                              IVkActionService VkActionService,
+                              IBotWorkService BotWorkService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -37,15 +39,13 @@ namespace BotClient.Controllers
             webDriverService = WebDriverService;
             settingsService = SettingsService;
             vkActionService = VkActionService;
+            botWorkService = BotWorkService;
         }
 
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            var constantText = new List<MessageConstantText>();
-            var textNumbers = new List<MessageConstantText>();
-            var regex = new Regex(@"(\(\w*\))");
-            var t = regex.Matches(Text);
+            await botWorkService.ReplaceNumberToWord(Text);
             return Ok();
         }
     }

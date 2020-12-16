@@ -26,6 +26,7 @@ namespace BotClient.Bussines.Services
             errorLogFilePath = configuration.GetSection("ErrorLogFilePath").Value;
             algoritmFilePath = configuration.GetSection("AlgoritmFilePath").Value;
             screenshotPath = configuration.GetSection("ScreenshotPath").Value;
+            errorWebElementLogFilePath = configuration.GetSection("ErrorWebElementLogFilePath").Value;
             CreateConfigurationFile();
             CreateErrorLogFile();
             CreateScreenshotFolder();
@@ -34,6 +35,7 @@ namespace BotClient.Bussines.Services
         private WebConnectionSettings webConnectionSettings = new WebConnectionSettings();
         private string configurationFilePath = string.Empty;
         private string errorLogFilePath = string.Empty;
+        private string errorWebElementLogFilePath = string.Empty;
         private string algoritmFilePath = string.Empty;
         private string screenshotPath = string.Empty;
 
@@ -311,7 +313,25 @@ namespace BotClient.Bussines.Services
                 CreateErrorLogFile();
                 if (File.Exists(errorLogFilePath))
                 {
-                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.UtcNow + " --- " + CodeFileName + ".cs --- " + Environment.NewLine + Ex);
+                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.Now + " --- " + CodeFileName + ".cs --- " + Environment.NewLine + Ex);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return false;
+        }
+
+        public async Task<bool> AddWebElementLog(string Selector, string Link)
+        {
+            try
+            {
+                CreateErrorWebElementLogFile();
+                if (File.Exists(errorWebElementLogFilePath))
+                {
+                    File.AppendAllText(errorWebElementLogFilePath, Environment.NewLine + DateTime.Now + " --- " + Selector + " ---- " + Link + " --- " + Environment.NewLine);
                     return true;
                 }
             }
@@ -424,6 +444,22 @@ namespace BotClient.Bussines.Services
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(@errorLogFilePath));
                     File.Create(@errorLogFilePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+        }
+
+        private void CreateErrorWebElementLogFile()
+        {
+            try
+            {
+                if (!File.Exists(errorWebElementLogFilePath))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(errorWebElementLogFilePath));
+                    File.Create(errorWebElementLogFilePath);
                 }
             }
             catch (Exception ex)

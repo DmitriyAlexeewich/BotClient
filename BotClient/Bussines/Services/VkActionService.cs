@@ -44,6 +44,7 @@ namespace BotClient.Bussines.Services
                     {
                         if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "index_login_button", EnumClickType.URLClick).ConfigureAwait(false))
                         {
+                            await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             return new AlgoritmResult()
                             {
                                 ActionResultMessage = EnumActionResult.Success,
@@ -86,11 +87,14 @@ namespace BotClient.Bussines.Services
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_pr", EnumClickType.URLClick).ConfigureAwait(false))
                 {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "profile_edit_act", EnumClickType.URLClick).ConfigureAwait(false))
                     {
+                        await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                         var customizeBufferResult = true;
                         if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "ui_rmenu_general", EnumClickType.URLClick).ConfigureAwait(false))
                         {
+                            await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_home_town", CustomizeData.City).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_add_grandparent_link", CustomizeData.Grands).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_add_parent_link", CustomizeData.Parents).ConfigureAwait(false);
@@ -101,6 +105,7 @@ namespace BotClient.Bussines.Services
                         }
                         if ((customizeBufferResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "ui_rmenu_contacts", EnumClickType.URLClick).ConfigureAwait(false)))
                         {
+                            await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_mobile", CustomizeData.MobilePhone).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_home", CustomizeData.HomePhone).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_skype", CustomizeData.Skype).ConfigureAwait(false);
@@ -128,6 +133,7 @@ namespace BotClient.Bussines.Services
                         }
                         if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "ui_rmenu_interests", EnumClickType.URLClick).ConfigureAwait(false))
                         {
+                            await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_interests_activities", CustomizeData.Job).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_interests_interests", CustomizeData.Interest).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_interests_music", CustomizeData.FavoriteMusic).ConfigureAwait(false);
@@ -163,6 +169,7 @@ namespace BotClient.Bussines.Services
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_aud", EnumClickType.URLClick).ConfigureAwait(false))
                 {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._audio_section_tab__for_you._audio_section_tab__recoms",
                                                                                 EnumWebHTMLElementSelector.CSSSelector, ".ui_tab");
                     if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
@@ -284,6 +291,7 @@ namespace BotClient.Bussines.Services
                 var closeResult = false;
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_vid", EnumClickType.URLClick).ConfigureAwait(false))
                 {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     var element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".videocat_autoplay_video_wrap").ConfigureAwait(false);
                     if (element != null)
                     {
@@ -328,6 +336,7 @@ namespace BotClient.Bussines.Services
                 var closeResult = false;
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_vid", EnumClickType.URLClick).ConfigureAwait(false))
                 {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     result = new AlgoritmResult()
                     {
                         ActionResultMessage = EnumActionResult.Success,
@@ -338,6 +347,17 @@ namespace BotClient.Bussines.Services
             catch (Exception ex)
             {
                 settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> GoToProfile(Guid WebDriverId, string Link)
+        {
+            var result = await webDriverService.GoToURL(WebDriverId, Link).ConfigureAwait(false);
+            if (result)
+            {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
             }
             return result;
         }
@@ -357,6 +377,7 @@ namespace BotClient.Bussines.Services
                     if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
                         ".ui_search_button_search._ui_search_button_search", EnumClickType.URLClick).ConfigureAwait(false))
                     {
+                        await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                         result = new AlgoritmResult()
                         {
                             ActionResultMessage = EnumActionResult.Success,
@@ -478,6 +499,7 @@ namespace BotClient.Bussines.Services
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_nwsf", EnumClickType.URLClick).ConfigureAwait(false))
                 {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
                     webElementService.ScrollElement(body);
                     await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
@@ -730,6 +752,7 @@ namespace BotClient.Bussines.Services
                 var goToDialogByVkIdResult = await goToDialogByVkId(WebDriverId, ClientVkId).ConfigureAwait(false);
                 if (goToDialogByVkIdResult)
                 {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     result = new AlgoritmResult()
                     {
                         ActionResultMessage = EnumActionResult.Success,
@@ -758,6 +781,7 @@ namespace BotClient.Bussines.Services
                     {
                         if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false))
                         {
+                            await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             var dialogContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "im_dialogs").ConfigureAwait(false);
                             var dialogsUnreadMarks = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
                             for (int i = 0; i < dialogsUnreadMarks.Count; i++)
@@ -962,7 +986,15 @@ namespace BotClient.Bussines.Services
                 var webDriver = await webDriverService.GetWebDriverById(WebDriverId).ConfigureAwait(false);
                 if (webDriver.WebDriver.Url.IndexOf("vk.com/im") == -1)
                     result = await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
-                result = true;
+                else
+                {
+                    var blockWindow = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container").ConfigureAwait(false);
+                    if (blockWindow != null)
+                    {
+                        var closeBtn = webElementService.GetElementInElement(blockWindow, EnumWebHTMLElementSelector.CSSSelector, ".box_x_button");
+                        result = webElementService.ClickToElement(closeBtn, EnumClickType.ElementClick);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -975,7 +1007,7 @@ namespace BotClient.Bussines.Services
         {
             var result = false;
             try
-            {//box_x_button //popup_box_container
+            {
                 var element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer_wrap").ConfigureAwait(false);
                 var attribute = webElementService.GetAttributeValue(element, "style");
                 if ((attribute != null) && (attribute.IndexOf("block;", StringComparison.Ordinal) != -1))
