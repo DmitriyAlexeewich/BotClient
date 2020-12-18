@@ -29,6 +29,10 @@ namespace BotClient.Bussines.Interfaces
 
         Task<SettingsReport> SetErrorChancePerTenWords(int ErrorChancePerTenWords);
 
+        Task<SettingsReport> SetCapsChancePerThousandWords(int CapsChancePerThousandWords);
+
+        Task<SettingsReport> SetNumberChancePerHundredWords(int NumberChancePerHundredWords);
+
         Task<SettingsReport> SetMusicWaitingTime(int MusicWaitingTime, int MusicWaitingDeltaTime);
 
         Task<SettingsReport> SetVideoWaitingTime(int VideoWaitingTime, int VideoWaitingDeltaTime);

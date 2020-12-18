@@ -45,8 +45,7 @@ namespace BotClient.Controllers
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            await botWorkService.ReplaceNumberToWord(Text);
-            return Ok();
+            return Ok(await botWorkService.Test(Text));
         }
     }
 }

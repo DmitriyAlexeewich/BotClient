@@ -219,6 +219,46 @@ namespace BotClient.Bussines.Services
                 };
             }
         }
+        
+        public async Task<SettingsReport> SetCapsChancePerThousandWords(int CapsChancePerThousandWords)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.CapsChancePerThousandWords = CapsChancePerThousandWords;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetNumberChancePerHundredWords(int NumberChancePerHundredWords)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.NumberChancePerHundredWords = NumberChancePerHundredWords;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
 
         public async Task<SettingsReport> SetMusicWaitingTime(int MusicWaitingTime, int MusicWaitingDeltaTime)
         {

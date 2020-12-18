@@ -31,7 +31,12 @@ namespace BotClient.Controllers
                 && (Settings.Options.Count > 0) && (Settings.KeyWaitingTimeMin >= 0) && (Settings.KeyWaitingTimeMax > 0) 
                 && (Settings.KeyWaitingTimeMin < Settings.KeyWaitingTimeMax) && (Settings.HTMLPageWaitingTime >= 60) 
                 && (Settings.HTMLElementWaitingTime >= 1) && (Settings.ScrollCount >= 1) && (Settings.ErrorChancePerTenWords >= 1) 
-                && (Settings.ErrorChancePerTenWords <= 100))
+                && (Settings.ErrorChancePerTenWords <= 100) && (Settings.CapsChancePerThousandWords >= 1) 
+                && (Settings.NumberChancePerHundredWords <= 100) && (Settings.MusicWaitingTime >= 60) 
+                && (Settings.MusicWaitingTime <= 360) && (Settings.MusicWaitingDeltaTime > 0) 
+                && (Settings.MusicWaitingDeltaTime <= 240) && (Settings.VideoWaitingTime >= 60) 
+                && (Settings.VideoWaitingTime <= 360) && (Settings.VideoWaitingDeltaTime > 0) 
+                && (Settings.VideoWaitingDeltaTime <= 240) && (Settings.VideoLoadingWaitingTime >= 60))
             {
                 return Ok(await settingsService.CreateLink(Settings).ConfigureAwait(false));
             }
@@ -122,6 +127,28 @@ namespace BotClient.Controllers
             }
             return BadRequest("Invalid ErrorChancePerTenWords. " +
                               "ErrorChancePerTenWords must be greater than 0 and must be less than or equal to 100");
+        }
+
+        [HttpPost("SetCapsChancePerThousandWords")]
+        public async Task<IActionResult> SetCapsChancePerThousandWords([FromQuery] int CapsChancePerThousandWords)
+        {
+            if ((CapsChancePerThousandWords >= 1) && (CapsChancePerThousandWords <= 100))
+            {
+                return Ok(await settingsService.SetCapsChancePerThousandWords(CapsChancePerThousandWords).ConfigureAwait(false));
+            }
+            return BadRequest("Invalid ErrorChancePerTenWords. " +
+                              "CapsChancePerThousandWords must be greater than 0 and must be less than or equal to 100");
+        }
+
+        [HttpPost("SetNumberChancePerHundredWords")]
+        public async Task<IActionResult> SetNumberChancePerHundredWords([FromQuery] int NumberChancePerHundredWords)
+        {
+            if ((NumberChancePerHundredWords >= 1) && (NumberChancePerHundredWords <= 100))
+            {
+                return Ok(await settingsService.SetNumberChancePerHundredWords(NumberChancePerHundredWords).ConfigureAwait(false));
+            }
+            return BadRequest("Invalid ErrorChancePerTenWords. " +
+                              "NumberChancePerHundredWords must be greater than 0 and must be less than or equal to 100");
         }
 
         [HttpPost("SetMusicWaitingTime")]

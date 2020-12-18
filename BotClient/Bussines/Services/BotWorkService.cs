@@ -231,7 +231,6 @@ namespace BotClient.Bussines.Services
                                         botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
                                 }
                             }
-                            botSchedule[0] = EnumBotActionType.ListenMusic;
                             await CheckMessage(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
@@ -500,7 +499,7 @@ namespace BotClient.Bussines.Services
                                             stepResult = !repostResult.hasError;
                                             break;
                                         case EnumMissionActionType.SendMessage:
-                                            var newMessage = RandOriginalMessage(nodes[i].Text);
+                                            var newMessage = await RandOriginalMessageAsync(nodes[i].Text).ConfigureAwait(false);
                                             if (newMessage != null)
                                             {
                                                 var sendMessageResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage).ConfigureAwait(false);
@@ -586,7 +585,7 @@ namespace BotClient.Bussines.Services
                                     };
                                     for (int j = 0; j < messages.Count; j++)
                                     {
-                                        var newBotMessage = RandOriginalMessage(messages[j].Text);
+                                        var newBotMessage = await RandOriginalMessageAsync(messages[j].Text).ConfigureAwait(false);
                                         if(newBotMessage != null)
                                             sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage, client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
                                     }
@@ -624,7 +623,7 @@ namespace BotClient.Bussines.Services
                     {
                         if (isRegexMatch(newMessageText, standartPatterns[i].Text, standartPatterns[i].isRegex, standartPatterns[i].isInclude))
                         {
-                            var botMessage = RandOriginalMessage(standartPatterns[i].AnswerText);
+                            var botMessage = await RandOriginalMessageAsync(standartPatterns[i].AnswerText).ConfigureAwait(false);
                             if (botMessage != null)
                             {
                                 var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
@@ -647,7 +646,7 @@ namespace BotClient.Bussines.Services
                                     var patternAction = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, nodePatterns[i].NodeId, null);
                                     if ((patternAction != null) && (patternAction.Count > 0) && (patternAction[0].Type == EnumMissionActionType.SendMessage))
                                     {
-                                        var botMessage = RandOriginalMessage(patternAction[0].Text);
+                                        var botMessage = await RandOriginalMessageAsync(patternAction[0].Text).ConfigureAwait(false);
                                         if (botMessage != null)
                                         {
                                             var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
@@ -731,21 +730,21 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        private string RandOriginalMessage(string message)
+        private async Task<string> RandOriginalMessageAsync(string message)
         {
             try
             {
                 var maxAttept = random.Next(3, 6);
                 for (int i = 0; i < maxAttept; i++)
                 {
-                    var randomMessage = RandMessage(message);
+                    var randomMessage = await RandMessage(message).ConfigureAwait(false);
                     if (randomMessages.FirstOrDefault(item => item == randomMessage) == null)
                     {
                         randomMessages.Add(randomMessage);
                         return randomMessage;
                     }
                 }
-                return RandMessage(message);
+                return await RandMessage(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -754,7 +753,7 @@ namespace BotClient.Bussines.Services
             return null;
         }
 
-        private string RandMessage(string message)
+        private async Task<string> RandMessage(string message)
         {
             try
             {
@@ -800,6 +799,16 @@ namespace BotClient.Bussines.Services
                 }
                 for (int i = 0; i < RandomMessageConstantTextes.Count; i++)
                     message = message.Replace(RandomMessageConstantTextes[i].TextGuid.ToString(), RandomMessageConstantTextes[i].Text);
+                var isSetedMessageKeyboardError = false;
+                var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
+                if (random.Next(0, 100) < ((message.Split(' ').Length / 10) * errorChancePerTenWords))
+                {
+                    isSetedMessageKeyboardError = true;
+                    message = await SetMessageKeyboardError(message).ConfigureAwait(false);
+                }
+                message = await SetCaps(message, isSetedMessageKeyboardError).ConfigureAwait(false);
+                message = await ReplaceNumberToWord(message).ConfigureAwait(false);
+                message = RemoveBrackets(message);
                 return message;
             }
             catch (Exception ex)
@@ -847,36 +856,76 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        private async Task SetBotSchedule(List<int> BotsId)
+        {
+            try
+            {
+                var ourRoleActions = BotsId.Count * random.Next(8, 13);
+                for (int i = 0; i < BotsId.Count; i++)
+                {
+                    var actionsCount = random.Next(8, 13);
+                    if (actionsCount > (ourRoleActions - actionsCount))
+                    {
+                        if (ourRoleActions <= 10)
+                            ourRoleActions = random.Next(10, 13);
+                        actionsCount = random.Next(8, ourRoleActions);
+                    }
+                    var connection = botRoleActions.FirstOrDefault(item => item.BotId == BotsId[i]);
+                    if (connection != null)
+                        botRoleActions[botRoleActions.IndexOf(connection)].RoleActionCount = actionsCount;
+                    else
+                    {
+                        botRoleActions.Add(new BotRoleActionsDaySchedule()
+                        {
+                            BotId = BotsId[i],
+                            RoleActionCount = actionsCount
+                        });
+                    }
+                    ourRoleActions -= actionsCount;
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+        }
+
         private async Task<string> SetMessageKeyboardError(string Text)
         {
-            var words = Text.Split(" ");
-            var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
-            var errorChance = Math.Round((double)(words.Length / settingsErrorChancePerTenWords));
-            if (random.Next(0, 100) < errorChance)
+            var result = Text;
+            try
             {
+                var constantText = new List<MessageConstantText>();
+                constantText = GetConstantTexts(Text, new Regex(@"(\(\w*\))"));
+                Text = ReplaceConstantStringToKey(Text, constantText);
+                var words = Text.Split(" ");
+                var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
                 char[][] keyboard = new char[3][]
-                {
+                    {
                     new char[12] { 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ' },
                     new char[11] { 'ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э' },
                     new char[9] { 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю' }
-                };
+                    };
                 var wordsIndexes = new List<int>();
-                for (int i = 0; i < errorChance; i++)
+                var regex = new Regex(@"\b[А-Яа-я]+\b", RegexOptions.IgnoreCase);
+                if (words.Length >= 10)
                 {
-                    wordsIndexes.Add(random.Next(0, words.Length - 1));
-                    while (true)
+                    for (int i = 0; i < words.Length; i++)
                     {
-                        if (wordsIndexes.Count(item => item == wordsIndexes[wordsIndexes.Count - 1]) > 1)
+                        if ((i > 0) && (i % 10 == 0) && (random.Next(0, 100) < settingsErrorChancePerTenWords))
                         {
-                            var randomIndex = random.Next(0, words.Length - 1);
-                            if(words[randomIndex].IndexOf("(") == -1)
-                                wordsIndexes[i] = randomIndex;
+                            var randomIndex = random.Next(i - 10, i);
+                            if (regex.IsMatch(words[randomIndex]))
+                                wordsIndexes.Add(randomIndex);
                         }
-                        else
-                            break;
                     }
                 }
-                var regex = new Regex(@"[^a-zA-ZА-Яа-я0-9]", RegexOptions.IgnoreCase);
+                else if(random.Next(0, 100) < words.Length / settingsErrorChancePerTenWords)
+                {
+                    var randomIndex = random.Next(0, words.Length);
+                    if (regex.IsMatch(words[randomIndex]))
+                        wordsIndexes.Add(randomIndex);
+                }
                 for (int i = 0; i < wordsIndexes.Count; i++)
                 {
                     if (regex.IsMatch(words[wordsIndexes[i]]))
@@ -958,145 +1007,185 @@ namespace BotClient.Bussines.Services
                         words[wordsIndexes[i]] = word;
                     }
                 }
-                string newText = "";
-                if (words.Length > 0)
+                result = ConstructMessage(words.ToList());
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
+        private async Task<string> SetCaps(string Text, bool isSetedMessageKeyboardError)
+        {
+            var result = Text;
+            try
+            {
+                var constantText = GetConstantTexts(Text, new Regex(@"(\(\w*\))"));
+                Text = ReplaceConstantStringToKey(Text, constantText);
+                var words = Text.Split(" ");
+                var settingsCapsChancePerThousandWords = settingsService.GetServerSettings().CapsChancePerThousandWords;
+                if (isSetedMessageKeyboardError)
+                    settingsCapsChancePerThousandWords /= 2;
+                if (settingsCapsChancePerThousandWords < 1)
+                    settingsCapsChancePerThousandWords = 1;
+                var regex = new Regex(@"\b[А-Яа-я]+\b");
+                if (words.Length >= 100)
                 {
                     for (int i = 0; i < words.Length; i++)
                     {
-                        newText += words[i];
-                        if (i == words.Length - 1)
-                            newText += " ";
-                    }
-                    return newText;
-                }
-            }
-            return Text;
-        }
-
-        private async Task SetBotSchedule(List<int> BotsId)
-        {
-            try
-            {
-                var ourRoleActions = BotsId.Count * random.Next(8, 13);
-                for (int i = 0; i < BotsId.Count; i++)
-                {
-                    var actionsCount = random.Next(8, 13);
-                    if (actionsCount > (ourRoleActions - actionsCount))
-                    {
-                        if (ourRoleActions <= 10)
-                            ourRoleActions = random.Next(10, 13);
-                        actionsCount = random.Next(8, ourRoleActions);
-                    }
-                    var connection = botRoleActions.FirstOrDefault(item => item.BotId == BotsId[i]);
-                    if (connection != null)
-                        botRoleActions[botRoleActions.IndexOf(connection)].RoleActionCount = actionsCount;
-                    else
-                    {
-                        botRoleActions.Add(new BotRoleActionsDaySchedule()
+                        if ((i > 0) && (i % 100 == 0) && (random.Next(0, 100) < settingsCapsChancePerThousandWords))
                         {
-                            BotId = BotsId[i],
-                            RoleActionCount = actionsCount
-                        });
+                            var randomIndex = random.Next(0, words.Length);
+                            if (regex.IsMatch(words[randomIndex]))
+                                words[randomIndex] = words[randomIndex].ToUpper();
+                        }
                     }
-                    ourRoleActions -= actionsCount;
                 }
+                else if(random.Next(0, 100) < words.Length / settingsCapsChancePerThousandWords)
+                {
+                    var randomIndex = random.Next(0, words.Length);
+                    if (regex.IsMatch(words[randomIndex]))
+                        words[randomIndex] = words[randomIndex].ToUpper();
+                }
+                result = ConstructMessage(words.ToList());
             }
             catch (Exception ex)
             {
                 settingsService.AddLog("BotWorkService", ex);
             }
+            return result;
         }
-                
-        private async Task<string> SetCaps(string Text)
+        
+        private async Task<string> ReplaceNumberToWord(string Text)
         {
-            var words = Text.Split(" ");
-            var settingsCapsChancePerThousandWords = settingsService.GetServerSettings().CapsChancePerThousandWords;
-            var capsChance = Math.Round((double)(words.Length / settingsCapsChancePerThousandWords));
-            if (random.Next(0, 100) < capsChance)
+            var result = Text;
+            try
             {
-                while (true)
+                var constantText = GetConstantTexts(Text, new Regex(@"(\(\w*\))"));
+                var textNumbers = GetConstantTexts(Text, new Regex(@"\b[0-9]{12}\b"));
+                Text = ReplaceConstantStringToKey(Text, constantText);
+                Text = ReplaceConstantStringToKey(Text, textNumbers);
+                if (textNumbers.Count > 0)
                 {
-                    var randIndex = random.Next(0, words.Length);
-                    var regex = new Regex(@"[^a-zA-ZА-Яа-я0-9]", RegexOptions.IgnoreCase);
-                    if ((words[randIndex].IndexOf("(") == -1) && (regex.IsMatch(words[randIndex])))
+                    var numberChancePerHundredWords = settingsService.GetServerSettings().NumberChancePerHundredWords;
+                    string[,] NumArray = {
+                        {"один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"},
+                        {"десять", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят", "восемьдесят", "девяносто"},
+                        {"сто", "двести", "триста", "четыреста", "пятьсот", "шестьсот", "семьсот", "восемьсот", "девятьсот"},
+                        {"одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать" } };
+                    string[,] TenArray = {
+                        {"тысяча", "тысячи", "тысяч"},
+                        {"миллион", "миллиона", "миллионов"},
+                        {"миллиард", "миллиарда", "миллиардов"}};
+                    for (int i = 0; i < numberChancePerHundredWords && textNumbers.Count > 0; i++)
                     {
-                        words[randIndex] = words[randIndex].ToUpper();
-                        break;
+                        var randomIndex = random.Next(0, textNumbers.Count);
+                        var words = new List<string>();
+                        for (int j = 0; j < textNumbers[randomIndex].Text.Length; j++)
+                        {
+                            var intValue = -1;
+                            if ((int.TryParse(textNumbers[randomIndex].Text[j].ToString(), out intValue)) && (intValue > 0))
+                            {
+                                var numI = 2 - (j - (j / 3) * 3);
+                                var tenI = 2 - (j / 3);
+                                var tenJ = 0;
+                                if ((numI == 0) && (words.Count > 0) && (words[words.Count - 1] == "десять"))
+                                {
+                                    words[words.Count - 1] = NumArray[3, intValue - 1];
+                                    tenJ = 2;
+                                }
+                                else
+                                {
+                                    words.Add(NumArray[numI, intValue - 1]);
+                                    if ((tenI == 0) && (numI == 0))
+                                    {
+                                        if (intValue == 1)
+                                            words[words.Count - 1] = "одна";
+                                        else if (intValue == 2)
+                                            words[words.Count - 1] = "две";
+                                    }
+                                }
+                                if ((j <= textNumbers[randomIndex].Text.Length - 3) && ((j + 1) % 3 == 0))
+                                {
+                                    if ((intValue >= 2) && (intValue <= 4) && (numI < 1))
+                                        tenJ = 1;
+                                    else if (intValue >= 5)
+                                        tenJ = 2;
+                                    words.Add(TenArray[tenI, tenJ]);
+                                }
+                            }
+                        }
+                        Text = Text.Replace(textNumbers[i].TextGuid.ToString(), String.Join(' ', words));
+                        textNumbers.RemoveAll(item => item.TextGuid == textNumbers[i].TextGuid);
                     }
                 }
-                string newText = "";
-                if (words.Length > 0)
+                Text = ConstructMessage(Text, constantText);
+                Text = ConstructMessage(Text, textNumbers);
+                return Text;
+            }
+            catch(Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
+        private List<MessageConstantText> GetConstantTexts(string Text, Regex RegulerExtension)
+        {
+            var result = new List<MessageConstantText>();
+            var matches = RegulerExtension.Matches(Text);
+            for (int i = 0; i < matches.Count; i++)
+            {
+                if (matches[i].Length > 0)
                 {
-                    for (int i = 0; i < words.Length; i++)
+                    var messageConstantText = new MessageConstantText()
                     {
-                        newText += words[i];
-                        if (i == words.Length - 1)
-                            newText += " ";
-                    }
-                    return newText;
+                        Text = matches[i].Value,
+                        TextGuid = Guid.NewGuid()
+                    };
+                    result.Add(messageConstantText);
                 }
+            }
+            return result;
+        }
+
+        private string ReplaceConstantStringToKey(string Text, List<MessageConstantText> ConstantTexts)
+        {
+            for (int i = 0; i < ConstantTexts.Count; i++)
+            {
+                var regex = new Regex(@ConstantTexts[i].Text);
+                Text = regex.Replace(Text, ConstantTexts[i].TextGuid.ToString(), 1);
             }
             return Text;
         }
-        
-        public async Task ReplaceNumberToWord(string Text)
+
+        private string ConstructMessage(string Text, List<MessageConstantText> ConstantTexts)
         {
-            var constantText = new List<MessageConstantText>();
-            var textNumbers = new List<MessageConstantText>();
-            var regex = new Regex(@"(\(\w*\))");
-            var matches = regex.Matches(Text);
-            for (int i = 0; i < matches.Count; i++)
-            {
-                if (matches[i].Length > 0)
-                {
-                    var messageConstantText = new MessageConstantText()
-                    {
-                        Text = matches[i].Value,
-                        TextGuid = Guid.NewGuid()
-                    };
-                    constantText.Add(messageConstantText);
-                    Text = regex.Replace(Text, messageConstantText.TextGuid.ToString(), 1);
-                }
-            }
-            regex = new Regex(@"[0-9]*");
-            matches = regex.Matches(Text);
-            for (int i = 0; i < matches.Count; i++)
-            {
-                if (matches[i].Length > 0)
-                {
-                    var messageConstantText = new MessageConstantText()
-                    {
-                        Text = matches[i].Value,
-                        TextGuid = Guid.NewGuid()
-                    };
-                    textNumbers.Add(messageConstantText);
-                    Text = regex.Replace(Text, messageConstantText.TextGuid.ToString(), 1);
-                }
-            }
-            if (textNumbers.Count > 0)
-            {
-                var randomIndex = random.Next(0, textNumbers.Count);
-                string[,] NumArray = {
-                        {"один","два","три","четыре","пять","шесть","семь","восемь","девять"},
-                        {"десять","двадцать", "тридцать", "сорок","пятьдесят","шестьдесят", "семьдесят", "восемьдесят", "девяносто"},
-                        {"сто","двести", "триста", "четыреста","пятьсот","шестьсот", "семьсот", "восемьсот", "девятьсот"}};
-                string[,] TenArray = {
-                        { "тысяча", "тысячи", "тысяч"},
-                        { "миллион","миллиона","миллионов"},
-                        { "миллиард","миллиарда","миллиардов"}};
-                var words = new List<string>();
-                for (int i = 0; i < textNumbers[randomIndex].Text.Length; i++)
-                {
-                    var intValue = -1;
-                    if ((int.TryParse(textNumbers[randomIndex].Text[i].ToString(), out intValue)) && (intValue > 0))
-                    {
-                        words.Add(NumArray[2 - (i - (i / 3) * 3), intValue - 1]);
-                        if (words.Count % 3 == 0)
-                            words.Add(TenArray[i / 3, 0]);
-                    }
-                }
-                var t = 1;
-            }
+            for (int i = 0; i < ConstantTexts.Count; i++)
+                Text = Text.Replace(ConstantTexts[i].TextGuid.ToString(), ConstantTexts[i].Text);
+            return Text;
+        }
+
+        private string ConstructMessage(List<string> Words)
+        {
+            var result = "";
+            for (int i = 0; i < Words.Count; i++)
+                result += Words[i] + " ";
+            result = result.Remove(result.Length - 1);
+            return result;
+        }
+
+        private string RemoveBrackets(string Text)
+        {
+            Text = Text.Replace("(", "");
+            Text = Text.Replace(")", "");
+            return Text;
+        }
+
+        public async Task<string> Test(string Text)
+        {
+            return await RandMessage(Text).ConfigureAwait(false);
         }
     }
 }

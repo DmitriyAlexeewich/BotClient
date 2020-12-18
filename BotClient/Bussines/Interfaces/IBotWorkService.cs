@@ -14,6 +14,6 @@ namespace BotClient.Bussines.Interfaces
         Task<List<BotWorkStatusModel>> GetBots();
         Task<List<BotRoleActionsDaySchedule>> GetBotRoleActions();
         Task<List<string>> GetRandomMessages();
-        Task ReplaceNumberToWord(string Text);
+        Task<string> Test(string Text);
     }
 }
