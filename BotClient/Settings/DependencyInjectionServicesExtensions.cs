@@ -25,24 +25,27 @@ namespace BotClient.Settings
             services.AddSingleton<IMySQLService, MySQLService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             //data services
+            //composite
             services.AddSingleton<IBotCompositeService, BotCompositeService>();
             services.AddSingleton<IClientCompositeService, ClientCompositeService>();
             services.AddSingleton<IMissionCompositeService, MissionCompositeService>();
+            //single
+            services.AddSingleton<IBotActionHistoryService, BotActionHistoryService>();
             services.AddSingleton<IBotClientRoleConnectorService, BotClientRoleConnectorService>();
             services.AddSingleton<IBotCustomizeService, BotCustomizeService>();
+            services.AddSingleton<IBotMusicService, BotMusicService>();
+            services.AddSingleton<IBotNewsService, BotNewsService>();
             services.AddSingleton<IBotService, BotService>();
+            services.AddSingleton<IBotVideoService, BotVideoService>();
             services.AddSingleton<IClientService, ClientService>();
+            services.AddSingleton<IDialogScreenshotService, DialogScreenshotService>();
             services.AddSingleton<IMessagesService, MessagesService>();
-            services.AddSingleton<IMissionService, MissionService>();
             services.AddSingleton<IMissionNodeService, MissionNodeService>();
+            services.AddSingleton<IMissionService, MissionService>();
             services.AddSingleton<INodePatternService, NodePatternService>();
             services.AddSingleton<IPatternService, PatternService>();
             services.AddSingleton<IRoleMissionConnectorService, RoleMissionConnectorService>();
             services.AddSingleton<IRoleService, RoleService>();
-            services.AddSingleton<IDialogScreenshotService, DialogScreenshotService>();
-            services.AddSingleton<IBotMusicService, BotMusicService>();
-            services.AddSingleton<IBotNewsService, BotNewsService>();
-            services.AddSingleton<IBotVideoService, BotVideoService>();
             services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
 
             return services;

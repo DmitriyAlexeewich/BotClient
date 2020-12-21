@@ -6,6 +6,7 @@ using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
+using BotDataModels.Bot.Enumerators;
 using BotDataModels.Role;
 using BotDataModels.Role.Enumerators;
 using BotMySQL.Bussines.Interfaces.Composite;
@@ -238,12 +239,15 @@ namespace BotClient.Bussines.Services
                                 switch (botSchedule[j])
                                 {
                                     case EnumBotActionType.ListenMusic:
+                                        botCompositeService.CreateBotActionHistory(webDriverBots[i].BotData.Id, botSchedule[j], $"Переход к музыкальному каталогу");
                                         await ListenMusic(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.WatchVideo:
+                                        botCompositeService.CreateBotActionHistory(webDriverBots[i].BotData.Id, botSchedule[j], $"Переход к видеокаталогу");
                                         await WatchVideo(WebDriverId, webDriverBots[i].BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.News:
+                                        botCompositeService.CreateBotActionHistory(webDriverBots[i].BotData.Id, botSchedule[j], $"Просмотр новостей");
                                         await vkActionService.News(WebDriverId).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.RoleMission:
@@ -274,6 +278,7 @@ namespace BotClient.Bussines.Services
                                 UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Stop);
                             else
                                 UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Free);
+                            botCompositeService.CreateBotActionHistory(webDriverBots[i].BotData.Id, EnumBotActionType.RoleMission, $"Выход из профиля");
                             var logoutresult = await Logout(WebDriverId).ConfigureAwait(false);
                             if (!logoutresult)
                                 UpdateBotWorkStatus(webDriverBots[i].BotData.Id, EnumBotWorkStatus.Error);
@@ -398,6 +403,7 @@ namespace BotClient.Bussines.Services
             }
             if (music != null)
             {
+                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic, $"Прослушивание {music.SongName} исполнитель {music.Artist}");
                 var stopResult = await vkActionService.StopMusic(WebDriverId, hasBotMusic).ConfigureAwait(false);
                 if ((!stopResult.hasError) && (stopResult.ActionResultMessage == EnumActionResult.Success) && (!hasBotMusic))
                     botCompositeService.CreateBotMusic(BotId, music.Artist, music.SongName);
@@ -421,6 +427,8 @@ namespace BotClient.Bussines.Services
                 var word = videoDictionaryService.GetAll(randomWordId, 1);
                 if (word.Count > 0)
                 {
+                    botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic,
+                                                                               $"Поиск видео {word[0].Word}");
                     var findVideoResult = await vkActionService.FindVideo(WebDriverId, word[0].Word).ConfigureAwait(false);
                     if ((!findVideoResult.hasError) && (findVideoResult.ActionResultMessage == EnumActionResult.Success))
                     {
@@ -433,6 +441,8 @@ namespace BotClient.Bussines.Services
                             var clickVideoResult = await vkActionService.ClickVideo(WebDriverId, videos[randomVideoIndex].HTMLElement).ConfigureAwait(false);
                             if ((!clickVideoResult.hasError) && (clickVideoResult.ActionResultMessage == EnumActionResult.Success))
                             {
+                                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic, 
+                                                                               $"Просмотр {videos[randomVideoIndex].URL}");
                                 var stopVideo = await vkActionService.CloseVideo(WebDriverId).ConfigureAwait(false);
                                 botCompositeService.CreateBotVideos(BotId, word[0].Id, videos[randomVideoIndex].URL);
                             }
@@ -446,12 +456,20 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                var role = missionCompositeService.GetRoleById(BotClientRoleConnector.RoleId);
+                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission, 
+                                                               $"Выполнение сценария {role.Id} ({role.Title}, {role.UpdateDate}) " +
+                                                               $"с контактёром {BotClientRoleConnector.ClientId}");
                 var client = clientCompositeService.GetClientById(BotClientRoleConnector.ClientId);
                 if (client != null)
                 {
                     var currentMission = missionCompositeService.GetRoleMissionConnections(BotClientRoleConnector.RoleId, true);
                     if ((currentMission != null) && (currentMission.Count > 0))
                     {
+                        var mission = missionCompositeService.GetMissionById(currentMission[0].Id);
+                        botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission, 
+                                                                       $"Выполнение миссии {mission.Id} ({mission.Title}, {role.UpdateDate}) " +
+                                                                       $"с контактёром {BotClientRoleConnector.ClientId}");
                         var nodes = missionCompositeService.GetNodes(currentMission[0].Id, null, null);
                         if ((nodes != null) && (nodes.Count > 0))
                         {
@@ -465,6 +483,8 @@ namespace BotClient.Bussines.Services
                                     switch (nodes[i].Type)
                                     {
                                         case EnumMissionActionType.GoToProfile:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Переход на страницу контактёра {BotClientRoleConnector.ClientId}");
                                             if (OnlyInteger(client.VkId))
                                                 stepResult = await vkActionService.GoToProfile(WebDriverId, "id" + client.VkId).ConfigureAwait(false);
                                             else
@@ -472,42 +492,89 @@ namespace BotClient.Bussines.Services
                                             if (stepResult)
                                             {
                                                 client.FullName = await vkActionService.GetClientName(WebDriverId);
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Успешный переход на страницу контактёра {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 clientCompositeService.UpdateClientData(client);
                                             }
                                             break;
                                         case EnumMissionActionType.GoToGroup:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Переход на страницу группы {nodes[i].Text}");
                                             stepResult = await vkActionService.GoToProfile(WebDriverId, nodes[i].Text).ConfigureAwait(false);
+                                            if (stepResult)
+                                            {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Успешный переход на страницу группы {nodes[i].Text}");
+                                            }
                                             break;
                                         case EnumMissionActionType.AvatarLike:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Лайк аватара");
                                             var avatarResult = await vkActionService.AvatarLike(WebDriverId).ConfigureAwait(false);
                                             stepResult = !avatarResult.hasError;
+                                            if (stepResult)
+                                            {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Успешный лайк аватара");
+                                            }
                                             break;
                                         case EnumMissionActionType.NewsLike:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                   $"Лайк новости");
                                             var newsLikeResult = await vkActionService.NewsLike(WebDriverId, EnumNewsLikeType.LikeFirstNews).ConfigureAwait(false);
                                             stepResult = !newsLikeResult.hasError;
+                                            if (stepResult)
+                                            {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Успешный лайк новости");
+                                            }
                                             break;
                                         case EnumMissionActionType.Subscribe:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                   $"Подписка на контактёра {BotClientRoleConnector.ClientId} ({client.FullName})");
                                             var subscribeResult = await vkActionService.Subscribe(WebDriverId).ConfigureAwait(false);
                                             stepResult = !subscribeResult.hasError;
+                                            if (stepResult)
+                                            {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Успешная подписка на контактёра {BotClientRoleConnector.ClientId} ({client.FullName})");
+                                            }
                                             break;
                                         case EnumMissionActionType.SubscribeToGroup:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                   $"Подписка на группу {nodes[i].Text}");
                                             var subscribeToGroupResult = await vkActionService.SubscribeToGroup(WebDriverId).ConfigureAwait(false);
                                             stepResult = !subscribeToGroupResult.hasError;
+                                            if (stepResult)
+                                            {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                    $"Успешная подписка на группу {nodes[i].Text}");
+                                            }
                                             break;
                                         case EnumMissionActionType.Repost:
+                                            botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                   $"Репост");
                                             var repostResult = await vkActionService.Repost(WebDriverId, EnumRepostType.First).ConfigureAwait(false);
                                             stepResult = !repostResult.hasError;
+                                            if (stepResult)
+                                            {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                       $"Успешный репост");
+                                            }
                                             break;
                                         case EnumMissionActionType.SendMessage:
                                             var newMessage = await RandOriginalMessageAsync(nodes[i].Text).ConfigureAwait(false);
                                             if (newMessage != null)
                                             {
+                                                botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                       $"Отправка сообщения {newMessage} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 var sendMessageResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage).ConfigureAwait(false);
                                                 stepResult = !sendMessageResult.hasError;
                                                 if (stepResult)
                                                 {
                                                     clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage);
-                                                    
+                                                    botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                           $"Успешная отправка сообщения {newMessage} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 }
                                             }
                                             else
@@ -552,6 +619,7 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.RoleMission, $"Переход к списку диалогов");
                 var dialog = await vkActionService.GetDialogWithNewMessages(WebDriverId).ConfigureAwait(false);
                 while (dialog != null)
                 {
@@ -567,14 +635,18 @@ namespace BotClient.Bussines.Services
                 var botDialogsWithNewBotMessages = clientCompositeService.GetBotClientRoleConnectionWithNewBotMessages(BotId);
                 if ((botDialogsWithNewBotMessages != null) && (botDialogsWithNewBotMessages.Count > 0))
                 {
+                    botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.RoleMission, $"Ответ на {botDialogsWithNewBotMessages.Count} сообщений");
                     for (int i = 0; i < botDialogsWithNewBotMessages.Count; i++)
                     {
                         var client = clientCompositeService.GetClientById(botDialogsWithNewBotMessages[i].ClientId);
                         if (client != null)
                         {
+                            botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.RoleMission, $"Переход к диалогу с контактёром {client.Id} ({client.FullName})");
                             var goToDialogResult = await vkActionService.GoToDialog(WebDriverId, client.VkId).ConfigureAwait(false);
                             if (!goToDialogResult.hasError)
                             {
+                                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.RoleMission, 
+                                                                               $"Успешный переход к диалогу с контактёром {client.Id} ({client.FullName})");
                                 var messages = clientCompositeService.GetMessagesByConnectionId(botDialogsWithNewBotMessages[i].Id);
                                 if ((messages != null) && (messages.Count > 0))
                                 {
@@ -586,11 +658,15 @@ namespace BotClient.Bussines.Services
                                     for (int j = 0; j < messages.Count; j++)
                                     {
                                         var newBotMessage = await RandOriginalMessageAsync(messages[j].Text).ConfigureAwait(false);
-                                        if(newBotMessage != null)
+                                        botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.RoleMission, 
+                                                                                       $"Отправка сообщения контактёру {client.Id} ({client.FullName})");
+                                        if (newBotMessage != null)
                                             sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage, client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
                                     }
                                     if (!sendAnswerMessageResult.hasError)
                                     {
+                                        botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.RoleMission,
+                                                                                       $"Успешная отправка сообщения контактёру {client.Id} ({client.FullName})");
                                         clientCompositeService.SetBotClientRoleConnectionHasNewBotMessages(botDialogsWithNewBotMessages[i].Id, false);
                                     }
                                 }
