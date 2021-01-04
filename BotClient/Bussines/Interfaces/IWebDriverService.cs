@@ -18,6 +18,7 @@ namespace BotClient.Bussines.Interfaces
         Task<List<HTMLWebDriver>> GetWebDrivers();
         Task<HTMLWebDriver> GetWebDriverById(Guid WebDriverId);
         Task<bool> hasWebDriver(Guid WebDriverId);
+        Task<bool> isUrlContains(Guid WebDriverId, string Text);
         Task<WebHTMLElement> GetElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true);
         Task<bool> hasWebHTMLElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true);
         Task<bool> hasWebHTMLElement(Guid WebDriverId, WebHTMLElement ParentElement, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true);

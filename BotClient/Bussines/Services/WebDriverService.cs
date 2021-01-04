@@ -379,6 +379,28 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
+        public async Task<bool> isUrlContains(Guid WebDriverId, string Text)
+        {
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                if ((settings != null) && (await hasWebDriver(WebDriverId).ConfigureAwait(false)))
+                {
+                    var webDriver = await GetWebDriverById(WebDriverId).ConfigureAwait(false);
+                    if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
+                        && (webDriver.Status != EnumWebDriverStatus.Loading) && (webDriver.WebDriver.Url.IndexOf(Text) != -1))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("WebDriverService", ex);
+            }
+            return false;
+        }
+
         public async Task<WebHTMLElement> GetElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true)
         {
             try

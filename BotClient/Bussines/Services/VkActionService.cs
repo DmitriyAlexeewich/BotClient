@@ -163,42 +163,62 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<BotMusicModel> GetFirstMusic(Guid WebDriverId)
+        public async Task<AlgoritmResult> GoToMusicPage(Guid WebDriverId)
         {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
             try
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_aud", EnumClickType.URLClick).ConfigureAwait(false))
                 {
                     await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                    var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._audio_section_tab__for_you._audio_section_tab__recoms",
-                                                                                EnumWebHTMLElementSelector.CSSSelector, ".ui_tab");
-                    if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
+                    result.ActionResultMessage = EnumActionResult.Success;
+                    result.hasError = false;
+                }
+            }
+            catch
+            (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<BotMusicModel> GetFirstMusic(Guid WebDriverId)
+        {
+            try
+            {
+                var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._audio_section_tab__for_you._audio_section_tab__recoms",
+                                                                            EnumWebHTMLElementSelector.CSSSelector, ".ui_tab");
+                if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
+                {
+                    if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you").ConfigureAwait(false))
                     {
-                        if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you").ConfigureAwait(false))
+                        element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you",
+                                                                  EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
+                        if (element != null)
                         {
-                            element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you",
-                                                                      EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
-                            if (element != null)
+                            var currentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                                ".audio_page_player_title_song_title", true).ConfigureAwait(false);
+                            if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                             {
-                                var currentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-                                    ".audio_page_player_title_song_title", true).ConfigureAwait(false);
-                                if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
+                                var musicLoadingWaitingTime = settingsService.GetServerSettings().MusicLoadingWaitingTime;
+                                var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
+                                for (int i = 0; i < 60; i++)
                                 {
-                                    var musicLoadingWaitingTime = settingsService.GetServerSettings().MusicLoadingWaitingTime;
-                                    var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
-                                    for (int i = 0; i < 60; i++)
+                                    var bufferMusic = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
+                                    if ((bufferMusic != music) && (bufferMusic != null))
                                     {
-                                        var bufferMusic = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
-                                        if ((bufferMusic != music) && (bufferMusic != null))
-                                        {
-                                            music = bufferMusic;
-                                            break;
-                                        }
-                                        Thread.Sleep(1000);
-                                        musicLoadingWaitingTime -= 1000;
+                                        music = bufferMusic;
+                                        break;
                                     }
-                                    return music;
+                                    Thread.Sleep(1000);
+                                    musicLoadingWaitingTime -= 1000;
                                 }
+                                return music;
                             }
                         }
                     }
@@ -241,35 +261,24 @@ namespace BotClient.Bussines.Services
             return null;
         }
 
-        public async Task<AlgoritmResult> StopMusic(Guid WebDriverId, bool hasBotMusic)
+        public async Task<AlgoritmResult> AddMusic(Guid WebDriverId)
         {
             var result = new AlgoritmResult()
             {
                 ActionResultMessage = EnumActionResult.ElementError,
-                hasError = true,
+                hasError = true
             };
             try
             {
-                var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you",
-                                                                         EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
-                if (element != null)
+                if (random.Next(1, 10) > 5)
                 {
-                    if ((random.Next(1, 10) > 5) && (!hasBotMusic))
-                    {
-                        var addBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add").ConfigureAwait(false);
-                        var addBtnAttribute = webElementService.GetAttributeValue(element, "class");
-                        if (addBtnAttribute.IndexOf("audio_row__added") == -1)
-                            await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
-                        await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-                            ".audio_page_player_ctrl.audio_page_player_play._audio_page_player_play.audio_playing", EnumClickType.ElementClick);
-                    }
-                    var MusicWaitingDeltaTime = settingsService.GetServerSettings().MusicWaitingDeltaTime;
-                    Thread.Sleep(settingsService.GetServerSettings().MusicWaitingTime + random.Next(-MusicWaitingDeltaTime, MusicWaitingDeltaTime));
-                    result = new AlgoritmResult()
-                    {
-                        ActionResultMessage = EnumActionResult.Success,
-                        hasError = false,
-                    };
+                    var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you",
+                                                                             EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
+                    var addBtnAttribute = webElementService.GetAttributeValue(element, "class");
+                    if (addBtnAttribute.IndexOf("audio_row__added") == -1)
+                        await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
+                    result.hasError = false;
+                    result.ActionResultMessage = EnumActionResult.Success;
                 }
             }
             catch (Exception ex)
@@ -277,6 +286,45 @@ namespace BotClient.Bussines.Services
                 settingsService.AddLog("VkActionService", ex);
             }
             return result;
+        }
+
+        public async Task<AlgoritmResult> StopMusic(Guid WebDriverId)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                var MusicWaitingDeltaTime = settingsService.GetServerSettings().MusicWaitingDeltaTime;
+                Thread.Sleep(settingsService.GetServerSettings().MusicWaitingTime + random.Next(-MusicWaitingDeltaTime, MusicWaitingDeltaTime));
+                await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
+                    ".top_audio_player_btn.top_audio_player_play._top_audio_player_play", EnumClickType.ElementClick);
+                result = new AlgoritmResult()
+                {
+                    ActionResultMessage = EnumActionResult.Success,
+                    hasError = false,
+                };
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task PlayAddedMusic(Guid WebDriverId)
+        {
+            try
+            {
+                var musics = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".blind_label._audio_row__play_btn").ConfigureAwait(false);
+                webElementService.ClickToElement(musics[random.Next(0, musics.Count)], EnumClickType.ElementClick);
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkActionService", ex);
+            }
         }
 
         public async Task<AlgoritmResult> WatchVideo(Guid WebDriverId)
@@ -408,7 +456,8 @@ namespace BotClient.Bussines.Services
                         for (int i = 0; i < videos.Count; i++)
                         {
                             var attribute = webElementService.GetAttributeValue(videos[i], "href");
-                            if (attribute != null)
+                            var innerText = webElementService.GetElementINNERText(videos[i], true);
+                            if ((attribute != null) && (innerText.IndexOf("YouTube") == -1))
                             {
                                 var botVKVideo = new BotVkVideo()
                                 {
@@ -983,8 +1032,7 @@ namespace BotClient.Bussines.Services
             var result = false;
             try
             {
-                var webDriver = await webDriverService.GetWebDriverById(WebDriverId).ConfigureAwait(false);
-                if (webDriver.WebDriver.Url.IndexOf("vk.com/im") == -1)
+                if (await webDriverService.isUrlContains(WebDriverId, "vk.com/im") == false)
                     result = await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
                 else
                 {

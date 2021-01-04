@@ -24,13 +24,13 @@
     ".NETCoreApp,Version=v3.1": {
       "BotClient/1.0.0": {
         "dependencies": {
-          "HtmlAgilityPack": "1.11.28",
+          "HtmlAgilityPack": "1.11.29",
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "MySql.Data": "8.0.22",
           "Newtonsoft.Json": "12.0.3",
           "Selenium.WebDriver": "3.141.0",
-          "Selenium.WebDriver.ChromeDriver": "87.0.4280.2000",
+          "Selenium.WebDriver.ChromeDriver": "87.0.4280.8800",
           "BotDataModels": "1.0.0.0",
           "BotMySQL": "1.0.0.0",
           "Microsoft.AspNetCore.Antiforgery": "3.1.0.0",
@@ -349,11 +349,11 @@
           "lib/netstandard2.0/Google.Protobuf.dll": {}
         }
       },
-      "HtmlAgilityPack/1.11.28": {
+      "HtmlAgilityPack/1.11.29": {
         "runtime": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {
-            "assemblyVersion": "1.11.28.0",
-            "fileVersion": "1.11.28.0"
+            "assemblyVersion": "1.11.29.0",
+            "fileVersion": "1.11.29.0"
           }
         },
         "compile": {
@@ -621,7 +621,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/87.0.4280.2000": {},
+      "Selenium.WebDriver.ChromeDriver/87.0.4280.8800": {},
       "SSH.NET/2016.1.0": {
         "dependencies": {
           "Microsoft.CSharp": "4.0.1",
@@ -3111,12 +3111,12 @@
       "path": "google.protobuf/3.11.4",
       "hashPath": "google.protobuf.3.11.4.nupkg.sha512"
     },
-    "HtmlAgilityPack/1.11.28": {
+    "HtmlAgilityPack/1.11.29": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-aclp8f2p+xeNNR02qfMu2r4K49sNWE13VDHiLpv9SoKBDIwwy62HQIMnT+oeuyFquQRzwSGD3vUWUmtOT+eNzQ==",
-      "path": "htmlagilitypack/1.11.28",
-      "hashPath": "htmlagilitypack.1.11.28.nupkg.sha512"
+      "sha512": "sha512-aCMPdyDUPU7z4fwMJ+4pbsUd669BWhIbC2rCo0upxBpYyblJHXNUjg5pxnk2iyqBg1C8gWF2fSxA1XERxcVZow==",
+      "path": "htmlagilitypack/1.11.29",
+      "hashPath": "htmlagilitypack.1.11.29.nupkg.sha512"
     },
     "K4os.Compression.LZ4/1.1.11": {
       "type": "package",
@@ -3258,12 +3258,12 @@
       "path": "selenium.webdriver/3.141.0",
       "hashPath": "selenium.webdriver.3.141.0.nupkg.sha512"
     },
-    "Selenium.WebDriver.ChromeDriver/87.0.4280.2000": {
+    "Selenium.WebDriver.ChromeDriver/87.0.4280.8800": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-jq1wC5pUz5Ov2CydyeIBEwdQ6tQ5IRy08mTjBM2OOca72fXLSLuGtEc4qVTjmNJ/LpTzWRrh7klSpBn1Lt4Raw==",
-      "path": "selenium.webdriver.chromedriver/87.0.4280.2000",
-      "hashPath": "selenium.webdriver.chromedriver.87.0.4280.2000.nupkg.sha512"
+      "sha512": "sha512-7bgZ2QNhYFofxDdlGVfUVgNJ6B785u/UeoFjEzB7O2EiggPitosPqqB/TG0KpJwvqgQTs+nNJus3rn9yNMHa1A==",
+      "path": "selenium.webdriver.chromedriver/87.0.4280.8800",
+      "hashPath": "selenium.webdriver.chromedriver.87.0.4280.8800.nupkg.sha512"
     },
     "SSH.NET/2016.1.0": {
       "type": "package",

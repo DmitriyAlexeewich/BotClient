@@ -15,9 +15,12 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> Login(Guid WebDriverId, string Username, string Password);
         Task<bool> isLoginSuccess(Guid WebDriverId);
         Task<AlgoritmResult> Customize(Guid WebDriverId, BotCustomizeModel CustomizeData);
+        Task<AlgoritmResult> GoToMusicPage(Guid WebDriverId);
         Task<BotMusicModel> GetFirstMusic(Guid WebDriverId);
         Task<BotMusicModel> GetNextMusic(Guid WebDriverId);
-        Task<AlgoritmResult> StopMusic(Guid WebDriverId, bool hasBotMusic);
+        Task<AlgoritmResult> StopMusic(Guid WebDriverId);
+        Task<AlgoritmResult> AddMusic(Guid WebDriverId);
+        Task PlayAddedMusic(Guid WebDriverId);
         Task<AlgoritmResult> WatchVideo(Guid WebDriverId);
         Task<bool> GoToProfile(Guid WebDriverId, string Link);
         Task<AlgoritmResult> GoToVideoCatalog(Guid WebDriverId);

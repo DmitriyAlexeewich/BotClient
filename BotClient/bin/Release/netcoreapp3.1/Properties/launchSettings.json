@@ -12,7 +12,8 @@
       "commandName": "IISExpress",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "nativeDebugging": true
     },
     "BotClient": {
       "commandName": "Project",

@@ -1,21 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj": {}
+    "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj": {
+    "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
+        "projectUniqueName": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
         "projectName": "BotClient",
-        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
+        "projectPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+        "packagesPath": "C:\\Users\\stalk\\.nuget\\packages\\",
+        "outputPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\"
+        ],
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\stalk\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
@@ -40,7 +44,7 @@
           "dependencies": {
             "HtmlAgilityPack": {
               "target": "Package",
-              "version": "[1.11.28, )"
+              "version": "[1.11.29, )"
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
@@ -64,7 +68,7 @@
             },
             "Selenium.WebDriver.ChromeDriver": {
               "target": "Package",
-              "version": "[87.0.4280.2000, )"
+              "version": "[87.0.4280.8800, )"
             }
           },
           "imports": [
@@ -85,7 +89,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
         }
       }
     }

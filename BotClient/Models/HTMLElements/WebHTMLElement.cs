@@ -90,7 +90,7 @@ namespace BotClient.Models.HTMLElements
                     if ((readyState == "complete" || readyState == "interactive") && (OldURL != webDriver.Url))
                         return EnumWebHTMLPageStatus.Ready;
                 }
-                catch
+                catch(Exception ex)
                 {
                     return EnumWebHTMLPageStatus.Error;
                 }
@@ -101,30 +101,36 @@ namespace BotClient.Models.HTMLElements
 
         public bool Click(EnumClickType ClickType)
         {
-            var oldURL = webDriver.Url;
             try
             {
-                element.Click();
-            }
-            catch
-            {
+                var oldURL = webDriver.Url;
                 try
                 {
-                    Actions actions = new Actions(webDriver);
-                    actions.MoveToElement(element).Click().Perform();
+                    element.Click();
                 }
                 catch
                 {
-                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
-                    executor.ExecuteScript("arguments[0].click();", element);
+                    try
+                    {
+                        Actions actions = new Actions(webDriver);
+                        actions.MoveToElement(element).Click().Perform();
+                    }
+                    catch
+                    {
+                        IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                        executor.ExecuteScript("arguments[0].click();", element);
 
+                    }
+                }
+                if (ClickType == EnumClickType.URLClick)
+                {
+                    var loadingResult = WaitPageLoading(oldURL);
+                    if (loadingResult != EnumWebHTMLPageStatus.Ready)
+                        return false;
                 }
             }
-            if (ClickType == EnumClickType.URLClick)
+            catch (Exception ex)
             {
-                var loadingResult = WaitPageLoading(oldURL);
-                if (loadingResult != EnumWebHTMLPageStatus.Ready)
-                    return false;
             }
             return true;
         }
@@ -138,26 +144,31 @@ namespace BotClient.Models.HTMLElements
             }
             catch
             {
-                return false;
             }
+            return false;
         }
 
         public bool PrintText(string Text)
         {
-            if (isCanPrintText())
+            try
             {
-                string printedText = "";
-                for (int i = 0; i < Text.Length; i++)
+                if (isCanPrintText())
                 {
-                    string letter = Text[i].ToString();
-                    element.SendKeys(letter);
-                    printedText += letter;
-                    Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
+                    string printedText = "";
+                    for (int i = 0; i < Text.Length; i++)
+                    {
+                        string letter = Text[i].ToString();
+                        element.SendKeys(letter);
+                        printedText += letter;
+                        Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
+                    }
+                    if (printedText == Text)
+                        return true;
+                    element.Clear();
                 }
-                if (printedText == Text)
-                    return true;
-                element.Clear();
             }
+            catch (Exception ex)
+            { }
             return false;
         }
 
@@ -193,19 +204,24 @@ namespace BotClient.Models.HTMLElements
 
         public bool WaitWebHTMLElement(bool isParentElementIsDriver, EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired, WebConnectionSettings ConnectionSettings)
         {
-            var ElementModel = new WebHTMLElementModel()
+            try
             {
-                SelectorType = SelectorType,
-                Link = Link,
-                isRequired = isRequired
-            };
-            for (int i = 0; i < WebSettings.HTMLElementWaitingTime; i++)
-            {
-                var bufferElement = FindWebElement(ElementModel, isParentElementIsDriver);
-                if (bufferElement != null)
-                    return true;
-                Thread.Sleep(1000);
+                var ElementModel = new WebHTMLElementModel()
+                {
+                    SelectorType = SelectorType,
+                    Link = Link,
+                    isRequired = isRequired
+                };
+                for (int i = 0; i < WebSettings.HTMLElementWaitingTime; i++)
+                {
+                    var bufferElement = FindWebElement(ElementModel, isParentElementIsDriver);
+                    if (bufferElement != null)
+                        return true;
+                    Thread.Sleep(1000);
+                }
             }
+            catch (Exception ex)
+            { }
             return false;
         }
 
@@ -257,19 +273,24 @@ namespace BotClient.Models.HTMLElements
 
         public WebHTMLElement GetElement(EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired)
         {
-            var elementModel = new WebHTMLElementModel()
+            try
             {
-                SelectorType = SelectorType,
-                Link = Link,
-                isRequired = isRequired
-            };
-            var childElement = FindWebElement(elementModel, false);
-            if (childElement != null)
-            {
-                var webHTMLElement = new WebHTMLElement(webDriver, SelectorType, Link, isRequired, childElement, WebSettings);
-                if (webHTMLElement.isAvailable)
-                    return webHTMLElement;
+                var elementModel = new WebHTMLElementModel()
+                {
+                    SelectorType = SelectorType,
+                    Link = Link,
+                    isRequired = isRequired
+                };
+                var childElement = FindWebElement(elementModel, false);
+                if (childElement != null)
+                {
+                    var webHTMLElement = new WebHTMLElement(webDriver, SelectorType, Link, isRequired, childElement, WebSettings);
+                    if (webHTMLElement.isAvailable)
+                        return webHTMLElement;
+                }
             }
+            catch (Exception ex)
+            { }
             return null;
         }
 

@@ -3,8 +3,6 @@ using BotClient.Models.Bot;
 using BotClient.Models.Bot.Enumerators;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
-using BotClient.Models.Enumerators;
-using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Role;
@@ -387,26 +385,38 @@ namespace BotClient.Bussines.Services
 
         private async Task ListenMusic(Guid WebDriverId, int BotId)
         {
-            var music = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
-            var randListenAttept = random.Next(10, 20);
-            var hasBotMusic = false;
-            if (music != null)
-                hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
-            for (int i = 0; i < randListenAttept; i++)
+            var goToPageResult = await vkActionService.GoToMusicPage(WebDriverId).ConfigureAwait(false);
+            if ((!goToPageResult.hasError) && (goToPageResult.ActionResultMessage == EnumActionResult.Success))
             {
-                if ((music != null) && (!hasBotMusic))
-                    break;
+                if (random.Next(0, 100) > 50)
+                {
+                    var music = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
+                    var randListenAttept = random.Next(10, 20);
+                    var hasBotMusic = false;
+                    if (music != null)
+                        hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
+                    for (int i = 0; i < randListenAttept; i++)
+                    {
+                        if ((music != null) && (!hasBotMusic))
+                            break;
+                        else
+                            music = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
+                        if (music != null)
+                            hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
+                    }
+                    if (music != null)
+                    {
+                        botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic, $"Прослушивание {music.SongName} исполнитель {music.Artist}");
+                        if (!hasBotMusic)
+                        {
+                            botCompositeService.CreateBotMusic(BotId, music.Artist, music.SongName);
+                            await vkActionService.AddMusic(WebDriverId).ConfigureAwait(false);
+                        }
+                    }
+                }
                 else
-                    music = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
-                if (music != null)
-                    hasBotMusic = botCompositeService.hasBotMusic(BotId, music.Artist, music.SongName);
-            }
-            if (music != null)
-            {
-                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic, $"Прослушивание {music.SongName} исполнитель {music.Artist}");
-                var stopResult = await vkActionService.StopMusic(WebDriverId, hasBotMusic).ConfigureAwait(false);
-                if ((!stopResult.hasError) && (stopResult.ActionResultMessage == EnumActionResult.Success) && (!hasBotMusic))
-                    botCompositeService.CreateBotMusic(BotId, music.Artist, music.SongName);
+                    await vkActionService.PlayAddedMusic(WebDriverId).ConfigureAwait(false);
+                Task.Run(() => { vkActionService.StopMusic(WebDriverId).ConfigureAwait(false); });
             }
         }
 

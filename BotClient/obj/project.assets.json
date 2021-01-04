@@ -28,7 +28,7 @@
           "lib/netstandard2.0/Google.Protobuf.dll": {}
         }
       },
-      "HtmlAgilityPack/1.11.28": {
+      "HtmlAgilityPack/1.11.29": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {}
@@ -341,7 +341,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/87.0.4280.2000": {
+      "Selenium.WebDriver.ChromeDriver/87.0.4280.8800": {
         "type": "package",
         "build": {
           "build/Selenium.WebDriver.ChromeDriver.targets": {}
@@ -1689,14 +1689,14 @@
         "lib/netstandard2.0/Google.Protobuf.xml"
       ]
     },
-    "HtmlAgilityPack/1.11.28": {
-      "sha512": "aclp8f2p+xeNNR02qfMu2r4K49sNWE13VDHiLpv9SoKBDIwwy62HQIMnT+oeuyFquQRzwSGD3vUWUmtOT+eNzQ==",
+    "HtmlAgilityPack/1.11.29": {
+      "sha512": "aCMPdyDUPU7z4fwMJ+4pbsUd669BWhIbC2rCo0upxBpYyblJHXNUjg5pxnk2iyqBg1C8gWF2fSxA1XERxcVZow==",
       "type": "package",
-      "path": "htmlagilitypack/1.11.28",
+      "path": "htmlagilitypack/1.11.29",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "htmlagilitypack.1.11.28.nupkg.sha512",
+        "htmlagilitypack.1.11.29.nupkg.sha512",
         "htmlagilitypack.nuspec",
         "lib/Net35/HtmlAgilityPack.dll",
         "lib/Net35/HtmlAgilityPack.pdb",
@@ -2184,10 +2184,10 @@
         "selenium.webdriver.nuspec"
       ]
     },
-    "Selenium.WebDriver.ChromeDriver/87.0.4280.2000": {
-      "sha512": "jq1wC5pUz5Ov2CydyeIBEwdQ6tQ5IRy08mTjBM2OOca72fXLSLuGtEc4qVTjmNJ/LpTzWRrh7klSpBn1Lt4Raw==",
+    "Selenium.WebDriver.ChromeDriver/87.0.4280.8800": {
+      "sha512": "7bgZ2QNhYFofxDdlGVfUVgNJ6B785u/UeoFjEzB7O2EiggPitosPqqB/TG0KpJwvqgQTs+nNJus3rn9yNMHa1A==",
       "type": "package",
-      "path": "selenium.webdriver.chromedriver/87.0.4280.2000",
+      "path": "selenium.webdriver.chromedriver/87.0.4280.8800",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -2197,7 +2197,7 @@
         "driver/mac64/chromedriver",
         "driver/win32/chromedriver.exe",
         "nupkg-icon.png",
-        "selenium.webdriver.chromedriver.87.0.4280.2000.nupkg.sha512",
+        "selenium.webdriver.chromedriver.87.0.4280.8800.nupkg.sha512",
         "selenium.webdriver.chromedriver.nuspec"
       ]
     },
@@ -5875,30 +5875,35 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "HtmlAgilityPack >= 1.11.28",
+      "HtmlAgilityPack >= 1.11.29",
       "Microsoft.Extensions.Configuration >= 5.0.0",
       "Microsoft.Extensions.Configuration.Binder >= 5.0.0",
       "MySql.Data >= 8.0.22",
       "Newtonsoft.Json >= 12.0.3",
       "Selenium.WebDriver >= 3.141.0",
-      "Selenium.WebDriver.ChromeDriver >= 87.0.4280.2000"
+      "Selenium.WebDriver.ChromeDriver >= 87.0.4280.8800"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\User\\.nuget\\packages\\": {}
+    "C:\\Users\\stalk\\.nuget\\packages\\": {},
+    "C:\\Microsoft\\Xamarin\\NuGet\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
-      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\obj\\",
+      "projectPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "packagesPath": "C:\\Users\\stalk\\.nuget\\packages\\",
+      "outputPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Microsoft\\Xamarin\\NuGet\\"
+      ],
       "configFilePaths": [
-        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\stalk\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp3.1"
@@ -5923,7 +5928,7 @@
         "dependencies": {
           "HtmlAgilityPack": {
             "target": "Package",
-            "version": "[1.11.28, )"
+            "version": "[1.11.29, )"
           },
           "Microsoft.Extensions.Configuration": {
             "target": "Package",
@@ -5947,7 +5952,7 @@
           },
           "Selenium.WebDriver.ChromeDriver": {
             "target": "Package",
-            "version": "[87.0.4280.2000, )"
+            "version": "[87.0.4280.8800, )"
           }
         },
         "imports": [
@@ -5968,7 +5973,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
       }
     }
   }
