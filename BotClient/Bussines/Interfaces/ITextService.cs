@@ -10,5 +10,8 @@ namespace BotClient.Bussines.Interfaces
     {
         Task<BotMessageText> RandOriginalMessage(string message);
         string TextToRegex(string Text);
+        Task<string> GetApologies(BotMessageTextPartModel BotMessageTextPart);
+        Task<string> GetApologies();
+        Task<string> GetCapsApologies();
     }
 }

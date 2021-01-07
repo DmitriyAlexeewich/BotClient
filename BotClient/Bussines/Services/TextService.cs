@@ -40,27 +40,34 @@ namespace BotClient.Bussines.Services
                 }
                 if(result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
-                result.TextParts = result.Text.Split('.').ToList();
+                var textParts = new List<string>();
+                if (random.Next(0, 100) > 50)
+                    textParts = result.Text.Split('.').ToList();
+                else
+                    textParts.Add(result.Text);
                 var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
-                for (int i = 0; i < result.TextParts.Count; i++)
+                var keyboardErrorCount = 0;
+                for (int i = 0; i < textParts.Count; i++)
                 {
-                    if (result.TextParts[i].Length > 0)
+                    if (textParts[i].Length > 0)
                     {
-                        var isSetedMessageKeyboardError = false;
-                        if (random.Next(0, 100) < ((result.TextParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
+                        var textPart = new BotMessageTextPartModel();
+                        textPart.Text = textParts[i];
+                        textPart.Text = await ReplaceNumberToWord(textPart.Text).ConfigureAwait(false);
+                        if (random.Next(0, 100) < ((textParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
                         {
-                            isSetedMessageKeyboardError = true;
-                            var errorText = await SetMessageKeyboardError(result.TextParts[i]).ConfigureAwait(false);
-                            result = SetCorrectWordId(result, result.TextParts[i], errorText);
+                            textPart = await SetMessageKeyboardError(textPart);
+                            if (textPart.hasMissClickError)
+                                keyboardErrorCount++;
                         }
-                        var capsResult = await SetCaps(result.TextParts[i], isSetedMessageKeyboardError).ConfigureAwait(false);
-                        if (String.Compare(result.TextParts[i], capsResult) == -1)
-                            result.isHasCaps = true;
-                        result.TextParts[i] = capsResult;
-                        result.TextParts[i] = await ReplaceNumberToWord(result.TextParts[i]).ConfigureAwait(false);
-                        result.TextParts[i] = RemoveBrackets(result.TextParts[i]);
+                        if(!textPart.hasMissClickError)
+                            textPart = await SetCaps(textPart).ConfigureAwait(false);
+                        textPart.Text = RemoveBrackets(textPart.Text);
+                        result.TextParts.Add(textPart);
                     }
                 }
+                if (keyboardErrorCount > 1)
+                    result.hasMultiplyMissClickError = true;
             }
             catch (Exception ex)
             {
@@ -91,6 +98,32 @@ namespace BotClient.Bussines.Services
                 settingsService.AddLog("BotWorkService", ex);
             }
             return null;
+        }
+
+        public async Task<string> GetApologies(BotMessageTextPartModel BotMessageTextPart)
+        {
+            var text = $"((Простите_Извините_Извеняюсь_Прошу прощения), " +
+                           $"в (тексте_сообщении) (есть_присутствует_допущена_имеется_находится) (ошибка_опечатка_описка). " +
+                           $"(Правильно_Вместо ошабки должно быть_Нужно, чтобы было): {BotMessageTextPart.BotMessageCorrectTexts}." +
+                       $"_* {BotMessageTextPart.BotMessageCorrectTexts}" +
+                       $"_(Простите_Извините_Извеняюсь_Прошу прощения): {BotMessageTextPart.BotMessageCorrectTexts}" +
+                       $"_^ {BotMessageTextPart.BotMessageCorrectTexts})";
+            text = await RandMessage(text).ConfigureAwait(false);
+            return text;
+        }
+
+        public async Task<string> GetApologies()
+        {
+            var text = "(Простите_Извините_Извеняюсь_Прошу прощения), за (ошибки_опечатки_описки) в (тексте_сообщении)";
+            text = await RandMessage(text).ConfigureAwait(false);
+            return text;
+        }
+
+        public async Task<string> GetCapsApologies()
+        {
+            var text = "(Простите_Извините_Извеняюсь_Прошу прощения), (случайно_незаметил что_забыл что) капс включился";
+            text = await RandMessage(text).ConfigureAwait(false);
+            return text;
         }
 
         private async Task<string> RandMessage(string message)
@@ -147,15 +180,15 @@ namespace BotClient.Bussines.Services
             return null;
         }
                 
-        private async Task<string> SetMessageKeyboardError(string Text)
+        private async Task<BotMessageTextPartModel> SetMessageKeyboardError(BotMessageTextPartModel TextPart)
         {
-            var result = Text;
+            var result = TextPart;
             try
             {
                 var constantText = new List<MessageConstantText>();
-                constantText = GetConstantTexts(Text, new Regex(@"(\(\w*\))"));
-                Text = ReplaceConstantStringToKey(Text, constantText);
-                var words = Text.Split(" ");
+                constantText = GetConstantTexts(TextPart.Text, new Regex(@"(\(\w*\))"));
+                result.Text = ReplaceConstantStringToKey(TextPart.Text, constantText);
+                var words = result.Text.Split(" ");
                 var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
                 char[][] keyboard = new char[3][]
                     {
@@ -183,88 +216,90 @@ namespace BotClient.Bussines.Services
                     if (regex.IsMatch(words[randomIndex]))
                         wordsIndexes.Add(randomIndex);
                 }
-                for (int i = 0; i < wordsIndexes.Count; i++)
+                var index = random.Next(0, wordsIndexes.Count);
+                if (regex.IsMatch(words[wordsIndexes[index]]))
                 {
-                    if (regex.IsMatch(words[wordsIndexes[i]]))
+                    var word = words[wordsIndexes[index]];
+                    var newWord = "";
+                    var characterIndex = random.Next(0, word.Length - 1);
+                    for (int j = 0; j < keyboard.Length; j++)
                     {
-                        var word = words[wordsIndexes[i]];
-                        var characterIndex = random.Next(0, word.Length - 1);
-                        for (int j = 0; j < keyboard.Length; j++)
+                        for (int k = 0; k < keyboard[j].Length; k++)
                         {
-                            for (int k = 0; k < keyboard[j].Length; k++)
+                            if (word[characterIndex] == keyboard[j][k])
                             {
-                                if (word[characterIndex] == keyboard[j][k])
+                                var x = 0;
+                                var y = 0;
+                                if ((j + k) == 0)
                                 {
-                                    var x = 0;
-                                    var y = 0;
-                                    if ((j + k) == 0)
-                                    {
-                                        x = random.Next(0, 2);
-                                        y = random.Next(0, 2);
-                                        if ((y == 0) && (x == 0))
-                                            x = 1;
-                                    }
-                                    else if ((j == 0) && (k == 11))
-                                    {
-                                        y = random.Next(0, 2);
-                                        x = 10;
-                                    }
-                                    else if ((j == 1) && (k == 0))
-                                    {
-                                        x = random.Next(0, 2);
-                                        y = random.Next(0, 3);
-                                    }
-                                    else if ((j == 1) && (k == 10))
-                                    {
-                                        x = random.Next(9, 12);
-                                        y = random.Next(0, 2);
-                                        if ((y == 1) && (x != 9))
-                                            x = 9;
-                                    }
-                                    else if ((j == 1) && (k == 9))
-                                    {
-                                        x = random.Next(8, 11);
-                                        y = random.Next(0, 3);
-                                        if ((y == 2) && (x > 8))
-                                            x = 8;
-                                    }
-                                    else if ((j == 2) && (k == 0))
-                                    {
-                                        y = random.Next(1, 3);
-                                        x = random.Next(0, 2);
-                                    }
-                                    else if ((j == 2) && (k == 8))
-                                    {
-                                        y = random.Next(1, 3);
-                                        x = random.Next(7, 10);
-                                        if (y == 2)
-                                            x = 7;
-                                    }
-                                    else if (j == 0)
-                                    {
-                                        y = random.Next(0, 2);
-                                        x = random.Next(k - 1, k + 2);
-                                    }
-                                    else if (j == 2)
-                                    {
-                                        y = random.Next(1, 3);
-                                        x = random.Next(k - 1, k + 2);
-                                    }
-                                    else
-                                    {
-                                        y = random.Next(0, 3);
-                                        x = random.Next(k - 1, k + 2);
-                                    }
-                                    StringBuilder sb = new StringBuilder(word);
-                                    sb[characterIndex] = keyboard[y][x];
-                                    word = sb.ToString();
+                                    x = random.Next(0, 2);
+                                    y = random.Next(0, 2);
+                                    if ((y == 0) && (x == 0))
+                                        x = 1;
                                 }
+                                else if ((j == 0) && (k == 11))
+                                {
+                                    y = random.Next(0, 2);
+                                    x = 10;
+                                }
+                                else if ((j == 1) && (k == 0))
+                                {
+                                    x = random.Next(0, 2);
+                                    y = random.Next(0, 3);
+                                }
+                                else if ((j == 1) && (k == 10))
+                                {
+                                    x = random.Next(9, 12);
+                                    y = random.Next(0, 2);
+                                    if ((y == 1) && (x != 9))
+                                        x = 9;
+                                }
+                                else if ((j == 1) && (k == 9))
+                                {
+                                    x = random.Next(8, 11);
+                                    y = random.Next(0, 3);
+                                    if ((y == 2) && (x > 8))
+                                        x = 8;
+                                }
+                                else if ((j == 2) && (k == 0))
+                                {
+                                    y = random.Next(1, 3);
+                                    x = random.Next(0, 2);
+                                }
+                                else if ((j == 2) && (k == 8))
+                                {
+                                    y = random.Next(1, 3);
+                                    x = random.Next(7, 10);
+                                    if (y == 2)
+                                        x = 7;
+                                }
+                                else if (j == 0)
+                                {
+                                    y = random.Next(0, 2);
+                                    x = random.Next(k - 1, k + 2);
+                                }
+                                else if (j == 2)
+                                {
+                                    y = random.Next(1, 3);
+                                    x = random.Next(k - 1, k + 2);
+                                }
+                                else
+                                {
+                                    y = random.Next(0, 3);
+                                    x = random.Next(k - 1, k + 2);
+                                }
+                                StringBuilder sb = new StringBuilder(word);
+                                sb[characterIndex] = keyboard[y][x];
+                                newWord = sb.ToString();
                             }
                         }
-                        words[wordsIndexes[i]] = word;
                     }
+                    words[wordsIndexes[index]] = newWord;
+                    result.BotMessageCorrectTexts = word;
                 }
-                result = ConstructMessage(words.ToList());
+                result.Text = ConstructMessage(words.ToList());
+                if (result.BotMessageCorrectTexts != null)
+                    result.hasMissClickError = true;
             }
             catch (Exception ex)
             {
@@ -273,48 +308,15 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        private BotMessageText SetCorrectWordId(BotMessageText OriginalText, string OriginalSentence, string ErrorSentence)
+        private async Task<BotMessageTextPartModel> SetCaps(BotMessageTextPartModel TextPart)
         {
+            var result = TextPart;
             try
             {
-                var originalWords = OriginalSentence.Split(" ").ToList();
-                var errorWords = ErrorSentence.Split(" ").ToList();
-                for (int i = 0; i < originalWords.Count; i++)
-                {
-                    if (errorWords.IndexOf(originalWords[i]) == -1)
-                    {
-                        var regex = new Regex(Regex.Escape(originalWords[i]));
-                        var index = OriginalText.TextParts.IndexOf(OriginalSentence);
-                        var id = Guid.NewGuid().ToString();
-                        OriginalText.TextParts[index] = regex.Replace(OriginalSentence, id, 1);
-                        OriginalText.isHasKeyboardError = true;
-                        OriginalText.BotMessageErrorTexts.Add(new BotMessageErrorText()
-                        {
-                            CorrectText = originalWords[i],
-                            CorrectTextIdString = id,
-                            ErrorText = errorWords[i]
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                settingsService.AddLog("BotWorkService", ex);
-            }
-            return OriginalText;
-        }
-
-        private async Task<string> SetCaps(string Text, bool isSetedMessageKeyboardError)
-        {
-            var result = Text;
-            try
-            {
-                var constantText = GetConstantTexts(Text, new Regex(@"(\(\w*\))"));
-                Text = ReplaceConstantStringToKey(Text, constantText);
-                var words = Text.Split(" ");
+                var constantText = GetConstantTexts(result.Text, new Regex(@"(\(\w*\))"));
+                result.Text = ReplaceConstantStringToKey(result.Text, constantText);
+                var words = result.Text.Split(" ");
                 var settingsCapsChancePerThousandWords = settingsService.GetServerSettings().CapsChancePerThousandWords;
-                if (isSetedMessageKeyboardError)
-                    settingsCapsChancePerThousandWords /= 2;
                 if (settingsCapsChancePerThousandWords < 1)
                     settingsCapsChancePerThousandWords = 1;
                 var regex = new Regex(@"\b[А-Яа-я]+\b");
@@ -326,7 +328,10 @@ namespace BotClient.Bussines.Services
                         {
                             var randomIndex = random.Next(0, words.Length);
                             if (regex.IsMatch(words[randomIndex]))
+                            {
                                 words[randomIndex] = words[randomIndex].ToUpper();
+                                TextPart.hasCaps = true;
+                            }
                         }
                     }
                 }
@@ -334,9 +339,12 @@ namespace BotClient.Bussines.Services
                 {
                     var randomIndex = random.Next(0, words.Length);
                     if (regex.IsMatch(words[randomIndex]))
+                    {
                         words[randomIndex] = words[randomIndex].ToUpper();
+                        TextPart.hasCaps = true;
+                    }
                 }
-                result = ConstructMessage(words.ToList());
+                result.Text = ConstructMessage(words.ToList());
             }
             catch (Exception ex)
             {

@@ -5885,25 +5885,20 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\stalk\\.nuget\\packages\\": {},
-    "C:\\Microsoft\\Xamarin\\NuGet\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
-      "packagesPath": "C:\\Users\\stalk\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\obj\\",
+      "projectPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Microsoft\\Xamarin\\NuGet\\"
-      ],
       "configFilePaths": [
-        "C:\\Users\\stalk\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp3.1"
@@ -5973,7 +5968,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
       }
     }
   }
