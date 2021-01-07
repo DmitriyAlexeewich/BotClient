@@ -9,9 +9,7 @@ namespace BotClient.Bussines.Interfaces
 {
     public interface IBotWorkService
     {
-        Task<BotStartReport> StartBot(List<int> BotsId);
-        Task<BotStopQueryReport> StopBot(List<int> BotsId);
-        Task<List<BotWorkStatusModel>> GetBots();
+        Task StartBot(Guid WebDriverId, int ServerId);
         Task<List<BotRoleActionsDaySchedule>> GetBotRoleActions();
         Task<List<string>> GetRandomMessages();
         Task<string> Test(string Text);

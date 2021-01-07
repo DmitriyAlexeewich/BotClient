@@ -24,6 +24,7 @@ namespace BotClient.Settings
             services.AddSingleton<IVkActionService, VkActionService>();
             services.AddSingleton<IMySQLService, MySQLService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ITextService, TextService>();
             //data services
             //composite
             services.AddSingleton<IBotCompositeService, BotCompositeService>();
