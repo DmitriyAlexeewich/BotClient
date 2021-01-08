@@ -102,28 +102,52 @@ namespace BotClient.Bussines.Services
 
         public async Task<string> GetApologies(BotMessageTextPartModel BotMessageTextPart)
         {
-            var text = $"((Простите_Извините_Извеняюсь_Прошу прощения), " +
-                           $"в (тексте_сообщении) (есть_присутствует_допущена_имеется_находится) (ошибка_опечатка_описка). " +
-                           $"(Правильно_Вместо ошабки должно быть_Нужно, чтобы было): {BotMessageTextPart.BotMessageCorrectTexts}." +
-                       $"_* {BotMessageTextPart.BotMessageCorrectTexts}" +
-                       $"_(Простите_Извините_Извеняюсь_Прошу прощения): {BotMessageTextPart.BotMessageCorrectTexts}" +
-                       $"_^ {BotMessageTextPart.BotMessageCorrectTexts})";
-            text = await RandMessage(text).ConfigureAwait(false);
-            return text;
+            string result = null;
+            try
+            {
+                result = $"((Простите_Извините_Извеняюсь_Прошу прощения), " +
+                               $"в (тексте_сообщении) (есть_присутствует_допущена_имеется_находится) (ошибка_опечатка_описка). " +
+                               $"(Правильно_Вместо ошабки должно быть_Нужно, чтобы было): {BotMessageTextPart.BotMessageCorrectTexts}." +
+                           $"_* {BotMessageTextPart.BotMessageCorrectTexts}" +
+                           $"_(Простите_Извините_Извеняюсь_Прошу прощения): {BotMessageTextPart.BotMessageCorrectTexts}" +
+                           $"_^ {BotMessageTextPart.BotMessageCorrectTexts})";
+                result = await RandMessage(result).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
         }
 
         public async Task<string> GetApologies()
         {
-            var text = "(Простите_Извините_Извеняюсь_Прошу прощения), за (ошибки_опечатки_описки) в (тексте_сообщении)";
-            text = await RandMessage(text).ConfigureAwait(false);
-            return text;
+            string result = null;
+            try
+            {
+                result = "(Простите_Извините_Извеняюсь_Прошу прощения), за (ошибки_опечатки_описки) в (тексте_сообщении)";
+                result = await RandMessage(result).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
         }
 
         public async Task<string> GetCapsApologies()
         {
-            var text = "(Простите_Извините_Извеняюсь_Прошу прощения), (случайно_незаметил что_забыл что) капс включился";
-            text = await RandMessage(text).ConfigureAwait(false);
-            return text;
+            string result = null;
+            try
+            {
+                result = "(Простите_Извините_Извеняюсь_Прошу прощения), (случайно_незаметил что_забыл что) капс включился";
+                result = await RandMessage(result).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
         }
 
         private async Task<string> RandMessage(string message)

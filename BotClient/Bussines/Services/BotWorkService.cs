@@ -457,20 +457,42 @@ namespace BotClient.Bussines.Services
                                             {
                                                 botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
                                                                        $"Отправка сообщения {newMessage} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
-                                                var printedApologiesMessage = false;
+                                                string apologies = null;
+                                                stepResult = false;
                                                 for (int j = 0; j < newMessage.TextParts.Count; j++)
                                                 {
-                                                    var sendMessageResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text).ConfigureAwait(false);
-                                                    stepResult = !sendMessageResult.hasError;
-                                                    if ((stepResult) && (!printedApologiesMessage))
-                                                        printedApologiesMessage = await PrintFirstApologies(newMessage.TextParts[j], WebDriverId).ConfigureAwait(false);
-                                                    if (!stepResult)
+                                                    var sendResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text).ConfigureAwait(false);
+                                                    clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.TextParts[j].Text);
+                                                    if ((sendResult.ActionResultMessage == EnumActionResult.Success) && (!sendResult.hasError))
+                                                    {
+                                                        stepResult = true;
+                                                        if (apologies != null)
+                                                        {
+                                                            apologies = await GetApologies(newMessage, j).ConfigureAwait(false);
+                                                            if (apologies != null)
+                                                            {
+                                                                var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
+                                                                if((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
+                                                                    clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
+                                                            }
+                                                        }
+                                                    }
+                                                    else
                                                         break;
                                                 }
-                                                if ((stepResult) && (!printedApologiesMessage))
+                                                if (stepResult)
                                                 {
-                                                    
-                                                    clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.Text);
+                                                    if (apologies == null)
+                                                    {
+                                                        apologies = await GetApologies(newMessage).ConfigureAwait(false);
+                                                        if (apologies != null)
+                                                        {
+                                                            var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
+                                                            clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
+                                                            if ((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
+                                                                clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.Text);
+                                                        }
+                                                    }
                                                     botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
                                                                            $"Успешная отправка сообщения {newMessage} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 }
@@ -560,31 +582,43 @@ namespace BotClient.Bussines.Services
                                                                                        $"Отправка сообщения контактёру {client.Id} ({client.FullName})");
                                         if (newBotMessage != null)
                                         {
-                                            var printedApologies = false;
+                                            string apologies = null;
+                                            var sendResult = false;
                                             for (int k = 0; k < newBotMessage.TextParts.Count; k++)
                                             {
-                                                sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage.TextParts[k].Text, client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
-                                                if (!printedApologies)
-                                                {
-                                                    if (newBotMessage.TextParts[k].hasMissClickError)
-                                                    {
-                                                        printedApologies = true;
-                                                    }
-                                                    else if (newBotMessage.TextParts[k].hasCaps)
-                                                    {
-                                                        printedApologies = true;
-                                                    }
-                                                }
-                                            }
-                                            if (!printedApologies)
-                                            {
-                                                if (newBotMessage.hasMultiplyMissClickError)
-                                                {
+                                                sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage.TextParts[k].Text, 
+                                                    client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
 
-                                                }
-                                                else if (newBotMessage.TextParts.FirstOrDefault(item => item.hasCaps == true) != null)
+                                                if ((!sendAnswerMessageResult.hasError) && (sendAnswerMessageResult.ActionResultMessage == EnumActionResult.Success))
                                                 {
-                                                    
+                                                    sendResult = true;
+                                                    if (apologies != null)
+                                                    {
+                                                        apologies = await GetApologies(newBotMessage, k).ConfigureAwait(false);
+                                                        if (apologies != null)
+                                                        {
+                                                            var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies,
+                                                                                      client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
+                                                            if((sendApologiesResult.ActionResultMessage == EnumActionResult.Success) && (!sendApologiesResult.hasError))
+                                                                clientCompositeService.CreateMessage(botDialogsWithNewBotMessages[i].Id, apologies);
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                    break;
+                                            }
+                                            if (sendResult)
+                                            {
+                                                if (apologies != null)
+                                                {
+                                                    apologies = await GetApologies(newBotMessage).ConfigureAwait(false);
+                                                    if (apologies != null)
+                                                    {
+                                                        var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies,
+                                                                                  client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
+                                                        if ((sendApologiesResult.ActionResultMessage == EnumActionResult.Success) && (!sendApologiesResult.hasError))
+                                                            clientCompositeService.CreateMessage(botDialogsWithNewBotMessages[i].Id, apologies);
+                                                    }
                                                 }
                                             }
                                         }
@@ -627,10 +661,30 @@ namespace BotClient.Bussines.Services
                         {
                             var botMessage = await textService.RandOriginalMessage(standartPatterns[i].AnswerText).ConfigureAwait(false);
                             if (botMessage != null)
-                            {
-                                var sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, botMessage, ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
+                            {/*
+                                var isPrintedApologies = false;
+                                for (int j=0; j<botMessage.TextParts.Count; j++)
+                                {
+                                    var sendAnswerResult = await vkActionService.SendAnswerMessage(WebDriverId, 
+                                                                  botMessage.TextParts[j].Text, ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
+                                    if ((!sendAnswerResult.hasError) && (!isPrintedApologies) && (!botMessage.hasMultiplyMissClickError))
+                                    {
+                                        apologies = await GetApologies(botMessage, j).ConfigureAwait(false);
+                                        if ((random.Next(0, 100) > 50) && (apologies != null))
+                                        {
+                                            var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies, 
+                                                                      ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
+                                            isPrintedApologies = !sendApologiesResult.hasError;
+                                            if (isPrintedApologies)
+                                                clientCompositeService.CreateMessage(botClientRoleConnector.Id, apologies);
+                                        }
+                                    }
+                                    if (!stepResult.hasError)
+                                        break;
+                                }
                                 var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, !sendAnswerMessageResult.hasError, newMessageText, botMessage).ConfigureAwait(false);
                                 return saveResult;
+                                */
                             }
                             return false;
                         }
@@ -746,19 +800,24 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<bool> PrintFirstApologies(BotMessageTextPartModel BotMessageTextPart, Guid WebDriverId)
+        public async Task<string> GetApologies(BotMessageText BotMessageText, int? TextPartIndex = null)
         {
-            string apologies = null;
-            if ((BotMessageTextPart.hasMissClickError) && (random.Next(0, 100) > 50))
-                apologies = await textService.GetApologies(BotMessageTextPart).ConfigureAwait(false);
-            else if ((BotMessageTextPart.hasCaps) && (random.Next(0, 100) > 50))
-                apologies = await textService.GetCapsApologies().ConfigureAwait(false);
-            if (apologies != null)
+            string result = null;
+            try
             {
-                await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
-                return true;
+                if ((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 50))
+                    result = await textService.GetApologies().ConfigureAwait(false);
+                else if ((TextPartIndex != null) && (random.Next(0, 100) > 50))
+                    result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
+                else if ((BotMessageText.TextParts.FirstOrDefault(item => item.hasCaps == true) != null) && (random.Next(0, 100) > 50))
+                    result = await textService.GetCapsApologies().ConfigureAwait(false);
+
             }
-            return false;
+            catch (Exception ex)
+            {
+                settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
         }
 
         public async Task<string> Test(string Text)
