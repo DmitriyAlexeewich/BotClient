@@ -34,38 +34,18 @@ namespace BotClient.Controllers
             httpContextAccessor = HttpContextAccessor;
         }
 
-        [HttpPost("StartBot")]
-        public async Task<IActionResult> StartBot([FromBody] List<int> BotsId)
+        [HttpGet("StartBot")]
+        public async Task<IActionResult> StartBot([FromQuery] int ServerId)
         {
-            var message = "Invalid BotsId. The list of bot IDs is empty";
-            if (BotsId != null)
+            var message = "Invalid ServerId. The ServerId is empty";
+            if (ServerId != null)
             {
-                if (BotsId.Count > 0)
-                    return Ok(await botWorkService.StartBot(BotsId).ConfigureAwait(false));
+                if (ServerId > 0)
+                    return Ok(await botWorkService.StartBot(ServerId).ConfigureAwait(false) == true ? "Success" : "Error");
                 else
                     message = "Invalid BotsId. Bot id list contains no elements";
             }
             return BadRequest(message);
-        }
-
-        [HttpPost("StopBot")]
-        public async Task<IActionResult> StopBot([FromQuery] List<int> BotsId)
-        {
-            var message = "Invalid BotsId. The list of bot IDs is empty";
-            if (BotsId != null)
-            {
-                if (BotsId.Count > 0)
-                    return Ok(await botWorkService.StopBot(BotsId).ConfigureAwait(false));
-                else
-                    message = "Invalid BotsId. Bot id list contains no elements";
-            }
-            return BadRequest(message);
-        }
-
-        [HttpGet("GetBots")]
-        public async Task<IActionResult> GetBots()
-        {
-            return Ok(await botWorkService.GetBots().ConfigureAwait(false));
         }
 
         [HttpGet("GetBot")]

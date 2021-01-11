@@ -25,6 +25,7 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> GoToURL(Guid WebDriverId, string URL);
         Task<bool> SetWebDriverStatus(Guid WebDriverId, EnumWebDriverStatus Status);
         Task GetScreenshot(Guid WebDriverId, int BotClientRoleConnectionId, string ScreenshotName);
+        Task GoToMainPage(Guid WebDriverId);
         /*
         Task ExecuteAlgoritm(Guid WebDriverId, List<WebHTMLElementModel> WebHTMLElementModels);
         Task<List<ActionReport>> ExecuteCommand(Guid WebDriverId, WebHTMLElementModel WebHTMLElement);*/

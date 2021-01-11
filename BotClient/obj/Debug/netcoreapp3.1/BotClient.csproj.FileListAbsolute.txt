@@ -45,11 +45,6 @@ D:\Users\stalk\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClien
 D:\Users\stalk\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.pdb
 D:\Users\stalk\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.genruntimeconfig.cache
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\hosting.json
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csprojAssemblyReference.cache
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.AssemblyInfoInputs.cache
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.AssemblyInfo.cs
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csproj.CoreCompileInputs.cache
-C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\appsettings.Development.json
 C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\appsettings.json
 C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\hosting.json
@@ -85,6 +80,11 @@ C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotDataMo
 C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotMySQL.dll
 C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotDataModels.pdb
 C:\Users\User\Source\Repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotMySQL.pdb
+C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csprojAssemblyReference.cache
+C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.AssemblyInfoInputs.cache
+C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.AssemblyInfo.cs
+C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csproj.CoreCompileInputs.cache
+C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.RazorTargetAssemblyInfo.cache
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.csproj.CopyComplete
 C:\Users\User\Source\Repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\staticwebassets\BotClient.StaticWebAssets.Manifest.cache

@@ -71,7 +71,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -105,17 +105,17 @@ namespace BotClient.Bussines.Services
             string result = null;
             try
             {
-                result = $"((Простите_Извините_Извеняюсь_Прошу прощения), " +
+                result = $"((Простите_Извините_Извиняюсь_Прошу прощения), " +
                                $"в (тексте_сообщении) (есть_присутствует_допущена_имеется_находится) (ошибка_опечатка_описка). " +
-                               $"(Правильно_Вместо ошабки должно быть_Нужно, чтобы было): {BotMessageTextPart.BotMessageCorrectTexts}." +
+                               $"(Правильно_Вместо ошибки должно быть_Нужно, чтобы было): {BotMessageTextPart.BotMessageCorrectTexts}." +
                            $"_* {BotMessageTextPart.BotMessageCorrectTexts}" +
-                           $"_(Простите_Извините_Извеняюсь_Прошу прощения): {BotMessageTextPart.BotMessageCorrectTexts}" +
+                           $"_(Простите_Извините_Извиняюсь_Прошу прощения): {BotMessageTextPart.BotMessageCorrectTexts}" +
                            $"_^ {BotMessageTextPart.BotMessageCorrectTexts})";
                 result = await RandMessage(result).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -130,7 +130,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -145,7 +145,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -199,7 +199,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return null;
         }
@@ -372,7 +372,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -446,7 +446,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }

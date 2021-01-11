@@ -343,7 +343,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return new List<HTMLWebDriver>();
         }
@@ -358,7 +358,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }
@@ -374,7 +374,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -396,7 +396,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -422,7 +422,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }
@@ -449,7 +449,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -472,7 +472,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -507,7 +507,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -526,7 +526,7 @@ namespace BotClient.Bussines.Services
             }
             catch(Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -552,16 +552,46 @@ namespace BotClient.Bussines.Services
                         };
                         var createDialogScreenshotResult = dialogScreenshotService.CreateDialogScreenshot(dialogScreenshotCreate);
                         if(createDialogScreenshotResult.HasError)
-                            settingsService.AddLog("WebDriverService", createDialogScreenshotResult.ExceptionMessage);
+                            await settingsService.AddLog("WebDriverService", createDialogScreenshotResult.ExceptionMessage);
                     }
                 }
             }
             catch (Exception ex)
             {
-                settingsService.AddLog("WebDriverService", ex);
+                await settingsService.AddLog("WebDriverService", ex);
             }
         }
 
+        public async Task GoToMainPage(Guid WebDriverId)
+        {
+            try
+            {
+                var webDriver = await GetWebDriverById(WebDriverId).ConfigureAwait(false);
+                if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
+                    && (webDriver.Status != EnumWebDriverStatus.Loading))
+                {
+                    string url = null;
+                    switch (webDriver.WebDriverPlatform)
+                    {
+                        case EnumSocialPlatform.Vk:
+                            url = "https://vk.com/";
+                            break;
+                        default:
+                            break;
+                    }
+                    if (url != null)
+                    {
+                        var oldURL = webDriver.WebDriver.Url;
+                        webDriver.WebDriver.Navigate().GoToUrl(url);
+                        var loadResult = WaitPageLoading(webDriver, oldURL);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("WebDriverService", ex);
+            }
+        }
         private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver, string OldURL)
         {
             bool urlNotChanged = false;
