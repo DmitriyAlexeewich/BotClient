@@ -41,8 +41,8 @@ namespace BotClient.Bussines.Services
                 if(result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
                 var textParts = new List<string>();
-                if (random.Next(0, 100) > 50)
-                    textParts = result.Text.Split('.').ToList();
+                if (random.Next(0, 100) > 0)
+                    textParts = result.Text.Split(".,".ToCharArray()).ToList();
                 else
                     textParts.Add(result.Text);
                 var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
@@ -125,7 +125,7 @@ namespace BotClient.Bussines.Services
             string result = null;
             try
             {
-                result = "(Простите_Извините_Извеняюсь_Прошу прощения), за (ошибки_опечатки_описки) в (тексте_сообщении)";
+                result = "(Простите_Извините_Извеняюсь_Прошу прощения), за (ошибки_опечатки_описки) (в тексте_в сообщении_)";
                 result = await RandMessage(result).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -140,7 +140,7 @@ namespace BotClient.Bussines.Services
             string result = null;
             try
             {
-                result = "(Простите_Извините_Извеняюсь_Прошу прощения), (случайно_незаметил что_забыл что) капс включился";
+                result = "(Простите_Извините_Извеняюсь_Прошу прощения), (случайно_что_) капс включился";
                 result = await RandMessage(result).ConfigureAwait(false);
             }
             catch (Exception ex)

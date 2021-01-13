@@ -3,6 +3,7 @@ using BotClient.Models.Bot;
 using BotClient.Models.Bot.Enumerators;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
+using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Role;
@@ -29,6 +30,7 @@ namespace BotClient.Bussines.Services
         private readonly IDialogScreenshotService dialogScreenshotService;
         private readonly IVideoDictionaryService videoDictionaryService;
         private readonly ITextService textService;
+        private readonly IRoleServerConnectorService roleServerConnectorService;
 
 
         public BotWorkService(IBotCompositeService BotCompositeService,
@@ -39,7 +41,8 @@ namespace BotClient.Bussines.Services
                               IVkActionService VkActionService,
                               IDialogScreenshotService DialogScreenshotService,
                               IVideoDictionaryService VideoDictionaryService,
-                              ITextService TextService)
+                              ITextService TextService,
+                              IRoleServerConnectorService RoleServerConnectorService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -50,18 +53,38 @@ namespace BotClient.Bussines.Services
             dialogScreenshotService = DialogScreenshotService;
             videoDictionaryService = VideoDictionaryService;
             textService = TextService;
+            roleServerConnectorService = RoleServerConnectorService;
         }
 
         private Random random = new Random();
         private List<BotRoleActionsDaySchedule> botsRoleActions = new List<BotRoleActionsDaySchedule>();
         private List<string> randomMessages = new List<string>();
+        private List<BotWorkStatusModel> botsWorkStatus = new List<BotWorkStatusModel>();
+        private List<HTMLWebDriver> browsers = new List<HTMLWebDriver>();
+        private List<MissionModel> missions = new List<MissionModel>();
 
-        public async Task<bool> StartBot(int ServerId)
+        public async Task<bool> StartBot(int ServerId, int BotCount)
         {
             var result = true;
             try
             {
-                var browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
+                var bots = botCompositeService.GetBotsByServerId(ServerId, null, BotCount);
+                browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
+                var sessionBotsCount = bots.Count / browsers.Count;
+                for (int i = 0; i < browsers.Count; i++)
+                {
+                    for (int j = 0; j < sessionBotsCount; j++)
+                    {
+                        var bot = bots[random.Next(0, bots.Count)];
+                        botsWorkStatus.Add(new BotWorkStatusModel()
+                        {
+                            BotData = bot,
+                            WebDriverId = browsers[i].Id
+                        });
+                        bots.Remove(bot);
+                    }
+                }
+                UpdateMissionList(ServerId);
                 for (int i = 0; i < browsers.Count; i++)
                 {
                     var browserId = browsers[i].Id;
@@ -92,41 +115,38 @@ namespace BotClient.Bussines.Services
             {
                 while (true)
                 {
-                    var serachId = botCompositeService.SearchBotByServerId(ServerId);
-                    while (!botCompositeService.isSearchBotByServerIdReady(serachId))
-                    { }
-                    var bot = botCompositeService.GetBotsByServerIdSearchResultBySearchId(serachId);
+                    var bot = botsWorkStatus.FirstOrDefault(item => item.WebDriverId == WebDriverId);
                     if (bot != null)
                     {
                         var currentDay = DateTime.Now;
-                        var loginflag = await vkActionService.Login(WebDriverId, bot.Login, bot.Password).ConfigureAwait(false);
+                        var loginflag = await vkActionService.Login(WebDriverId, bot.BotData.Login, bot.BotData.Password).ConfigureAwait(false);
                         if ((!loginflag.hasError) && (await vkActionService.isLoginSuccess(WebDriverId).ConfigureAwait(false)))
                         {
-                            var updateOnlineDateResult = botCompositeService.UpdateOnlineDate(bot.Id, DateTime.Now);
+                            var updateOnlineDateResult = botCompositeService.UpdateOnlineDate(bot.BotData.Id, DateTime.Now);
                             if (updateOnlineDateResult.HasError)
                                 await settingsService.AddLog("BotWorkService", updateOnlineDateResult.ExceptionMessage).ConfigureAwait(false);
 
-                            if (bot.isUpdatedCustomizeInfo)
+                            if (bot.BotData.isUpdatedCustomizeInfo)
                             {
-                                var cusomizeData = botCompositeService.GetBotCustomizeByBotId(bot.Id);
+                                var cusomizeData = botCompositeService.GetBotCustomizeByBotId(bot.BotData.Id);
                                 var cusomizeResult = await vkActionService.Customize(WebDriverId, cusomizeData).ConfigureAwait(false);
                                 if (!cusomizeResult.hasError)
-                                    botCompositeService.SetIsUpdatedCustomizeInfo(bot.Id, false);
+                                    botCompositeService.SetIsUpdatedCustomizeInfo(bot.BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();
                             var nowTime = DateTime.Now;
                             var startTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 8, 0, 0);
                             var endTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 23, 0, 0);
                             var maxSecondActionsCount = random.Next(1, 4);
-                            var botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.Id);
+                            var botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.BotData.Id);
                             if (botRoleActions == null)
                             {
                                 botsRoleActions.Add(new BotRoleActionsDaySchedule()
                                 {
-                                    BotId = bot.Id,
+                                    BotId = bot.BotData.Id,
                                     RoleActionCount = random.Next(8, 13)
                                 });
-                                botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.Id);
+                                botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.BotData.Id);
                             }
                             if ((nowTime > startTime) && (nowTime < endTime))
                             {
@@ -152,26 +172,27 @@ namespace BotClient.Bussines.Services
                                         botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
                                 }
                             }
-                            await CheckMessage(WebDriverId, bot.Id).ConfigureAwait(false);
+                            await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
                                 var isActionError = false;
                                 switch (botSchedule[j])
                                 {
                                     case EnumBotActionType.ListenMusic:
-                                        botCompositeService.CreateBotActionHistory(bot.Id, botSchedule[j], $"Переход к музыкальному каталогу");
-                                        await ListenMusic(WebDriverId, bot.Id).ConfigureAwait(false);
+                                        botCompositeService.CreateBotActionHistory(bot.BotData.Id, botSchedule[j], $"Переход к музыкальному каталогу");
+                                        await ListenMusic(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.WatchVideo:
-                                        botCompositeService.CreateBotActionHistory(bot.Id, botSchedule[j], $"Переход к видеокаталогу");
-                                        await WatchVideo(WebDriverId, bot.Id).ConfigureAwait(false);
+                                        botCompositeService.CreateBotActionHistory(bot.BotData.Id, botSchedule[j], $"Переход к видеокаталогу");
+                                        await WatchVideo(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.News:
-                                        botCompositeService.CreateBotActionHistory(bot.Id, botSchedule[j], $"Просмотр новостей");
+                                        botCompositeService.CreateBotActionHistory(bot.BotData.Id, botSchedule[j], $"Просмотр новостей");
                                         await vkActionService.News(WebDriverId).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.RoleMission:
-                                        var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.Id);
+
+                                        var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.BotData.Id, GetMissionId(bot.BotData.Id));
                                         if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
                                         {
                                             var botClientsRoleConnection = setBotClientsRoleConnection.Result;
@@ -186,14 +207,36 @@ namespace BotClient.Bussines.Services
                                 }
                                 if (isActionError)
                                     break;
-                                await CheckMessage(WebDriverId, bot.Id).ConfigureAwait(false);
+                                await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             }
-                            botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Выход из профиля");
+                            botCompositeService.CreateBotActionHistory(bot.BotData.Id, EnumBotActionType.RoleMission, $"Выход из профиля");
                         }
                         else
-                            botCompositeService.SetIsDead(bot.Id, true);
+                            botCompositeService.SetIsDead(bot.BotData.Id, true);
                         var logoutresult = await Logout(WebDriverId).ConfigureAwait(false);
-                        botCompositeService.SetIsOnline(bot.Id, false);
+                        botCompositeService.SetIsOnline(bot.BotData.Id, false);
+                        botsWorkStatus.Remove(bot);
+                        if (browsers.Count > 1)
+                        {
+                            while (true)
+                            {
+                                int randomBrowserIndex = random.Next(0, browsers.Count);
+                                if (browsers[randomBrowserIndex].Id != bot.WebDriverId)
+                                {
+                                    bot.WebDriverId = browsers[randomBrowserIndex].Id;
+                                    for (int i = 0; i < browsers.Count; i++)
+                                    {
+                                        if (botsWorkStatus.FirstOrDefault(item => item.WebDriverId == browsers[i].Id) == null)
+                                        {
+                                            bot.WebDriverId = browsers[i].Id;
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        botsWorkStatus.Add(bot);
                         if (currentDay > DateTime.Now)
                         {
                             currentDay = DateTime.Now;
@@ -213,6 +256,7 @@ namespace BotClient.Bussines.Services
                                 }
                             }
                         }
+                        UpdateMissionList(ServerId);
                     }
                 }
             }
@@ -877,9 +921,38 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<string> Test(string Text)
+        private void UpdateMissionList(int ServerId)
         {
-            return Text;
+            var roles = roleServerConnectorService.GetByServerId(ServerId);
+            for (int i = 0; i < roles.Count; i++)
+            {
+                var missions = missionCompositeService.GetRoleMissionConnections(roles[i].Id, true);
+                for (int j = 0; j < missions.Count; j++)
+                    missions.Add(missions[j]);
+            }
+        }
+
+        private int GetMissionId(int BotId)
+        {
+            var botWorkStatus = botsWorkStatus.FirstOrDefault(item => item.BotData.Id == BotId);
+            if (missions.Count > botWorkStatus.BotWorkMissionsStatus.Count)
+            {
+                for (int i = 0; i < missions.Count; i++)
+                {
+                    var unusedMission = botWorkStatus.BotWorkMissionsStatus.FirstOrDefault(item => item.MissionId == missions[i].Id);
+                    if (unusedMission == null)
+                    {
+                        botWorkStatus.BotWorkMissionsStatus.Add(new BotWorkMissionStatus()
+                        {
+                            MissionId = unusedMission.MissionId,
+                            ActionsCount = 0
+                        });
+                    }
+                }
+            }
+            var botWorkMissionStatus = botWorkStatus.BotWorkMissionsStatus.OrderBy(item => item.ActionsCount).FirstOrDefault();
+            botWorkMissionStatus.ActionsCount++;
+            return botWorkMissionStatus.MissionId;
         }
     }
 }

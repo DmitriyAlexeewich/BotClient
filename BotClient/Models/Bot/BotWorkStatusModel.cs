@@ -12,9 +12,7 @@ namespace BotClient.Models.Bot
     public class BotWorkStatusModel
     {
         public BotModel BotData { get; set; }
-        public int RoleId { get; set; }
-        public EnumBotWorkStatus WorkStatus { get; set; }
-        public EnumAlgoritmName LastAlgoritm { get; set; }
         public Guid WebDriverId { get; set; }
+        public List<BotWorkMissionStatus> BotWorkMissionsStatus { get; set; } = new List<BotWorkMissionStatus>();
     }
 }
