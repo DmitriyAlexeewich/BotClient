@@ -34,7 +34,7 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> Subscribe(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId);
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
-        Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText);
+        Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
         Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId);
         Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId, string ClientVkId);

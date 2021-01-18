@@ -41,10 +41,37 @@ namespace BotClient.Bussines.Services
                 if(result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
                 var textParts = new List<string>();
-                if (random.Next(0, 100) > 0)
+                if (random.Next(0, 100) > 20)
                     textParts = result.Text.Split(".,".ToCharArray()).ToList();
                 else
                     textParts.Add(result.Text);
+                for (int i = 0; i < textParts.Count; i++)
+                {
+                    var maxSpace = random.Next(3, 5);
+                    if (textParts[i].Count(item => item == ' ') > maxSpace)
+                    {
+                        var spaceTextParts = new List<string>();
+                        for (int j = 0; j < textParts[i].Length; j++)
+                        {
+                            if (textParts[i][j] == ' ')
+                                maxSpace--;
+                            if (maxSpace < 1)
+                            {
+                                var part = textParts[i].Substring(j + 1);
+                                spaceTextParts.Add(textParts[i].Replace(part, ""));
+                                spaceTextParts.Add(part);
+                                break;
+                            }
+                        }
+                        spaceTextParts.Reverse();
+                        textParts.RemoveAt(i);
+                        for (int j = 0; j < spaceTextParts.Count; j++)
+                            textParts.Insert(i, spaceTextParts[j]);
+                        i += spaceTextParts.Count - 1;
+                    }
+                }
+                bool predicate(string item) { return item.Length < 1; }
+                textParts.RemoveAll(predicate);
                 var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
                 var keyboardErrorCount = 0;
                 for (int i = 0; i < textParts.Count; i++)
@@ -54,7 +81,7 @@ namespace BotClient.Bussines.Services
                         var textPart = new BotMessageTextPartModel();
                         textPart.Text = textParts[i];
                         textPart.Text = await ReplaceNumberToWord(textPart.Text).ConfigureAwait(false);
-                        if (random.Next(0, 100) < ((textParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
+                        if ((true) && random.Next(0, 100) < ((textParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
                         {
                             textPart = await SetMessageKeyboardError(textPart);
                             if (textPart.hasMissClickError)
@@ -226,7 +253,7 @@ namespace BotClient.Bussines.Services
                 {
                     for (int i = 0; i < words.Length; i++)
                     {
-                        if ((i > 0) && (i % 10 == 0) && (random.Next(0, 100) < settingsErrorChancePerTenWords))
+                        if ((i > 0) && (i % 10 == 0) && true && (random.Next(0, 100) < settingsErrorChancePerTenWords))
                         {
                             var randomIndex = random.Next(i - 10, i);
                             if (regex.IsMatch(words[randomIndex]))
@@ -234,7 +261,7 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
-                else if (random.Next(0, 100) < words.Length / settingsErrorChancePerTenWords)
+                else if (random.Next(0, 100) < words.Length / settingsErrorChancePerTenWords && true)
                 {
                     var randomIndex = random.Next(0, words.Length);
                     if (regex.IsMatch(words[randomIndex]))

@@ -750,7 +750,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText)
+        public async Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false)
         {
             var result = new AlgoritmResult()
             {
@@ -759,8 +759,6 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
                     if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false))
@@ -769,7 +767,7 @@ namespace BotClient.Bussines.Services
                         var printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText);
                         if ((printMessageResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_send", EnumClickType.ElementClick).ConfigureAwait(false)))
                         {
-                            if (await hasCaptcha(WebDriverId).ConfigureAwait(false) == false)
+                            if ((isSecond.Value) || (await hasCaptcha(WebDriverId, true).ConfigureAwait(false) == false))
                             {
                                 result = new AlgoritmResult()
                                 {
@@ -780,8 +778,6 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1076,7 +1072,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        private async Task<bool> hasCaptcha(Guid WebDriverId)
+        private async Task<bool> hasCaptcha(Guid WebDriverId, bool? SkipClose = false)
         {
             var result = false;
             try
@@ -1089,8 +1085,10 @@ namespace BotClient.Bussines.Services
                         result = true;
                     }
                 }
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                if (SkipClose.Value) {
+                    await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {

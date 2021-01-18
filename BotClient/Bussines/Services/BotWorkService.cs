@@ -61,7 +61,7 @@ namespace BotClient.Bussines.Services
         private List<string> randomMessages = new List<string>();
         private List<BotWorkStatusModel> botsWorkStatus = new List<BotWorkStatusModel>();
         private List<HTMLWebDriver> browsers = new List<HTMLWebDriver>();
-        private List<MissionModel> missions = new List<MissionModel>();
+        private List<int> missionsId = new List<int>();
 
         public async Task<bool> StartBot(int ServerId, int BotCount)
         {
@@ -161,6 +161,7 @@ namespace BotClient.Bussines.Services
                             }
                             else
                                 maxSecondActionsCount = random.Next(10, 20);
+
                             for (int j = 0; j < maxSecondActionsCount; j++)
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
                             botSchedule = Shuffle(botSchedule).ToList();
@@ -173,6 +174,7 @@ namespace BotClient.Bussines.Services
                                 }
                             }
                             await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
+                            botSchedule[0] = EnumBotActionType.RoleMission;
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
                                 var isActionError = false;
@@ -191,7 +193,6 @@ namespace BotClient.Bussines.Services
                                         await vkActionService.News(WebDriverId).ConfigureAwait(false);
                                         break;
                                     case EnumBotActionType.RoleMission:
-
                                         var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.BotData.Id, GetMissionId(bot.BotData.Id));
                                         if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
                                         {
@@ -215,7 +216,7 @@ namespace BotClient.Bussines.Services
                             botCompositeService.SetIsDead(bot.BotData.Id, true);
                         var logoutresult = await Logout(WebDriverId).ConfigureAwait(false);
                         botCompositeService.SetIsOnline(bot.BotData.Id, false);
-                        botsWorkStatus.Remove(bot);
+                        botsWorkStatus.Remove(bot);/*
                         if (browsers.Count > 1)
                         {
                             while (true)
@@ -235,7 +236,7 @@ namespace BotClient.Bussines.Services
                                     break;
                                 }
                             }
-                        }
+                        }*/
                         botsWorkStatus.Add(bot);
                         if (currentDay > DateTime.Now)
                         {
@@ -531,12 +532,12 @@ namespace BotClient.Bussines.Services
                                                 stepResult = false;
                                                 for (int j = 0; j < newMessage.TextParts.Count; j++)
                                                 {
-                                                    var sendResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text).ConfigureAwait(false);
+                                                    var sendResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text, stepResult).ConfigureAwait(false);
                                                     clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.TextParts[j].Text);
                                                     if ((sendResult.ActionResultMessage == EnumActionResult.Success) && (!sendResult.hasError))
                                                     {
                                                         stepResult = true;
-                                                        if (apologies != null)
+                                                        if (apologies == null)
                                                         {
                                                             apologies = await GetApologies(newMessage, j).ConfigureAwait(false);
                                                             if (apologies != null)
@@ -662,7 +663,7 @@ namespace BotClient.Bussines.Services
                                                 if ((!sendAnswerMessageResult.hasError) && (sendAnswerMessageResult.ActionResultMessage == EnumActionResult.Success))
                                                 {
                                                     sendResult = true;
-                                                    if (apologies != null)
+                                                    if (apologies == null)
                                                     {
                                                         apologies = await GetApologies(newBotMessage, k).ConfigureAwait(false);
                                                         if (apologies != null)
@@ -859,13 +860,13 @@ namespace BotClient.Bussines.Services
             string result = null;
             try
             {
-                if ((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 50))
+                if ((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 70))
                     result = await textService.GetApologies().ConfigureAwait(false);
-                else if ((TextPartIndex != null) && (random.Next(0, 100) > 50))
+                else if ((TextPartIndex != null) && (random.Next(0, 100) > 70))
                     result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
-                else if ((BotMessageText.TextParts.FirstOrDefault(item => item.hasCaps == true) != null) && (random.Next(0, 100) > 50))
+                else if ((BotMessageText.TextParts.FirstOrDefault(item => item.hasCaps == true) != null) && (random.Next(0, 100) > 70))
                     result = await textService.GetCapsApologies().ConfigureAwait(false);
-
+                result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -926,25 +927,25 @@ namespace BotClient.Bussines.Services
             var roles = roleServerConnectorService.GetByServerId(ServerId);
             for (int i = 0; i < roles.Count; i++)
             {
-                var missions = missionCompositeService.GetRoleMissionConnections(roles[i].Id, true);
-                for (int j = 0; j < missions.Count; j++)
-                    missions.Add(missions[j]);
+                var roleMissions = missionCompositeService.GetRoleMissionConnections(roles[i].RoleId, true);
+                for (int j = 0; j < roleMissions.Count; j++)
+                    missionsId.Add(roleMissions[j].Id);
             }
         }
 
         private int GetMissionId(int BotId)
         {
             var botWorkStatus = botsWorkStatus.FirstOrDefault(item => item.BotData.Id == BotId);
-            if (missions.Count > botWorkStatus.BotWorkMissionsStatus.Count)
+            if (missionsId.Count > botWorkStatus.BotWorkMissionsStatus.Count)
             {
-                for (int i = 0; i < missions.Count; i++)
+                for (int i = 0; i < missionsId.Count; i++)
                 {
-                    var unusedMission = botWorkStatus.BotWorkMissionsStatus.FirstOrDefault(item => item.MissionId == missions[i].Id);
+                    var unusedMission = botWorkStatus.BotWorkMissionsStatus.FirstOrDefault(item => item.MissionId == missionsId[i]);
                     if (unusedMission == null)
                     {
                         botWorkStatus.BotWorkMissionsStatus.Add(new BotWorkMissionStatus()
                         {
-                            MissionId = unusedMission.MissionId,
+                            MissionId = missionsId[i],
                             ActionsCount = 0
                         });
                     }
