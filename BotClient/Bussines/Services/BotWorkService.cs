@@ -955,5 +955,26 @@ namespace BotClient.Bussines.Services
             botWorkMissionStatus.ActionsCount++;
             return botWorkMissionStatus.MissionId;
         }
+
+        public async Task Test(string Text)//UPDATE `BotClientRoleConnector` SET `MissionPath` = NULL, `BotId`=-1, `IsComplete`=0 WHERE `BotClientRoleConnector`.`Id` = 41065;
+        {
+            var newMessage = await textService.RandOriginalMessage(Text).ConfigureAwait(false);
+            for (int i = 0; i < newMessage.TextParts.Count; i++)
+            {
+                if (newMessage.TextParts[i].hasMissClickError)
+                {
+                    var apologies = await GetApologies(newMessage, i).ConfigureAwait(false);
+                    if (apologies != null)
+                    {
+                        newMessage.TextParts.Insert(i+1, new BotMessageTextPartModel()
+                        {
+                            BotMessageCorrectTexts = apologies
+                        });
+                        i++;
+                    }
+                }
+            }
+            var t = 0;
+        }
     }
 }

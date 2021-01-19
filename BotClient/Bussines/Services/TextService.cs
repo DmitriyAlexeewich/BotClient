@@ -1,5 +1,7 @@
 ﻿using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
+using BotDataModels.Bot.Enumerators;
+using BotMySQL.Bussines.Interfaces.MySQL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +14,13 @@ namespace BotClient.Bussines.Services
     public class TextService : ITextService
     {
         private readonly ISettingsService settingsService;
+        private readonly IPhraseService phraseService;
 
-
-        public TextService(ISettingsService SettingsService)
+        public TextService(ISettingsService SettingsService, 
+                           IPhraseService PhraseService)
         {
             settingsService = SettingsService;
+            phraseService = PhraseService;
         }
 
         private Random random = new Random();
@@ -40,6 +44,7 @@ namespace BotClient.Bussines.Services
                 }
                 if(result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
+                result.Text = await SetHelloPhrase(result.Text).ConfigureAwait(false);
                 var textParts = new List<string>();
                 if (random.Next(0, 100) > 20)
                     textParts = result.Text.Split(".,".ToCharArray()).ToList();
@@ -47,7 +52,7 @@ namespace BotClient.Bussines.Services
                     textParts.Add(result.Text);
                 for (int i = 0; i < textParts.Count; i++)
                 {
-                    var maxSpace = random.Next(3, 5);
+                    var maxSpace = random.Next(9, 15);
                     if (textParts[i].Count(item => item == ' ') > maxSpace)
                     {
                         var spaceTextParts = new List<string>();
@@ -67,7 +72,6 @@ namespace BotClient.Bussines.Services
                         textParts.RemoveAt(i);
                         for (int j = 0; j < spaceTextParts.Count; j++)
                             textParts.Insert(i, spaceTextParts[j]);
-                        i += spaceTextParts.Count - 1;
                     }
                 }
                 bool predicate(string item) { return item.Length < 1; }
@@ -81,7 +85,7 @@ namespace BotClient.Bussines.Services
                         var textPart = new BotMessageTextPartModel();
                         textPart.Text = textParts[i];
                         textPart.Text = await ReplaceNumberToWord(textPart.Text).ConfigureAwait(false);
-                        if ((true) && random.Next(0, 100) < ((textParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
+                        if ((textParts[i].Length > 2) && random.Next(0, 100) < ((textParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
                         {
                             textPart = await SetMessageKeyboardError(textPart);
                             if (textPart.hasMissClickError)
@@ -253,7 +257,7 @@ namespace BotClient.Bussines.Services
                 {
                     for (int i = 0; i < words.Length; i++)
                     {
-                        if ((i > 0) && (i % 10 == 0) && true && (random.Next(0, 100) < settingsErrorChancePerTenWords))
+                        if ((i > 0) && (i % 10 == 0) && (random.Next(0, 100) < settingsErrorChancePerTenWords))
                         {
                             var randomIndex = random.Next(i - 10, i);
                             if (regex.IsMatch(words[randomIndex]))
@@ -261,14 +265,27 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
-                else if (random.Next(0, 100) < words.Length / settingsErrorChancePerTenWords && true)
+                else if (random.Next(0, 100) < words.Length / settingsErrorChancePerTenWords)
                 {
                     var randomIndex = random.Next(0, words.Length);
                     if (regex.IsMatch(words[randomIndex]))
                         wordsIndexes.Add(randomIndex);
                 }
                 var index = random.Next(0, wordsIndexes.Count);
-                if (regex.IsMatch(words[wordsIndexes[index]]))
+                if (wordsIndexes.Count < 1)
+                    index = -1;
+                while (wordsIndexes.Count > 0)
+                {
+                    index = random.Next(0, wordsIndexes.Count);
+                    if (words[wordsIndexes[index]].Length < 2)
+                    {
+                        wordsIndexes.RemoveAt(index);
+                        index = -1;
+                    }
+                    else
+                        break;
+                }
+                if ((index >= 0) && (regex.IsMatch(words[wordsIndexes[index]])))
                 {
                     var word = words[wordsIndexes[index]];
                     var newWord = "";
@@ -277,7 +294,7 @@ namespace BotClient.Bussines.Services
                     {
                         for (int k = 0; k < keyboard[j].Length; k++)
                         {
-                            if (word[characterIndex] == keyboard[j][k])
+                            if(Regex.IsMatch(word[characterIndex].ToString(), @keyboard[j][k].ToString(), RegexOptions.IgnoreCase))
                             {
                                 var x = 0;
                                 var y = 0;
@@ -341,12 +358,14 @@ namespace BotClient.Bussines.Services
                                 }
                                 StringBuilder sb = new StringBuilder(word);
                                 sb[characterIndex] = keyboard[y][x];
+                                if (Char.IsUpper(word[characterIndex]))
+                                    sb[characterIndex] = Char.ToUpper(sb[characterIndex]);
                                 newWord = sb.ToString();
                             }
                         }
                     }
                     words[wordsIndexes[index]] = newWord;
-                    result.BotMessageCorrectTexts = word;
+                    result.BotMessageCorrectTexts = Regex.Replace(word, "(?:[^А-яa-z0-9- ]|(?<=['\"])s)", "");
                 }
                 result.Text = ConstructMessage(words.ToList());
                 if (result.BotMessageCorrectTexts != null)
@@ -371,7 +390,7 @@ namespace BotClient.Bussines.Services
                 if (settingsCapsChancePerThousandWords < 1)
                     settingsCapsChancePerThousandWords = 1;
                 var regex = new Regex(@"\b[А-Яа-я]+\b");
-                if (words.Length >= 100)
+                if (words.Length >= 10)
                 {
                     for (int i = 0; i < words.Length; i++)
                     {
@@ -530,5 +549,97 @@ namespace BotClient.Bussines.Services
             return Text;
         }
 
+        private async Task<string> SetHelloPhrase(string Text)
+        {
+            var header = GetHeader("HP", Text);
+            List<EnumPhraseType> filters = new List<EnumPhraseType>();
+            switch (header)
+            {
+                case "<HPS>":
+                    filters.Add(EnumPhraseType.Standart);
+                    filters.Add(EnumPhraseType.TimeMorning);
+                    filters.Add(EnumPhraseType.TimeDay);
+                    filters.Add(EnumPhraseType.TimeEvening);
+                    filters.Add(EnumPhraseType.TimуNight);
+                    break;
+                case "<HPP>":
+                    filters.Add(EnumPhraseType.Play);
+                    break;
+                case "<HPR>":
+                    filters.Add(EnumPhraseType.Respect);
+                    break;
+                case "<HPT>":
+                    filters.Add(EnumPhraseType.Trade);
+                    break;
+                default:
+                    filters = new List<EnumPhraseType>();
+                    break;
+            }
+            if (filters.Count > 0)
+            {
+                var regex = new Regex(@header);
+                var phrases = new List<string>();
+                for (int i = 0; i < filters.Count; i++)
+                {
+                    var phrase = await GetPhrasesString(filters[i]).ConfigureAwait(false);
+                    if (phrase.Length > 0)
+                        phrases.Add(phrase);
+                }
+                if (filters.IndexOf(EnumPhraseType.Standart) != -1)
+                {
+                    var helloText = "";
+                    if (random.Next(0, 100) > 25)
+                    {
+                        var currentTime = DateTime.Now.Hour;
+                        if((currentTime >= 5) && (currentTime < 12))
+                            helloText = await RandMessage(phrases[1]);
+                        if ((currentTime >= 12) && (currentTime < 18))
+                            helloText = await RandMessage(phrases[2]);
+                        if ((currentTime >= 18) && (currentTime <= 23))
+                            helloText = await RandMessage(phrases[3]);
+                        if ((currentTime < 5) && (phrases.Count > 4))
+                            helloText = await RandMessage(phrases[4]);
+                    }
+                    if (helloText.Length < 1)
+                        helloText = await RandMessage(phrases[0]);
+                }
+                else
+                    Text = regex.Replace(Text, await RandMessage(phrases[random.Next(0, phrases.Count)]), 1);
+            }
+            return Text;
+        }
+
+        private string GetHeader(string HeaderStart, string Text)
+        {
+            var header = "";
+            var index = Text.IndexOf($"<{HeaderStart}");
+            for (int i = index; i < Text.Length && Text[i] != '>'; i++)
+            {
+                header += Text[i];
+            }
+            if(header.Length > 0)
+                return header + ">";
+            return null;
+        }
+
+        private async Task<string> GetPhrasesString(EnumPhraseType PhraseType)
+        {
+            var result = "";
+            try
+            {
+                var phrases = phraseService.GetByPhraseType(PhraseType);
+                for (int i = 0; i < phrases.Count; i++)
+                {
+                    result += phrases[i].Text + "_";
+                }
+                if (result.Length > 0)
+                    result.Remove(result.Length - 1);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
     }
 }

@@ -49,6 +49,7 @@ namespace BotClient.Settings
             services.AddSingleton<IRoleService, RoleService>();
             services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
             services.AddSingleton<IRoleServerConnectorService, RoleServerConnectorService>();
+            services.AddSingleton<IPhraseService, PhraseService>();
 
             return services;
         }

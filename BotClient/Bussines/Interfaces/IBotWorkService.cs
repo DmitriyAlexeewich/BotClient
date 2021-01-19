@@ -12,5 +12,6 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> StartBot(int ServerId, int BotCount);
         Task<List<BotRoleActionsDaySchedule>> GetBotRoleActions();
         Task<List<string>> GetRandomMessages();
+        Task Test(string Text);
     }
 }

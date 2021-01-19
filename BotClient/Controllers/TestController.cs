@@ -43,10 +43,10 @@ namespace BotClient.Controllers
         }
 
         [HttpPost("Test")]
-        public async Task<IActionResult> Test()
+        public async Task<IActionResult> Test([FromBody] string Text)
         {
-            var Text = "A.B,C!D?E";
-            var t = Text.Split(".,!?".ToCharArray());
+            for(int i=0; i<100; i++)
+                await botWorkService.Test(Text);
             return Ok();
         }
     }
