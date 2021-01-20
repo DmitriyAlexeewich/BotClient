@@ -1,6 +1,7 @@
 ﻿using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
 using BotDataModels.Bot.Enumerators;
+using BotDataModels.Enumerators;
 using BotMySQL.Bussines.Interfaces.MySQL;
 using System;
 using System.Collections.Generic;
@@ -26,12 +27,13 @@ namespace BotClient.Bussines.Services
         private Random random = new Random();
         private List<string> randomMessages = new List<string>();
 
-        public async Task<BotMessageText> RandOriginalMessage(string message)
+        public async Task<BotMessageText> RandOriginalMessage(string message, string Name = null, EnumGender? Gender = 0)
         {
             var result = new BotMessageText();
             try
             {
-                var maxAttept = random.Next(3, 6);
+                var settings = settingsService.GetServerSettings();
+                var maxAttept = random.Next(settings.MinAtteptCountToRandMessage, settings.MaxAtteptCountToRandMessage);
                 for (int i = 0; i < maxAttept; i++)
                 {
                     var randomMessage = await RandMessage(message).ConfigureAwait(false);
@@ -44,15 +46,18 @@ namespace BotClient.Bussines.Services
                 }
                 if(result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
-                result.Text = await SetHelloPhrase(result.Text).ConfigureAwait(false);
+                result.Text = await SetPhrases(result.Text).ConfigureAwait(false);
+                result.Text = ReplaceSecondaryText(result.Text);
+                result.Text = await SetContact(Name, Gender, result.Text);
+                result.Text = Regex.Replace(result.Text, @"\s+", " ");
                 var textParts = new List<string>();
-                if (random.Next(0, 100) > 20)
+                if (random.Next(0, 100) < settings.PlotCommaSplitChance)
                     textParts = result.Text.Split(".,".ToCharArray()).ToList();
                 else
                     textParts.Add(result.Text);
                 for (int i = 0; i < textParts.Count; i++)
                 {
-                    var maxSpace = random.Next(9, 15);
+                    var maxSpace = random.Next(settings.MinSpaceCountToSplit, settings.MaxSpaceCountToSplit);
                     if (textParts[i].Count(item => item == ' ') > maxSpace)
                     {
                         var spaceTextParts = new List<string>();
@@ -189,9 +194,9 @@ namespace BotClient.Bussines.Services
                 int LastOpen = 0;
                 for (int i = 0; i < message.Length; i++)
                 {
-                    if (message[i] == '(')
+                    if ((message[i] == '(') && (isTechBrackets(message, i)))
                         LastOpen = i;
-                    if ((message[i] == ')') && (LastOpen != -1))
+                    if ((message[i] == ')') && (LastOpen != -1) && (isTechBrackets(message, i)))
                     {
                         var Elements = new List<string>();
                         Elements.Add("");
@@ -234,7 +239,14 @@ namespace BotClient.Bussines.Services
             }
             return null;
         }
-                
+
+        private bool isTechBrackets(string Message, int Index)
+        {
+            if (((Index - 1 >= 0) && (Message[Index - 1] != '\\')) || (Index == 0))
+                return true;
+            return false;
+        }
+        
         private async Task<BotMessageTextPartModel> SetMessageKeyboardError(BotMessageTextPartModel TextPart)
         {
             var result = TextPart;
@@ -544,67 +556,119 @@ namespace BotClient.Bussines.Services
 
         private string RemoveBrackets(string Text)
         {
-            Text = Text.Replace("(", "");
-            Text = Text.Replace(")", "");
+            var regex = new Regex(@"((\[|\]|\(|\))+|s)");
+            for (int i = 0; i < Text.Length; i++)
+            {
+                if (regex.IsMatch(Text[i].ToString()) && (isTechBrackets(Text, i)))
+                {
+                    Text = Text.Remove(i, 1);
+                    i--;
+                }
+            }
+            Text = Text.Replace("\\(", "(");
+            Text = Text.Replace("\\)", ")");
+            Text = Text.Replace("\\[", "[");
+            Text = Text.Replace("\\]", "]");
             return Text;
         }
 
-        private async Task<string> SetHelloPhrase(string Text)
+        private async Task<string> SetPhrases(string Text)
         {
-            var header = GetHeader("HP", Text);
-            List<EnumPhraseType> filters = new List<EnumPhraseType>();
-            switch (header)
+            try
             {
-                case "<HPS>":
-                    filters.Add(EnumPhraseType.Standart);
-                    filters.Add(EnumPhraseType.TimeMorning);
-                    filters.Add(EnumPhraseType.TimeDay);
-                    filters.Add(EnumPhraseType.TimeEvening);
-                    filters.Add(EnumPhraseType.TimуNight);
-                    break;
-                case "<HPP>":
-                    filters.Add(EnumPhraseType.Play);
-                    break;
-                case "<HPR>":
-                    filters.Add(EnumPhraseType.Respect);
-                    break;
-                case "<HPT>":
-                    filters.Add(EnumPhraseType.Trade);
-                    break;
-                default:
-                    filters = new List<EnumPhraseType>();
-                    break;
-            }
-            if (filters.Count > 0)
-            {
-                var regex = new Regex(@header);
-                var phrases = new List<string>();
-                for (int i = 0; i < filters.Count; i++)
+                var settings = settingsService.GetServerSettings();
+                var header = GetHeader("<#P", Text);
+                while ((header != null) && (header.Length > 0))
                 {
-                    var phrase = await GetPhrasesString(filters[i]).ConfigureAwait(false);
-                    if (phrase.Length > 0)
-                        phrases.Add(phrase);
-                }
-                if (filters.IndexOf(EnumPhraseType.Standart) != -1)
-                {
-                    var helloText = "";
-                    if (random.Next(0, 100) > 25)
+                    EnumPhraseCategory category;
+                    List<EnumPhraseType> filters = new List<EnumPhraseType>();
+                    var phraseCategoryString = header.Remove(0, 3);
+                    phraseCategoryString = phraseCategoryString.Remove(phraseCategoryString.Length - 2);
+                    switch (phraseCategoryString)
                     {
-                        var currentTime = DateTime.Now.Hour;
-                        if((currentTime >= 5) && (currentTime < 12))
-                            helloText = await RandMessage(phrases[1]);
-                        if ((currentTime >= 12) && (currentTime < 18))
-                            helloText = await RandMessage(phrases[2]);
-                        if ((currentTime >= 18) && (currentTime <= 23))
-                            helloText = await RandMessage(phrases[3]);
-                        if ((currentTime < 5) && (phrases.Count > 4))
-                            helloText = await RandMessage(phrases[4]);
+                        case "H":
+                            category = EnumPhraseCategory.Hello;
+                            break;
+                        case "B":
+                            category = EnumPhraseCategory.Bye;
+                            break;
+                        case "T":
+                            category = EnumPhraseCategory.Thank;
+                            break;
+                        case "A":
+                            category = EnumPhraseCategory.Apologies;
+                            break;
+                        case "IS":
+                            category = EnumPhraseCategory.IntroductionStart;
+                            break;
+                        case "IM":
+                            category = EnumPhraseCategory.IntroductionMiddle;
+                            break;
+                        case "IE":
+                            category = EnumPhraseCategory.IntroductionEnd;
+                            break;
+                        case "CI":
+                            category = EnumPhraseCategory.CanI;
+                            break;
+                        default:
+                            category = 0;
+                            break;
                     }
-                    if (helloText.Length < 1)
-                        helloText = await RandMessage(phrases[0]);
+                    switch (header[header.Length - 2])
+                    {
+                        case 'S':
+                            filters.Add(EnumPhraseType.Standart);
+                            filters.Add(EnumPhraseType.TimeMorning);
+                            filters.Add(EnumPhraseType.TimeDay);
+                            filters.Add(EnumPhraseType.TimeEvening);
+                            filters.Add(EnumPhraseType.TimeNight);
+                            break;
+                        case 'P':
+                            filters.Add(EnumPhraseType.Play);
+                            break;
+                        case 'R':
+                            filters.Add(EnumPhraseType.Respect);
+                            break;
+                        case 'T':
+                            filters.Add(EnumPhraseType.Trade);
+                            break;
+                        default:
+                            filters = new List<EnumPhraseType>();
+                            break;
+                    }
+                    if ((filters.Count > 0) && (category > 0))
+                    {
+                        var regex = new Regex(@header);
+                        var phrases = await GetPhrasesString(category, filters).ConfigureAwait(false);
+                        var newText = "";
+                        if (phrases.Count > 0)
+                        {
+                            if (filters.IndexOf(EnumPhraseType.Standart) != -1)
+                            {
+                                if (random.Next(0, 100) < settings.UseDateTimeHelloPhraseChance)
+                                {
+                                    var currentTime = DateTime.Now.Hour;
+                                    if ((currentTime >= 5) && (currentTime < 12))
+                                        newText = await RandMessage(phrases[1]);
+                                    if ((currentTime >= 12) && (currentTime < 18))
+                                        newText = await RandMessage(phrases[2]);
+                                    if ((currentTime >= 18) && (currentTime <= 23))
+                                        newText = await RandMessage(phrases[3]);
+                                }
+                                if (newText.Length < 1)
+                                    newText = await RandMessage(phrases[0]);
+                            }
+                            else
+                                newText = await RandMessage(phrases[random.Next(0, phrases.Count)]);
+                        }
+                        Text = regex.Replace(Text, newText, 1);
+                    }
+                    header = GetHeader("<#P", Text);
                 }
-                else
-                    Text = regex.Replace(Text, await RandMessage(phrases[random.Next(0, phrases.Count)]), 1);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("TextService", ex);
             }
             return Text;
         }
@@ -612,34 +676,115 @@ namespace BotClient.Bussines.Services
         private string GetHeader(string HeaderStart, string Text)
         {
             var header = "";
-            var index = Text.IndexOf($"<{HeaderStart}");
-            for (int i = index; i < Text.Length && Text[i] != '>'; i++)
+            var index = Text.IndexOf(HeaderStart);
+            if (index > -1)
             {
-                header += Text[i];
+                for (int i = index; i < Text.Length && Text[i] != '>'; i++)
+                {
+                    header += Text[i];
+                }
+                if (header.Length > 0)
+                    return header + ">";
             }
-            if(header.Length > 0)
-                return header + ">";
             return null;
         }
 
-        private async Task<string> GetPhrasesString(EnumPhraseType PhraseType)
+        private async Task<List<string>> GetPhrasesString(EnumPhraseCategory Category, List<EnumPhraseType> Types)
         {
-            var result = "";
+            var result = new List<string>();
             try
             {
-                var phrases = phraseService.GetByPhraseType(PhraseType);
-                for (int i = 0; i < phrases.Count; i++)
+                var phrases = phraseService.GetByCategory(Category);
+                if (phrases.Count > 0)
                 {
-                    result += phrases[i].Text + "_";
+                    for (int i = 0; i < Types.Count; i++)
+                    {
+                        var phrasesString = "(";
+                        var filteredPhrases = phrases.Where(item => item.Type == Types[i]).ToList();
+                        for (int j = 0; j < filteredPhrases.Count; j++)
+                        {
+                            phrasesString += filteredPhrases[j].Text + "_";
+                        }
+                        if (phrasesString.Length > 1)
+                            result.Add(phrasesString.Remove(phrasesString.Length - 1) + ")");
+                        else
+                            result.Add("");
+                    }
                 }
-                if (result.Length > 0)
-                    result.Remove(result.Length - 1);
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                await settingsService.AddLog("TextService", ex);
             }
             return result;
+        }
+
+        private async Task<string> SetContact(string Name, EnumGender? Gender, string Text)
+        {
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                if ((((Name != null) && (Name.Length > 0)) || ((Gender != null) && (Gender.Value > 0))) && (random.Next(0, 100) < settings.UseContactPhraseChance))
+                {
+                    var header = GetHeader("<#C", Text);
+                    var regex = new Regex(header);
+                    while ((header != null) && (header.Length > 0))
+                    {
+                        var newWord = "";
+                        if ((Name != null) && (Name.Length > 0) && (random.Next(0, 100) < settings.UseNameContactChance))
+                        {
+                            if ((newWord.Length > 0) && (!Regex.IsMatch(newWord, "(?:[^А-я]+|(?<=['\"])s)", RegexOptions.IgnoreCase)))
+                                newWord = Name.Remove(newWord.IndexOf(" "));
+                        }
+                        if ((Gender != null) && (newWord.Length > 0))
+                        {
+                            EnumPhraseCategory phraseCategory;
+                            switch (Gender.Value)
+                            {
+                                case EnumGender.Female:
+                                    phraseCategory = EnumPhraseCategory.ContactFemale;
+                                    break;
+                                case EnumGender.Male:
+                                    phraseCategory = EnumPhraseCategory.ContactMale;
+                                    break;
+                                default:
+                                    phraseCategory = EnumPhraseCategory.Contact;
+                                    break;
+                            }
+                            var phraseTypes = new List<EnumPhraseType>();
+                            phraseTypes.Add(EnumPhraseType.Standart);
+                            var phrases = await GetPhrasesString(phraseCategory, phraseTypes).ConfigureAwait(false);
+                            if (phrases.Count > 0)
+                                newWord = await RandMessage(phrases[random.Next(0, phrases.Count)]);
+                        }
+                        Text = regex.Replace(Text, newWord, 1);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("TextService", ex);
+            }
+            return Text;
+        }
+        
+        private string ReplaceSecondaryText(string Text)
+        {
+            var lastOpen = -1;
+            for (int i = 0; i < Text.Length; i++)
+            {
+                if ((Text[i] == '[') && (isTechBrackets(Text, i)))
+                    lastOpen = i;
+                if ((Text[i] == ']') && (lastOpen != -1) && (isTechBrackets(Text, i)))
+                {
+                    var substring = Text.Substring(lastOpen+1, i - lastOpen);
+                    var parts = substring.Split("_").ToList();
+                    parts = settingsService.Shuffle(parts).ToList();
+                    Text = Text.Replace(substring, string.Join(" ", parts));
+                    i = -1;
+                }
+            }
+            return Text;
         }
     }
 }

@@ -56,5 +56,7 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId);
 
         Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots);
+        IList<T> Shuffle<T>(IList<T> list);
+        IList<T> Split<T>(IList<T> list, int Index);
     }
 }

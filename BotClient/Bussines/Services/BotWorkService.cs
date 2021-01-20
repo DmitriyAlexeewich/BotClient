@@ -164,7 +164,7 @@ namespace BotClient.Bussines.Services
 
                             for (int j = 0; j < maxSecondActionsCount; j++)
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
-                            botSchedule = Shuffle(botSchedule).ToList();
+                            botSchedule = settingsService.Shuffle(botSchedule).ToList();
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
                                 if ((j > 0) && (botSchedule[j] != EnumBotActionType.RoleMission))
@@ -265,40 +265,6 @@ namespace BotClient.Bussines.Services
             {
                 await settingsService.AddLog("BotWorkService", ex);
             }
-        }
-
-        private IList<T> Shuffle<T>(IList<T> list)
-        {
-            try
-            {
-                int n = list.Count;
-                while (n > 1)
-                {
-                    n--;
-                    int k = random.Next(n + 1);
-                    T value = list[k];
-                    list[k] = list[n];
-                    list[n] = value;
-                }
-            }
-            catch (Exception ex)
-            {
-                settingsService.AddLog("BotWorkService", ex);
-            }
-            return list;
-        }
-
-        private IList<T> Split<T>(IList<T> list, int Index)
-        {
-            List<T> previous = new List<T>();
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (i <= Index)
-                    previous.Add(list[i]);
-                else
-                    break;
-            }
-            return previous;
         }
 
         private bool OnlyInteger(string Row)

@@ -18,6 +18,16 @@ namespace BotClient.Models.Settings
         public int ErrorChancePerTenWords { get; set; }
         public int CapsChancePerThousandWords { get; set; }
         public int NumberChancePerHundredWords { get; set; }
+
+        public int MinSpaceCountToSplit { get; set; }
+        public int MaxSpaceCountToSplit { get; set; }
+        public int PlotCommaSplitChance { get; set; }
+        public int MinAtteptCountToRandMessage { get; set; }
+        public int MaxAtteptCountToRandMessage { get; set; }
+        public int UseDateTimeHelloPhraseChance { get; set; }
+        public int UseContactPhraseChance { get; set; }
+        public int UseNameContactChance { get; set; }
+
         public int MusicWaitingTime { get; set; }
         public int MusicWaitingDeltaTime { get; set; }
         public int MusicLoadingWaitingTime { get; set; }

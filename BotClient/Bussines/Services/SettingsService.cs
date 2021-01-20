@@ -32,6 +32,7 @@ namespace BotClient.Bussines.Services
             CreateScreenshotFolder();
         }
 
+        private Random random = new Random();
         private WebConnectionSettings webConnectionSettings = new WebConnectionSettings();
         private string configurationFilePath = string.Empty;
         private string errorLogFilePath = string.Empty;
@@ -260,6 +261,126 @@ namespace BotClient.Bussines.Services
             }
         }
 
+        public async Task<SettingsReport> SetMinSpaceCountToSplit(int MinSpaceCountToSplit)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.MinSpaceCountToSplit = MinSpaceCountToSplit;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetMaxSpaceCountToSplit(int MaxSpaceCountToSplit)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.MaxSpaceCountToSplit = MaxSpaceCountToSplit;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetPlotCommaSplitChance(int PlotCommaSplitChance)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.PlotCommaSplitChance = PlotCommaSplitChance;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetMinAtteptCountToRandMessage(int MinAtteptCountToRandMessage)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.MinAtteptCountToRandMessage = MinAtteptCountToRandMessage;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetMaxAtteptCountToRandMessage(int MaxAtteptCountToRandMessage)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.MaxAtteptCountToRandMessage = MaxAtteptCountToRandMessage;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<SettingsReport> SetUseDateTimeHelloPhraseChance(int UseDateTimeHelloPhraseChance)
+        {
+            try
+            {
+                CreateConfigurationFile();
+                webConnectionSettings.UseDateTimeHelloPhraseChance = UseDateTimeHelloPhraseChance;
+                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                return new SettingsReport();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+                return new SettingsReport()
+                {
+                    HasError = true,
+                    ExceptionMessage = ex.Message
+                };
+            }
+        }
+
         public async Task<SettingsReport> SetMusicWaitingTime(int MusicWaitingTime, int MusicWaitingDeltaTime)
         {
             try
@@ -474,6 +595,48 @@ namespace BotClient.Bussines.Services
                 AddLog("SettingsService", ex);
             }
             return false;
+        }
+
+        public IList<T> Shuffle<T>(IList<T> list)
+        {
+            try
+            {
+                int n = list.Count;
+                while (n > 1)
+                {
+                    n--;
+                    int k = random.Next(n + 1);
+                    T value = list[k];
+                    list[k] = list[n];
+                    list[n] = value;
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return list;
+        }
+
+        public IList<T> Split<T>(IList<T> list, int Index)
+        {
+            try
+            {
+                List<T> previous = new List<T>();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i <= Index)
+                        previous.Add(list[i]);
+                    else
+                        break;
+                }
+                list = previous;
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return list;
         }
 
         private void CreateErrorLogFile()
