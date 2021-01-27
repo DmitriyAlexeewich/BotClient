@@ -33,7 +33,12 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> NewsLike(Guid WebDriverId, EnumNewsLikeType NewsLikeType);
         Task<AlgoritmResult> Subscribe(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId);
+        Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, string GroupURL, string GroupName);
+        Task<AlgoritmResult> GoToGroup(Guid WebDriverId, string GroupURL);
+        Task<List<PlatformPostModel>> GetPosts(Guid WebDriverId);
+        Task<AlgoritmResult> WatchPost(Guid WebDriverId, PlatformPostModel PlatformPost, bool isRepost);
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
+        Task<AlgoritmResult> RepostPostToSelfPage(Guid WebDriverId, WebHTMLElement Post);
         Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
         Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId);

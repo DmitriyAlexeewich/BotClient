@@ -90,7 +90,7 @@ namespace BotClient.Bussines.Services
                         var textPart = new BotMessageTextPartModel();
                         textPart.Text = textParts[i];
                         textPart.Text = await ReplaceNumberToWord(textPart.Text).ConfigureAwait(false);
-                        if ((textParts[i].Length > 2) && random.Next(0, 100) < ((textParts[i].Split(' ').Length / 10) * errorChancePerTenWords))
+                        if ((textParts[i].Length > 2) && random.Next(0, 100) < (int)(((float)(textParts[i].Split(' ').Length / 10)) * errorChancePerTenWords))
                         {
                             textPart = await SetMessageKeyboardError(textPart);
                             if (textPart.hasMissClickError)
@@ -621,7 +621,6 @@ namespace BotClient.Bussines.Services
                             filters.Add(EnumPhraseType.TimeMorning);
                             filters.Add(EnumPhraseType.TimeDay);
                             filters.Add(EnumPhraseType.TimeEvening);
-                            filters.Add(EnumPhraseType.TimeNight);
                             break;
                         case 'P':
                             filters.Add(EnumPhraseType.Play);
@@ -638,7 +637,6 @@ namespace BotClient.Bussines.Services
                     }
                     if ((filters.Count > 0) && (category > 0))
                     {
-                        var regex = new Regex(@header);
                         var phrases = await GetPhrasesString(category, filters).ConfigureAwait(false);
                         var newText = "";
                         if (phrases.Count > 0)
@@ -661,7 +659,8 @@ namespace BotClient.Bussines.Services
                             else
                                 newText = await RandMessage(phrases[random.Next(0, phrases.Count)]);
                         }
-                        Text = regex.Replace(Text, newText, 1);
+
+                        Text = SetPhraseCase(Text, header, newText);
                     }
                     header = GetHeader("<#P", Text);
                 }
@@ -717,6 +716,32 @@ namespace BotClient.Bussines.Services
                 await settingsService.AddLog("TextService", ex);
             }
             return result;
+        }
+
+        private string SetPhraseCase(string Text, string Pattern, string Input)
+        {
+            var isPreviousCharAPlot = false;
+            var index = Text.IndexOf(Pattern);
+            var regex = new Regex(@Pattern);
+            if ((index > 0) && (Text.Length > 0))
+            {
+                var plotRegex = new Regex(@"((\.|\!|\?)+|s)");
+                var wordRegex = new Regex(@"(([А-я]|\,|[A-z])+|s)");
+                for (int i = index; i > 0; i--)
+                {
+                    if (plotRegex.IsMatch(Text[i].ToString()))
+                    {
+                        isPreviousCharAPlot = true;
+                        break;
+                    }
+                    if (wordRegex.IsMatch(Text[i].ToString()))
+                        break;
+                }
+                if (!isPreviousCharAPlot)
+                    Input = Input.ToLower();
+            }
+            Text = regex.Replace(Text, Input, 1);
+            return Text;
         }
 
         private async Task<string> SetContact(string Name, EnumGender? Gender, string Text)

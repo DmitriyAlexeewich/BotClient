@@ -166,6 +166,20 @@ namespace BotClient.Models.HTMLElements
                         return true;
                     element.Clear();
                 }
+                else
+                {
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    string printedText = "";
+                    for (int i = 0; i < Text.Length; i++)
+                    {
+                        string letter = Text[i].ToString();
+                        executor.ExecuteScript("arguments[0].click();", letter);
+                        printedText += letter;
+                        Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
+                    }
+                    if (printedText == Text)
+                        return true;
+                }
             }
             catch (Exception ex)
             { }
@@ -296,7 +310,7 @@ namespace BotClient.Models.HTMLElements
 
         public List<WebHTMLElement> GetChildElements(EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired)
         {
-            var findElementsResult = FindWebElements(SelectorType, Link, isRequired);
+            var findElementsResult = FindWebElements(SelectorType, Link, false);
             var result = new List<WebHTMLElement>();
             if ((findElementsResult != null) && (findElementsResult.Count > 0))
             {

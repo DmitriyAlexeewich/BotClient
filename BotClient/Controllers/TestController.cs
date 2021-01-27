@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
 using BotMySQL.Bussines.Interfaces.Composite;
+using BotMySQL.Bussines.Interfaces.MySQL;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -24,6 +25,7 @@ namespace BotClient.Controllers
         private readonly ISettingsService settingsService;
         private readonly IVkActionService vkActionService;
         private readonly IBotWorkService botWorkService;
+        private readonly IPhraseService phraseService;
 
         public TestController(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -31,7 +33,8 @@ namespace BotClient.Controllers
                               IWebDriverService WebDriverService,
                               ISettingsService SettingsService,
                               IVkActionService VkActionService,
-                              IBotWorkService BotWorkService)
+                              IBotWorkService BotWorkService,
+                              IPhraseService PhraseService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -40,12 +43,13 @@ namespace BotClient.Controllers
             settingsService = SettingsService;
             vkActionService = VkActionService;
             botWorkService = BotWorkService;
+            phraseService = PhraseService;
         }
 
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            for(int i=0; i<100; i++)
+            for (int i=0; i<100; i++)
                 await botWorkService.Test(Text);
             return Ok();
         }

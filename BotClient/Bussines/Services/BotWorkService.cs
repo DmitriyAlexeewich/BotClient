@@ -173,6 +173,18 @@ namespace BotClient.Bussines.Services
                                         botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
                                 }
                             }
+
+                            var t = await vkActionService.GoToGroup(WebDriverId, "dayvinchik").ConfigureAwait(false);
+                            if (t.ActionResultMessage == EnumActionResult.Success)
+                            {
+                                var p = await vkActionService.GetPosts(WebDriverId);
+                                if (p.Count > 0)
+                                {
+                                    await vkActionService.WatchPost(WebDriverId, p[0], true).ConfigureAwait(false);
+                                }
+                            }
+
+                            await vkActionService.SubscribeToGroup(WebDriverId, "dayvinchik", "Леонардо Дайвинчик").ConfigureAwait(false);
                             await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             botSchedule[0] = EnumBotActionType.RoleMission;
                             for (int j = 0; j < botSchedule.Count; j++)
@@ -216,27 +228,29 @@ namespace BotClient.Bussines.Services
                             botCompositeService.SetIsDead(bot.BotData.Id, true);
                         var logoutresult = await Logout(WebDriverId).ConfigureAwait(false);
                         botCompositeService.SetIsOnline(bot.BotData.Id, false);
-                        botsWorkStatus.Remove(bot);/*
-                        if (browsers.Count > 1)
-                        {
-                            while (true)
+                        botsWorkStatus.Remove(bot);
+                        /*
+                            if (browsers.Count > 1)
                             {
-                                int randomBrowserIndex = random.Next(0, browsers.Count);
-                                if (browsers[randomBrowserIndex].Id != bot.WebDriverId)
+                                while (true)
                                 {
-                                    bot.WebDriverId = browsers[randomBrowserIndex].Id;
-                                    for (int i = 0; i < browsers.Count; i++)
+                                    int randomBrowserIndex = random.Next(0, browsers.Count);
+                                    if (browsers[randomBrowserIndex].Id != bot.WebDriverId)
                                     {
-                                        if (botsWorkStatus.FirstOrDefault(item => item.WebDriverId == browsers[i].Id) == null)
+                                        bot.WebDriverId = browsers[randomBrowserIndex].Id;
+                                        for (int i = 0; i < browsers.Count; i++)
                                         {
-                                            bot.WebDriverId = browsers[i].Id;
-                                            break;
+                                            if (botsWorkStatus.FirstOrDefault(item => item.WebDriverId == browsers[i].Id) == null)
+                                            {
+                                                bot.WebDriverId = browsers[i].Id;
+                                                break;
+                                            }
                                         }
+                                        break;
                                     }
-                                    break;
                                 }
                             }
-                        }*/
+                        */
                         botsWorkStatus.Add(bot);
                         if (currentDay > DateTime.Now)
                         {
@@ -826,13 +840,18 @@ namespace BotClient.Bussines.Services
             string result = null;
             try
             {
-                if ((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 70))
-                    result = await textService.GetApologies().ConfigureAwait(false);
-                else if ((TextPartIndex != null) && (random.Next(0, 100) > 70))
-                    result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
-                else if ((BotMessageText.TextParts.FirstOrDefault(item => item.hasCaps == true) != null) && (random.Next(0, 100) > 70))
-                    result = await textService.GetCapsApologies().ConfigureAwait(false);
-                result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
+                if (TextPartIndex == null)
+                {
+                    if ((BotMessageText.TextParts[TextPartIndex.Value].hasMissClickError) && (random.Next(0, 100) > 70))
+                        result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
+                    else if((BotMessageText.TextParts[TextPartIndex.Value].hasCaps) && (random.Next(0, 100) > 70))
+                        result = await textService.GetCapsApologies().ConfigureAwait(false);
+                }
+                else
+                {
+                    if((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 70))
+                        result = await textService.GetApologies().ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -863,7 +882,7 @@ namespace BotClient.Bussines.Services
                                 clientCompositeService.CreateMessage(BotClientRoleConnectionId, apologies);
                         }
                     }
-                    if (!sendAnswerResult.hasError)
+                    if ((sendAnswerResult.hasError) && (sendAnswerResult.ActionResultMessage == EnumActionResult.Success))
                         break;
                 }
                 if (result)
