@@ -40,7 +40,7 @@
           "dependencies": {
             "HtmlAgilityPack": {
               "target": "Package",
-              "version": "[1.11.29, )"
+              "version": "[1.11.30, )"
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
@@ -52,7 +52,7 @@
             },
             "MySql.Data": {
               "target": "Package",
-              "version": "[8.0.22, )"
+              "version": "[8.0.23, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
@@ -64,7 +64,7 @@
             },
             "Selenium.WebDriver.ChromeDriver": {
               "target": "Package",
-              "version": "[87.0.4280.8800, )"
+              "version": "[88.0.4324.9600, )"
             }
           },
           "imports": [

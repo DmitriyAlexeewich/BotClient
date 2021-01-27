@@ -3,6 +3,7 @@ using BotClient.Models.Bot;
 using BotClient.Models.Bot.Enumerators;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
+using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
 using BotDataModels.Bot.Enumerators;
@@ -31,7 +32,7 @@ namespace BotClient.Bussines.Services
         private readonly IVideoDictionaryService videoDictionaryService;
         private readonly ITextService textService;
         private readonly IRoleServerConnectorService roleServerConnectorService;
-
+        private readonly IPlatformGroupService platformGroupService;
 
         public BotWorkService(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -42,7 +43,8 @@ namespace BotClient.Bussines.Services
                               IDialogScreenshotService DialogScreenshotService,
                               IVideoDictionaryService VideoDictionaryService,
                               ITextService TextService,
-                              IRoleServerConnectorService RoleServerConnectorService)
+                              IRoleServerConnectorService RoleServerConnectorService,
+                              IPlatformGroupService PlatformGroupService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -54,6 +56,7 @@ namespace BotClient.Bussines.Services
             videoDictionaryService = VideoDictionaryService;
             textService = TextService;
             roleServerConnectorService = RoleServerConnectorService;
+            platformGroupService = PlatformGroupService;
         }
 
         private Random random = new Random();
@@ -137,7 +140,7 @@ namespace BotClient.Bussines.Services
                             var nowTime = DateTime.Now;
                             var startTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 8, 0, 0);
                             var endTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 23, 0, 0);
-                            var maxSecondActionsCount = random.Next(1, 4);
+                            var maxSecondActionsCount = random.Next(4, 10);
                             var botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.BotData.Id);
                             if (botRoleActions == null)
                             {
@@ -154,14 +157,12 @@ namespace BotClient.Bussines.Services
                                 {
                                     var maxClientsRoleConnectionActionsCount = random.Next(1, 2);
                                     botRoleActions.RoleActionCount -= maxClientsRoleConnectionActionsCount;
-                                    botsRoleActions[botsRoleActions.IndexOf(botRoleActions)] = botRoleActions;
                                     for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
                                         botSchedule.Add(EnumBotActionType.RoleMission);
                                 }
                             }
                             else
                                 maxSecondActionsCount = random.Next(10, 20);
-
                             for (int j = 0; j < maxSecondActionsCount; j++)
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
                             botSchedule = settingsService.Shuffle(botSchedule).ToList();
@@ -170,21 +171,9 @@ namespace BotClient.Bussines.Services
                                 if ((j > 0) && (botSchedule[j] != EnumBotActionType.RoleMission))
                                 {
                                     while (botSchedule[j] == botSchedule[j - 1])
-                                        botSchedule[j] = (EnumBotActionType)random.Next(1, 4);
+                                        botSchedule[j] = (EnumBotActionType)random.Next(1, 5);
                                 }
                             }
-
-                            var t = await vkActionService.GoToGroup(WebDriverId, "dayvinchik").ConfigureAwait(false);
-                            if (t.ActionResultMessage == EnumActionResult.Success)
-                            {
-                                var p = await vkActionService.GetPosts(WebDriverId);
-                                if (p.Count > 0)
-                                {
-                                    await vkActionService.WatchPost(WebDriverId, p[0], true).ConfigureAwait(false);
-                                }
-                            }
-
-                            await vkActionService.SubscribeToGroup(WebDriverId, "dayvinchik", "Леонардо Дайвинчик").ConfigureAwait(false);
                             await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             botSchedule[0] = EnumBotActionType.RoleMission;
                             for (int j = 0; j < botSchedule.Count; j++)
@@ -204,23 +193,41 @@ namespace BotClient.Bussines.Services
                                         botCompositeService.CreateBotActionHistory(bot.BotData.Id, botSchedule[j], $"Просмотр новостей");
                                         await vkActionService.News(WebDriverId).ConfigureAwait(false);
                                         break;
+                                    case EnumBotActionType.Group:
+                                        botCompositeService.CreateBotActionHistory(bot.BotData.Id, botSchedule[j], $"Просмотр или подписка на группу");
+                                        await GroupAction(WebDriverId, bot.BotData.Id);
+                                        break;
                                     case EnumBotActionType.RoleMission:
-                                        var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.BotData.Id, GetMissionId(bot.BotData.Id));
-                                        if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
+                                        if (!bot.BotData.isPrintBlock)
                                         {
-                                            var botClientsRoleConnection = setBotClientsRoleConnection.Result;
-                                            var roleMissionResult = await ExecuteRoleMission(WebDriverId, botClientsRoleConnection).ConfigureAwait(false);
-                                            if (roleMissionResult)
-                                                clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
-                                            else
-                                                clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, false);
-                                            clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
+                                            var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.BotData.Id, GetMissionId(bot.BotData.Id));
+                                            if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
+                                            {
+                                                var botClientsRoleConnection = setBotClientsRoleConnection.Result;
+                                                var roleMissionResult = await ExecuteRoleMission(WebDriverId, botClientsRoleConnection).ConfigureAwait(false);
+                                                if (roleMissionResult)
+                                                    clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
+                                                else
+                                                {
+                                                    clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, false);
+                                                    botRoleActions.RoleActionCount++;
+                                                    if (j + 1 < botSchedule.Count)
+                                                    {
+                                                        var last = botSchedule.spl
+                                                        
+                                                        botSchedule[] = EnumBotActionType.RoleMission;
+                                                        botSchedule.Add((EnumBotActionType)random.Next(1, 5));
+                                                    }
+                                                }
+                                                clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
+                                            }
                                         }
                                         break;
                                 }
                                 if (isActionError)
                                     break;
                                 await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
+                                bot.BotData = botCompositeService.GetBotById(bot.BotData.Id);
                             }
                             botCompositeService.CreateBotActionHistory(bot.BotData.Id, EnumBotActionType.RoleMission, $"Выход из профиля");
                         }
@@ -272,6 +279,11 @@ namespace BotClient.Bussines.Services
                             }
                         }
                         UpdateMissionList(ServerId);
+                        if ((DateTime.Now.Hour > 6) && (DateTime.Now.Hour < 8))
+                        {
+                            for (int i = 0; i < botsWorkStatus.Count; i++)
+                                botsWorkStatus[i].RepostCount = 0;
+                        }
                     }
                 }
             }
@@ -507,45 +519,62 @@ namespace BotClient.Bussines.Services
                                             if (newMessage != null)
                                             {
                                                 botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
-                                                                       $"Отправка сообщения {newMessage} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
+                                                                       $"Отправка сообщения {newMessage.Text} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 string apologies = null;
                                                 stepResult = false;
-                                                for (int j = 0; j < newMessage.TextParts.Count; j++)
+                                                var hasCaptcha = false;
+                                                for (int j = 0; j < newMessage.TextParts.Count && hasCaptcha == false; j++)
                                                 {
                                                     var sendResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text, stepResult).ConfigureAwait(false);
-                                                    clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.TextParts[j].Text);
-                                                    if ((sendResult.ActionResultMessage == EnumActionResult.Success) && (!sendResult.hasError))
+                                                    hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
+                                                    if (!hasCaptcha)
                                                     {
-                                                        stepResult = true;
-                                                        if (apologies == null)
+                                                        clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.TextParts[j].Text);
+                                                        if ((sendResult.ActionResultMessage == EnumActionResult.Success) && (!sendResult.hasError))
                                                         {
-                                                            apologies = await GetApologies(newMessage, j).ConfigureAwait(false);
-                                                            if (apologies != null)
+                                                            stepResult = true;
+                                                            if (apologies == null)
                                                             {
-                                                                var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
-                                                                if((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
-                                                                    clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
+                                                                apologies = await GetApologies(newMessage, j).ConfigureAwait(false);
+                                                                if (apologies != null)
+                                                                {
+                                                                    var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
+                                                                    if ((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
+                                                                        clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
+                                                                }
                                                             }
                                                         }
+                                                        else
+                                                            break;
                                                     }
                                                     else
                                                         break;
                                                 }
+                                                if (hasCaptcha)
+                                                    botCompositeService.SetIsPrintBlock(BotClientRoleConnector.BotId, true);
                                                 if (stepResult)
                                                 {
-                                                    if (apologies == null)
+                                                    if (!hasCaptcha)
                                                     {
-                                                        apologies = await GetApologies(newMessage).ConfigureAwait(false);
-                                                        if (apologies != null)
+                                                        if (apologies == null)
                                                         {
-                                                            var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
-                                                            clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
-                                                            if ((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
-                                                                clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.Text);
+                                                            apologies = await GetApologies(newMessage).ConfigureAwait(false);
+                                                            if (apologies != null)
+                                                            {
+                                                                var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies).ConfigureAwait(false);
+                                                                clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
+                                                                if ((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
+                                                                    clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.Text);
+                                                            }
                                                         }
+                                                        botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                               $"Успешная отправка сообщения {newMessage.Text} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                     }
-                                                    botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
-                                                                           $"Успешная отправка сообщения {newMessage} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
+                                                    else
+                                                    {
+                                                        botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
+                                                                               $"Боту ");
+                                                    }
                                                 }
                                             }
                                             else
@@ -633,42 +662,53 @@ namespace BotClient.Bussines.Services
                                                                                        $"Отправка сообщения контактёру {client.Id} ({client.FullName})");
                                         if (newBotMessage != null)
                                         {
+                                            var hasCaptcha = false;
                                             string apologies = null;
                                             var sendResult = false;
-                                            for (int k = 0; k < newBotMessage.TextParts.Count; k++)
+                                            for (int k = 0; k < newBotMessage.TextParts.Count && hasCaptcha == false; k++)
                                             {
                                                 sendAnswerMessageResult = await vkActionService.SendAnswerMessage(WebDriverId, newBotMessage.TextParts[k].Text, 
                                                     client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
-
-                                                if ((!sendAnswerMessageResult.hasError) && (sendAnswerMessageResult.ActionResultMessage == EnumActionResult.Success))
+                                                hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
+                                                if (!hasCaptcha)
                                                 {
-                                                    sendResult = true;
-                                                    if (apologies == null)
+                                                    if ((!sendAnswerMessageResult.hasError) && (sendAnswerMessageResult.ActionResultMessage == EnumActionResult.Success))
                                                     {
-                                                        apologies = await GetApologies(newBotMessage, k).ConfigureAwait(false);
-                                                        if (apologies != null)
+                                                        sendResult = true;
+                                                        if (apologies == null)
                                                         {
-                                                            var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies,
-                                                                                      client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
-                                                            if((sendApologiesResult.ActionResultMessage == EnumActionResult.Success) && (!sendApologiesResult.hasError))
-                                                                clientCompositeService.CreateMessage(botDialogsWithNewBotMessages[i].Id, apologies);
+                                                            apologies = await GetApologies(newBotMessage, k).ConfigureAwait(false);
+                                                            if (apologies != null)
+                                                            {
+                                                                var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies,
+                                                                                          client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
+                                                                if ((sendApologiesResult.ActionResultMessage == EnumActionResult.Success) && (!sendApologiesResult.hasError))
+                                                                    clientCompositeService.CreateMessage(botDialogsWithNewBotMessages[i].Id, apologies);
+                                                            }
                                                         }
                                                     }
+                                                    else
+                                                        break;
                                                 }
                                                 else
                                                     break;
                                             }
+                                            if (hasCaptcha)
+                                                botCompositeService.SetIsPrintBlock(BotId, true);
                                             if (sendResult)
                                             {
-                                                if (apologies != null)
+                                                if (!hasCaptcha)
                                                 {
-                                                    apologies = await GetApologies(newBotMessage).ConfigureAwait(false);
                                                     if (apologies != null)
                                                     {
-                                                        var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies,
-                                                                                  client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
-                                                        if ((sendApologiesResult.ActionResultMessage == EnumActionResult.Success) && (!sendApologiesResult.hasError))
-                                                            clientCompositeService.CreateMessage(botDialogsWithNewBotMessages[i].Id, apologies);
+                                                        apologies = await GetApologies(newBotMessage).ConfigureAwait(false);
+                                                        if (apologies != null)
+                                                        {
+                                                            var sendApologiesResult = await vkActionService.SendAnswerMessage(WebDriverId, apologies,
+                                                                                      client.VkId, botDialogsWithNewBotMessages[i].Id).ConfigureAwait(false);
+                                                            if ((sendApologiesResult.ActionResultMessage == EnumActionResult.Success) && (!sendApologiesResult.hasError))
+                                                                clientCompositeService.CreateMessage(botDialogsWithNewBotMessages[i].Id, apologies);
+                                                        }
                                                     }
                                                 }
                                             }
@@ -939,6 +979,72 @@ namespace BotClient.Bussines.Services
             var botWorkMissionStatus = botWorkStatus.BotWorkMissionsStatus.OrderBy(item => item.ActionsCount).FirstOrDefault();
             botWorkMissionStatus.ActionsCount++;
             return botWorkMissionStatus.MissionId;
+        }
+
+        private async Task<bool> GroupAction(Guid WebDriverId, int BotId)
+        {
+            var result = false;
+            try
+            {
+                var botData = botCompositeService.GetBotById(BotId);
+                var settings = settingsService.GetServerSettings();
+                if (botData.MaxGroupCount < 0)
+                {
+                    botData.MaxGroupCount = random.Next(settings.MinSubscribeCount, settings.MaxSubscribeCount);
+                    botCompositeService.SetMaxGroupCount(BotId, botData.MaxGroupCount);
+                }
+                var botGroups = botCompositeService.GetBotPlatformGroupConnectionsByBotId(BotId);
+                var isSubscribe = false;
+                if (botGroups.Count < botData.MaxGroupCount)
+                {
+                    var groups = platformGroupService.GetByPlatformId((int)EnumSocialPlatform.Vk);
+                    groups.RemoveAll(item => !botGroups.Any(item2 => item2.PlatformGroupId == item.Id));
+                    if (groups.Count > 0)
+                    {
+                        var randomGroupId = random.Next(0, groups.Count);
+                        var subscribeResult = await vkActionService.SubscribeToGroup(WebDriverId,
+                                              groups[randomGroupId].GroupId, groups[randomGroupId].GroupName).ConfigureAwait(false);
+                        if ((!subscribeResult.hasError) && (subscribeResult.ActionResultMessage == EnumActionResult.Success))
+                        {
+                            isSubscribe = true;
+                            botCompositeService.CreateBotPlatformGroupConnection(BotId, groups[randomGroupId].Id);
+                        }
+                    }
+                }
+                if ((!isSubscribe) && (botGroups.Count > 0))
+                {
+                    botGroups = botGroups.OrderBy(item => item.RepostCount).ToList();
+                    var group = platformGroupService.GetById(botGroups[0].PlatformGroupId);
+                    if (group != null)
+                    {
+                        var goToGroupResult = await vkActionService.GoToGroup(WebDriverId, group.GroupName).ConfigureAwait(false);
+                        if (goToGroupResult.ActionResultMessage == EnumActionResult.Success)
+                        {
+                            var posts = await vkActionService.GetPosts(WebDriverId);
+                            var repostCount = botsWorkStatus.FirstOrDefault(item => item.BotData.Id == BotId).RepostCount;
+                            if (posts.Count > 0)
+                            {
+                                var isRepost = false;
+                                if ((settings.RepostChancePerDay / repostCount) < random.Next(0, 100))
+                                    isRepost = true;
+                                var watchResult = await vkActionService.WatchPost(WebDriverId, posts[random.Next(0, posts.Count)], isRepost).ConfigureAwait(false);
+                                if ((watchResult.ActionResultMessage == EnumActionResult.Success) && (isRepost))
+                                {
+                                    botCompositeService.AddRepostCount(botGroups[0].Id, botGroups[0].RepostCount + 1);
+                                    botsWorkStatus.FirstOrDefault(item => item.BotData.Id == BotId).RepostCount++;
+                                }
+                                if (watchResult.ActionResultMessage == EnumActionResult.Success)
+                                    result = true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
         }
 
         public async Task Test(string Text)//UPDATE `BotClientRoleConnector` SET `MissionPath` = NULL, `BotId`=-1, `IsComplete`=0 WHERE `BotClientRoleConnector`.`Id` = 41065;

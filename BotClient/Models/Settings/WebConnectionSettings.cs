@@ -27,7 +27,9 @@ namespace BotClient.Models.Settings
         public int UseDateTimeHelloPhraseChance { get; set; }
         public int UseContactPhraseChance { get; set; }
         public int UseNameContactChance { get; set; }
-        public int RepostChancePerTenPost { get; set; }
+        public int MinSubscribeCount { get; set; }
+        public int MaxSubscribeCount { get; set; }
+        public int RepostChancePerDay { get; set; }
 
         public int MusicWaitingTime { get; set; }
         public int MusicWaitingDeltaTime { get; set; }

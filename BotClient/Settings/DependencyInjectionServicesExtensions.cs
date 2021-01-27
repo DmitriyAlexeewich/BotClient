@@ -50,6 +50,8 @@ namespace BotClient.Settings
             services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
             services.AddSingleton<IRoleServerConnectorService, RoleServerConnectorService>();
             services.AddSingleton<IPhraseService, PhraseService>();
+            services.AddSingleton<IPlatformGroupService, PlatformGroupService>();
+            services.AddSingleton<IBotPlatformGroupConnectorService, BotPlatformGroupConnectorService>();
 
             return services;
         }

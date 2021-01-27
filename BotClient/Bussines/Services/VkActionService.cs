@@ -1186,7 +1186,7 @@ namespace BotClient.Bussines.Services
                     result.ActionResultMessage = EnumActionResult.Success;
                     if (isRepost)
                     {
-                        var closeBtn = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".pv_close_btn", EnumClickType.URLClick);
+                        await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
                         var repostResult = await RepostPostToSelfPage(WebDriverId, PlatformPost.Element).ConfigureAwait(false);
                         if ((repostResult.hasError) || (repostResult.ActionResultMessage != EnumActionResult.Success))
                         {
@@ -1295,7 +1295,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        private async Task<bool> hasCaptcha(Guid WebDriverId, bool? SkipClose = false)
+        public async Task<bool> hasCaptcha(Guid WebDriverId)
         {
             var result = false;
             try
@@ -1307,10 +1307,6 @@ namespace BotClient.Bussines.Services
                         await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container").ConfigureAwait(false);
                         result = true;
                     }
-                }
-                if (SkipClose.Value) {
-                    await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
