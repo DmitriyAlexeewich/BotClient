@@ -1179,7 +1179,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var postContent = webElementService.GetElementInElement(PlatformPost.Element, EnumWebHTMLElementSelector.CSSSelector, ".wall_text");
-                var postActiveContent = webElementService.GetElementInElement(postContent, EnumWebHTMLElementSelector.TagName, "a");
+                var postActiveContent = webElementService.GetElementInElement(postContent, EnumWebHTMLElementSelector.TagName, "div");
                 if (webElementService.ClickToElement(postActiveContent, EnumClickType.URLClick))
                 {
                     result.hasError = false;

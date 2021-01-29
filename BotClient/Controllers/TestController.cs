@@ -49,9 +49,24 @@ namespace BotClient.Controllers
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            for (int i=0; i<100; i++)
-                await botWorkService.Test(Text);
+            Random rand = new Random();
+            var tl = new List<t>();
+            for (int i = 0; i < 10; i++)
+            {
+                tl.Add(new t()
+                {
+                    a = rand.Next(0, 100)
+                });
+            }
+            var f = tl[0];
+            tl.Remove(f);
+            tl.Add(f);
             return Ok();
+        }
+
+        class t
+        {
+            public int a;
         }
     }
 }
