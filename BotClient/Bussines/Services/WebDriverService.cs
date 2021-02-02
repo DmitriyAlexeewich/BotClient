@@ -77,6 +77,7 @@ namespace BotClient.Bussines.Services
                     webDrivers[webDrivers.IndexOf(webDriver)].Status = EnumWebDriverStatus.Start;
                     webDriver.WebDriver.Quit();
                     var startResult = StartWebDriver(webDriver.WebDriverPlatform);
+                    startResult.Item1.SetNewId(WebDriverId);
                     webDrivers[webDrivers.IndexOf(webDriver)] = startResult.Item1;
                     result = startResult.Item2;
                 }

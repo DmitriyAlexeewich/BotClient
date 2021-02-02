@@ -26,7 +26,6 @@ D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Renci.Ss
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\SshNet.Security.Cryptography.dll
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Configuration.ConfigurationManager.dll
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Security.Cryptography.ProtectedData.dll
-D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Xml.XPath.XmlDocument.dll
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotDataModels.dll
 D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotMySQL.dll

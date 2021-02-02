@@ -36,6 +36,7 @@ namespace BotClient.Settings
             services.AddSingleton<IBotCustomizeService, BotCustomizeService>();
             services.AddSingleton<IBotMusicService, BotMusicService>();
             services.AddSingleton<IBotNewsService, BotNewsService>();
+            services.AddSingleton<IBotPlatformGroupConnectorService, BotPlatformGroupConnectorService>();
             services.AddSingleton<IBotService, BotService>();
             services.AddSingleton<IBotVideoService, BotVideoService>();
             services.AddSingleton<IClientService, ClientService>();
@@ -45,13 +46,12 @@ namespace BotClient.Settings
             services.AddSingleton<IMissionService, MissionService>();
             services.AddSingleton<INodePatternService, NodePatternService>();
             services.AddSingleton<IPatternService, PatternService>();
-            services.AddSingleton<IRoleMissionConnectorService, RoleMissionConnectorService>();
-            services.AddSingleton<IRoleService, RoleService>();
-            services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
-            services.AddSingleton<IRoleServerConnectorService, RoleServerConnectorService>();
             services.AddSingleton<IPhraseService, PhraseService>();
             services.AddSingleton<IPlatformGroupService, PlatformGroupService>();
-            services.AddSingleton<IBotPlatformGroupConnectorService, BotPlatformGroupConnectorService>();
+            services.AddSingleton<IRoleMissionConnectorService, RoleMissionConnectorService>();
+            services.AddSingleton<IRoleServerConnectorService, RoleServerConnectorService>();
+            services.AddSingleton<IRoleService, RoleService>();
+            services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
 
             return services;
         }

@@ -67,6 +67,8 @@ namespace BotClient.Bussines.Services
             var result = false;
             try
             {
+                var settings = settingsService.GetServerSettings();
+                Thread.Sleep(settings.LoginWaitingTime);
                 var checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_blocked_wrap").ConfigureAwait(false);
                 result = !webElementService.isElementAvailable(checkElement);
             }

@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <Reference Include="BotDataModels">
-      <HintPath>..\..\BotDataModels\BotDataModels\bin\Debug\netstandard2.0\BotDataModels.dll</HintPath>
+      <HintPath>D:\Users\stalk\source\repos\BotDataModels\BotDataModels\bin\Debug\netstandard2.0\BotDataModels.dll</HintPath>
     </Reference>
     <Reference Include="BotMySQL">
       <HintPath>..\..\BotMySQL\BotMySQL\bin\Debug\netcoreapp3.1\BotMySQL.dll</HintPath>

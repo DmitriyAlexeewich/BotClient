@@ -10,7 +10,7 @@ namespace BotClient.Models.HTMLWebDriver
 {
     public class HTMLWebDriver
     {
-        public Guid Id { get; } = Guid.NewGuid();
+        public Guid Id { get { return _id; } }
         public EnumWebDriverStatus Status { get; set; } = EnumWebDriverStatus.Start;
         [JsonIgnore]
         public IWebDriver WebDriver { get; }
@@ -21,6 +21,7 @@ namespace BotClient.Models.HTMLWebDriver
         public bool hasBots { get; set; }
 
         private Exception _exception = new Exception();
+        private Guid _id = Guid.NewGuid();
 
         public HTMLWebDriver(EnumSocialPlatform SocialPlatform, WebConnectionSettings ConnectionSettings)
         {
@@ -48,6 +49,11 @@ namespace BotClient.Models.HTMLWebDriver
                 _exception = ex;
                 Status = EnumWebDriverStatus.Error;
             }
+        }
+
+        public void SetNewId(Guid Id)
+        {
+            _id = Id;
         }
     }
 }

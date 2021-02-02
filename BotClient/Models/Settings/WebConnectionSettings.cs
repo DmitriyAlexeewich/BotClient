@@ -32,6 +32,7 @@ namespace BotClient.Models.Settings
         public int RepostChancePerDay { get; set; }
         public int MinRoleActionCountPerDay { get; set; }
         public int MaxRoleActionCountPerDay { get; set; }
+        public int LoginWaitingTime { get; set; }
 
         public int MusicWaitingTime { get; set; }
         public int MusicWaitingDeltaTime { get; set; }

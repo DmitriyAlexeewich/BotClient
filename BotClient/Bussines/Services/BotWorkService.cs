@@ -239,6 +239,7 @@ namespace BotClient.Bussines.Services
                                 botsWorkStatus[i].RepostCount = 0;
                             botsRoleActions = new List<BotRoleActionsDaySchedule>();
                             randomMessages = new List<string>();
+                            /*
                             var deleteDay = DateTime.Now;
                             deleteDay = deleteDay.AddDays(-7);
                             var screenshots = dialogScreenshotService.GetByDateTime(deleteDay);
@@ -252,6 +253,7 @@ namespace BotClient.Bussines.Services
                                     dialogScreenshotService.SetIsDeleted(screenshotsId);
                                 }
                             }
+                            */
                             dayUpdate = true;
                         }
                     }
@@ -572,8 +574,7 @@ namespace BotClient.Bussines.Services
                     }
                 }
             }
-            catch
-            (Exception ex)
+            catch (Exception ex)
             {
                 await settingsService.AddLog("BotWorkService", ex);
             }
@@ -845,17 +846,20 @@ namespace BotClient.Bussines.Services
             string result = "";
             try
             {
-                if (TextPartIndex == null)
+                if (BotMessageText != null)
                 {
-                    if ((BotMessageText.TextParts[TextPartIndex.Value].hasMissClickError) && (random.Next(0, 100) > 70))
-                        result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
-                    else if((BotMessageText.TextParts[TextPartIndex.Value].hasCaps) && (random.Next(0, 100) > 70))
-                        result = await textService.GetCapsApologies().ConfigureAwait(false);
-                }
-                else
-                {
-                    if((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 70))
-                        result = await textService.GetApologies().ConfigureAwait(false);
+                    if (TextPartIndex == null)
+                    {
+                        if ((BotMessageText.TextParts[TextPartIndex.Value].hasMissClickError) && (random.Next(0, 100) > 70))
+                            result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
+                        else if ((BotMessageText.TextParts[TextPartIndex.Value].hasCaps) && (random.Next(0, 100) > 70))
+                            result = await textService.GetCapsApologies().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        if ((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 70))
+                            result = await textService.GetApologies().ConfigureAwait(false);
+                    }
                 }
             }
             catch (Exception ex)
@@ -883,7 +887,7 @@ namespace BotClient.Bussines.Services
                         if ((random.Next(0, 100) > 90) && (apologies.Length > 0))
                         await vkActionService.SendAnswerMessage(WebDriverId, apologies, ClientVkId, BotClientRoleConnectionId).ConfigureAwait(false);
                     }
-                    if ((sendAnswerResult.hasError) && (sendAnswerResult.ActionResultMessage == EnumActionResult.Success))
+                    if (!result)
                         break;
                 }
                 if (result)
