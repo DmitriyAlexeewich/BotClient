@@ -1060,33 +1060,38 @@ namespace BotClient.Bussines.Services
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_gr", EnumClickType.URLClick).ConfigureAwait(false))
                 {
-                    var input = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "groups_list_search").ConfigureAwait(false);
-                    if (webElementService.PrintTextToElement(input, GroupName))
+                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "ui_rmenu_search", EnumClickType.URLClick).ConfigureAwait(false))
                     {
-                        var searchResultContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "groups_list_search_cont").ConfigureAwait(false);
-                        if (searchResultContainer != null)
+                        var input = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "search_query").ConfigureAwait(false);
+                        if (webElementService.PrintTextToElement(input, GroupName))
                         {
-                            var searchResult = webElementService.GetElementInElement(searchResultContainer, EnumWebHTMLElementSelector.TagName, "div");
-                            for (int i = 0; i < 60; i++)
+                            var searchResultContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "results").ConfigureAwait(false);
+                            if (searchResultContainer != null)
                             {
-                                searchResult = webElementService.GetElementInElement(searchResultContainer, EnumWebHTMLElementSelector.TagName, "div");
-                                Thread.Sleep(1000);
-                            }
-                            if (searchResult != null)
-                            {
-                                var groups = webElementService.GetChildElements(searchResultContainer, EnumWebHTMLElementSelector.CSSSelector,
-                                             ".group_list_row.clear_fix._gl_row");
-                                for (int i = 0; i < groups.Count; i++)
+                                var searchResult = webElementService.GetElementInElement(searchResultContainer, EnumWebHTMLElementSelector.TagName, "div");
+                                for (int i = 0; i < 60; i++)
                                 {
-                                    var groupHref = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".group_row_photo");
-                                    if (groupHref.GetAttributeValue("href").IndexOf(GroupURL) != -1)
+                                    searchResult = webElementService.GetElementInElement(searchResultContainer, EnumWebHTMLElementSelector.TagName, "div");
+                                    Thread.Sleep(1000);
+                                    if (searchResult != null)
+                                        break;
+                                }
+                                if (searchResult != null)
+                                {
+                                    var groups = webElementService.GetChildElements(searchResultContainer, EnumWebHTMLElementSelector.CSSSelector,
+                                                 ".groups_row.search_row.clear_fix");
+                                    for (int i = 0; i < groups.Count; i++)
                                     {
-                                        var btn = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".flat_button");
-                                        if (webElementService.ClickToElement(btn, EnumClickType.ElementClick))
+                                        var groupHref = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.TagName, "a");
+                                        if (groupHref.GetAttributeValue("href").IndexOf(GroupURL) != -1)
                                         {
-                                            result.hasError = false;
-                                            result.ActionResultMessage = EnumActionResult.Success;
-                                            break;
+                                            var btn = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".flat_button");
+                                            if (webElementService.ClickToElement(btn, EnumClickType.ElementClick))
+                                            {
+                                                result.hasError = false;
+                                                result.ActionResultMessage = EnumActionResult.Success;
+                                                break;
+                                            }
                                         }
                                     }
                                 }

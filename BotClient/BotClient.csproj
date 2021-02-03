@@ -28,11 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BotMySQL\BotMySQL\BotMySQL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="BotDataModels">
-      <HintPath>D:\Users\stalk\source\repos\BotDataModels\BotDataModels\bin\Debug\netstandard2.0\BotDataModels.dll</HintPath>
-    </Reference>
-    <Reference Include="BotMySQL">
-      <HintPath>..\..\BotMySQL\BotMySQL\bin\Debug\netcoreapp3.1\BotMySQL.dll</HintPath>
+      <HintPath>..\..\BotDataModels\BotDataModels\bin\Debug\netstandard2.0\BotDataModels.dll</HintPath>
     </Reference>
   </ItemGroup>
 

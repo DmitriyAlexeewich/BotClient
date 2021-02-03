@@ -206,7 +206,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 CreateConfigurationFile();
-                webConnectionSettings.ErrorChancePerTenWords = ErrorChancePerTenWords;
+                webConnectionSettings.ErrorChanceInWords = ErrorChancePerTenWords;
                 File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
                 return new SettingsReport();
             }

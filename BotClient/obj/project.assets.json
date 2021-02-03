@@ -369,6 +369,31 @@
             "rid": "win"
           }
         }
+      },
+      "BotDataModels/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/BotDataModels.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BotDataModels.dll": {}
+        }
+      },
+      "BotMySQL/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.1",
+        "dependencies": {
+          "BotDataModels": "1.0.0",
+          "MySql.Data": "8.0.22",
+          "Newtonsoft.Json": "12.0.3"
+        },
+        "compile": {
+          "bin/placeholder/BotMySQL.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BotMySQL.dll": {}
+        }
       }
     }
   },
@@ -1161,10 +1186,21 @@
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
+    },
+    "BotDataModels/1.0.0": {
+      "type": "project",
+      "path": "../../BotDataModels/BotDataModels/BotDataModels.csproj",
+      "msbuildProject": "../../BotDataModels/BotDataModels/BotDataModels.csproj"
+    },
+    "BotMySQL/1.0.0": {
+      "type": "project",
+      "path": "../../BotMySQL/BotMySQL/BotMySQL.csproj",
+      "msbuildProject": "../../BotMySQL/BotMySQL/BotMySQL.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
+      "BotMySQL >= 1.0.0",
       "HtmlAgilityPack >= 1.11.30",
       "Microsoft.Extensions.Configuration >= 5.0.0",
       "Microsoft.Extensions.Configuration.Binder >= 5.0.0",
@@ -1175,25 +1211,20 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\stalk\\.nuget\\packages\\": {},
-    "C:\\Microsoft\\Xamarin\\NuGet\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
-      "packagesPath": "C:\\Users\\stalk\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\obj\\",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Microsoft\\Xamarin\\NuGet\\"
-      ],
       "configFilePaths": [
-        "C:\\Users\\stalk\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp3.1"
@@ -1204,7 +1235,11 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -1263,7 +1298,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.405\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
       }
     }
   }

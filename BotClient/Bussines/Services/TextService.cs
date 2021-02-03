@@ -81,7 +81,7 @@ namespace BotClient.Bussines.Services
                 }
                 bool predicate(string item) { return item.Length < 1; }
                 textParts.RemoveAll(predicate);
-                var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
+                var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChanceInWords;
                 var keyboardErrorCount = 0;
                 for (int i = 0; i < textParts.Count; i++)
                 {
@@ -90,7 +90,7 @@ namespace BotClient.Bussines.Services
                         var textPart = new BotMessageTextPartModel();
                         textPart.Text = textParts[i];
                         textPart.Text = await ReplaceNumberToWord(textPart.Text).ConfigureAwait(false);
-                        if ((textParts[i].Length > 2) && random.Next(0, 100) < (int)(((float)(textParts[i].Split(' ').Length / 10)) * errorChancePerTenWords))
+                        if ((textParts[i].Length > 2) && random.Next(0, 100) < (textParts[i].Split(' ').Length * errorChancePerTenWords))
                         {
                             textPart = await SetMessageKeyboardError(textPart);
                             if (textPart.hasMissClickError)
@@ -256,7 +256,7 @@ namespace BotClient.Bussines.Services
                 constantText = GetConstantTexts(TextPart.Text, new Regex(@"(\(\w*\))"));
                 result.Text = ReplaceConstantStringToKey(TextPart.Text, constantText);
                 var words = result.Text.Split(" ");
-                var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
+                var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChanceInWords;
                 char[][] keyboard = new char[3][]
                     {
                     new char[12] { 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ' },

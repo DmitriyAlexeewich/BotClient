@@ -24,6 +24,7 @@
     ".NETCoreApp,Version=v3.1": {
       "BotClient/1.0.0": {
         "dependencies": {
+          "BotMySQL": "1.0.0",
           "HtmlAgilityPack": "1.11.30",
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
@@ -31,8 +32,7 @@
           "Newtonsoft.Json": "12.0.3",
           "Selenium.WebDriver": "3.141.0",
           "Selenium.WebDriver.ChromeDriver": "88.0.4324.9600",
-          "BotDataModels": "1.0.0.0",
-          "BotMySQL": "1.0.0.0",
+          "BotDataModels.Reference": "1.0.0.0",
           "Microsoft.AspNetCore.Antiforgery": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Abstractions": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Cookies": "3.1.0.0",
@@ -603,7 +603,20 @@
           "System.Drawing.Common": "4.7.0"
         }
       },
-      "BotDataModels/1.0.0.0": {
+      "BotMySQL/1.0.0": {
+        "dependencies": {
+          "BotDataModels": "1.0.0",
+          "MySql.Data": "8.0.23",
+          "Newtonsoft.Json": "12.0.3"
+        },
+        "runtime": {
+          "BotMySQL.dll": {}
+        },
+        "compile": {
+          "BotMySQL.dll": {}
+        }
+      },
+      "BotDataModels.Reference/1.0.0.0": {
         "runtime": {
           "BotDataModels.dll": {
             "assemblyVersion": "1.0.0.0",
@@ -612,17 +625,6 @@
         },
         "compile": {
           "BotDataModels.dll": {}
-        }
-      },
-      "BotMySQL/1.0.0.0": {
-        "runtime": {
-          "BotMySQL.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        },
-        "compile": {
-          "BotMySQL.dll": {}
         }
       },
       "Microsoft.AspNetCore.Antiforgery/3.1.0.0": {
@@ -2292,6 +2294,9 @@
           "WindowsBase.dll": {}
         },
         "compileOnly": true
+      },
+      "BotDataModels/1.0.0": {
+        "compileOnly": true
       }
     }
   },
@@ -2497,12 +2502,12 @@
       "path": "system.windows.extensions/4.7.0",
       "hashPath": "system.windows.extensions.4.7.0.nupkg.sha512"
     },
-    "BotDataModels/1.0.0.0": {
-      "type": "reference",
+    "BotMySQL/1.0.0": {
+      "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "BotMySQL/1.0.0.0": {
+    "BotDataModels.Reference/1.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
@@ -3894,6 +3899,11 @@
     },
     "WindowsBase/4.0.0.0": {
       "type": "referenceassembly",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "BotDataModels/1.0.0": {
+      "type": "project",
       "serviceable": false,
       "sha512": ""
     }

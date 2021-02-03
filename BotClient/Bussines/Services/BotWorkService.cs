@@ -142,7 +142,7 @@ namespace BotClient.Bussines.Services
                             var nowTime = DateTime.Now;
                             var startTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 8, 0, 0);
                             var endTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 23, 0, 0);
-                            var maxSecondActionsCount = random.Next(4, 10);
+                            var maxSecondActionsCount = 0;
                             var botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.BotData.Id);
                             if (botRoleActions == null)
                             {
@@ -157,14 +157,17 @@ namespace BotClient.Bussines.Services
                             {
                                 if (botRoleActions.RoleActionCount > 0)
                                 {
-                                    var maxClientsRoleConnectionActionsCount = random.Next(1, 2);
+                                    var maxClientsRoleConnectionActionsCount = random.Next(setting.MinRoleActionCountPerSession, setting.MaxRoleActionCountPerSession);
                                     botRoleActions.RoleActionCount -= maxClientsRoleConnectionActionsCount;
                                     for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
+                                    {
                                         botSchedule.Add(EnumBotActionType.RoleMission);
+                                        maxSecondActionsCount++;
+                                    }
                                 }
                             }
                             else
-                                maxSecondActionsCount = random.Next(10, 20);
+                                maxSecondActionsCount = random.Next(setting.MinNightSecondActionCountPerSession, setting.MaxNightSecondActionCountPerSession);
                             for (int j = 0; j < maxSecondActionsCount; j++)
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 4));
                             botSchedule = settingsService.Shuffle(botSchedule).ToList();
@@ -711,32 +714,38 @@ namespace BotClient.Bussines.Services
                     for (int i = 0; i < newMessages.Count; i++)
                         newMessageText += newMessages[i].Text + " ";
                     newMessageText = newMessageText.Remove(newMessageText.Length - 1);
-                    var standartPatterns = missionCompositeService.GetStandartPatterns(RoleId);
-                    for (int i = 0; i < standartPatterns.Count; i++)
+                    var mission = missionCompositeService.GetMissionById(botClientRoleConnector.MissionId);
+                    if (!mission.isQuiz)
                     {
-                        if (isRegexMatch(newMessageText, standartPatterns[i].Text, standartPatterns[i].isRegex, standartPatterns[i].isInclude))
+                        var standartPatterns = missionCompositeService.GetStandartPatterns(RoleId);
+                        var nonRoleStandartPatterns = missionCompositeService.GetNonRoleStandartPatterns();
+                        standartPatterns.AddRange(nonRoleStandartPatterns);
+                        for (int i = 0; i < standartPatterns.Count; i++)
                         {
-                            var botMessage = await textService.RandOriginalMessage(standartPatterns[i].AnswerText).ConfigureAwait(false);
-                            if (botMessage != null)
+                            if (isRegexMatch(newMessageText, standartPatterns[i].Text, standartPatterns[i].isRegex, standartPatterns[i].isInclude))
                             {
-                                var sendResult = await PrintAnswerMessage(WebDriverId, botMessage, botClientRoleConnector.Id, ClientVkId).ConfigureAwait(false);
-                                var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, sendResult, newMessageText, botMessage.Text).ConfigureAwait(false);
-                                return saveResult;
+                                var botMessage = await textService.RandOriginalMessage(standartPatterns[i].AnswerText).ConfigureAwait(false);
+                                if (botMessage != null)
+                                {
+                                    var sendResult = await PrintAnswerMessage(WebDriverId, botMessage, botClientRoleConnector.Id, ClientVkId).ConfigureAwait(false);
+                                    var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, sendResult, newMessageText, botMessage.Text).ConfigureAwait(false);
+                                    return saveResult;
+                                }
+                                return false;
                             }
-                            return false;
                         }
                     }
                     if (!botClientRoleConnector.isScenarioComplete)
                     {
                         var nodes = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, null, botClientRoleConnector.MissionPath);
-                        if ((nodes != null) && (nodes.Count > 0))
+                        for (int i = 0; i < nodes.Count; i++)
                         {
-                            var nodePatterns = missionCompositeService.GetNodePatterns(botClientRoleConnector.MissionId, nodes[0].PatternId);
-                            for (int i = 0; i < nodePatterns.Count; i++)
+                            var nodePatterns = missionCompositeService.GetNodePatterns(botClientRoleConnector.MissionId, nodes[i].PatternId);
+                            for (int j = 0; j < nodePatterns.Count; j++)
                             {
-                                if (isRegexMatch(newMessageText, nodePatterns[i].PatternText, nodePatterns[i].isRegex, nodePatterns[i].isInclude))
+                                if (isRegexMatch(newMessageText, nodePatterns[j].PatternText, nodePatterns[j].isRegex, nodePatterns[j].isInclude))
                                 {
-                                    var patternAction = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, nodePatterns[i].NodeId, null);
+                                    var patternAction = missionCompositeService.GetNodes(botClientRoleConnector.MissionId, nodePatterns[j].NodeId, null);
                                     if ((patternAction != null) && (patternAction.Count > 0) && (patternAction[0].Type == EnumMissionActionType.SendMessage))
                                     {
                                         var botMessage = await textService.RandOriginalMessage(patternAction[0].Text).ConfigureAwait(false);
