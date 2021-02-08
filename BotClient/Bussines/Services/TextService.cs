@@ -32,7 +32,7 @@ namespace BotClient.Bussines.Services
             var result = new BotMessageText();
             try
             {
-                var settings = settingsService.GetServerSettings();
+                var settings = settingsService.GetServerSettings();/*
                 var maxAttept = random.Next(settings.MinAtteptCountToRandMessage, settings.MaxAtteptCountToRandMessage);
                 for (int i = 0; i < maxAttept; i++)
                 {
@@ -43,11 +43,14 @@ namespace BotClient.Bussines.Services
                         result.Text = randomMessage;
                         break;
                     }
-                }
-                if(result.Text == null)
+                }*/
+                if (result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
+                var constantText = new List<MessageConstantText>();
+                constantText = GetConstantTexts(result.Text);
+                result.Text = ReplaceConstantStringToKey(result.Text, constantText);
                 result.Text = await SetPhrases(result.Text).ConfigureAwait(false);
-                result.Text = ReplaceSecondaryText(result.Text);
+                result.Text = await ReplaceSecondaryText(result.Text).ConfigureAwait(false);
                 result.Text = await SetContact(Name, Gender, result.Text);
                 result.Text = Regex.Replace(result.Text, @"\s+", " ");
                 var textParts = new List<string>();
@@ -79,9 +82,9 @@ namespace BotClient.Bussines.Services
                             textParts.Insert(i, spaceTextParts[j]);
                     }
                 }
-                bool predicate(string item) { return item.Length < 1; }
-                textParts.RemoveAll(predicate);
-                var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChanceInWords;
+                //bool predicate(string item) { return item.Length < 1; }
+                textParts.RemoveAll(item => item.Length < 1);
+                var errorIndexList = await SetMissClickErrorIndex(textParts).ConfigureAwait(false);
                 var keyboardErrorCount = 0;
                 for (int i = 0; i < textParts.Count; i++)
                 {
@@ -90,15 +93,16 @@ namespace BotClient.Bussines.Services
                         var textPart = new BotMessageTextPartModel();
                         textPart.Text = textParts[i];
                         textPart.Text = await ReplaceNumberToWord(textPart.Text).ConfigureAwait(false);
-                        if ((textParts[i].Length > 2) && random.Next(0, 100) < (textParts[i].Split(' ').Length * errorChancePerTenWords))
+                        if (errorIndexList.IndexOf(i) != -1)
                         {
-                            textPart = await SetMessageKeyboardError(textPart);
+                            textPart = await SetMessageKeyboardError(textPart).ConfigureAwait(false);
                             if (textPart.hasMissClickError)
                                 keyboardErrorCount++;
                         }
                         if(!textPart.hasMissClickError)
                             textPart = await SetCaps(textPart).ConfigureAwait(false);
                         textPart.Text = RemoveBrackets(textPart.Text);
+                        textPart.Text = ConstructMessage(textPart.Text, constantText);
                         result.TextParts.Add(textPart);
                     }
                 }
@@ -252,11 +256,8 @@ namespace BotClient.Bussines.Services
             var result = TextPart;
             try
             {
-                var constantText = new List<MessageConstantText>();
-                constantText = GetConstantTexts(TextPart.Text, new Regex(@"(\(\w*\))"));
-                result.Text = ReplaceConstantStringToKey(TextPart.Text, constantText);
                 var words = result.Text.Split(" ");
-                var settingsErrorChancePerTenWords = settingsService.GetServerSettings().ErrorChanceInWords;
+                var settings = settingsService.GetServerSettings();
                 char[][] keyboard = new char[3][]
                     {
                     new char[12] { 'й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ' },
@@ -265,39 +266,31 @@ namespace BotClient.Bussines.Services
                     };
                 var wordsIndexes = new List<int>();
                 var regex = new Regex(@"\b[А-Яа-я]+\b", RegexOptions.IgnoreCase);
-                if (words.Length >= 10)
+                var errorChance = 100;
+                for (int i = 0; i < words.Length; i++)
                 {
-                    for (int i = 0; i < words.Length; i++)
+                    if (regex.IsMatch(words[i]))
                     {
-                        if ((i > 0) && (i % 10 == 0) && (random.Next(0, 100) < settingsErrorChancePerTenWords))
+                        if (random.Next(0, 100) <= errorChance)
                         {
-                            var randomIndex = random.Next(i - 10, i);
-                            if (regex.IsMatch(words[randomIndex]))
-                                wordsIndexes.Add(randomIndex);
+                            if (words[i].Length < settings.MinErrorWordLength)
+                            {
+                                if (random.Next(0, 100) < 30)
+                                    wordsIndexes.Add(i);
+                            }
+                            else if ((words[i].Length > settings.MinErrorWordLength) && (words[i].Length < settings.MaxErrorWordLength))
+                            {
+                                if (random.Next(0, 100) < 60)
+                                    wordsIndexes.Add(i);
+                            }
+                            else
+                                wordsIndexes.Add(i);
+                            errorChance /= 2;
                         }
                     }
                 }
-                else if (random.Next(0, 100) < words.Length / settingsErrorChancePerTenWords)
-                {
-                    var randomIndex = random.Next(0, words.Length);
-                    if (regex.IsMatch(words[randomIndex]))
-                        wordsIndexes.Add(randomIndex);
-                }
-                var index = random.Next(0, wordsIndexes.Count);
-                if (wordsIndexes.Count < 1)
-                    index = -1;
-                while (wordsIndexes.Count > 0)
-                {
-                    index = random.Next(0, wordsIndexes.Count);
-                    if (words[wordsIndexes[index]].Length < 2)
-                    {
-                        wordsIndexes.RemoveAt(index);
-                        index = -1;
-                    }
-                    else
-                        break;
-                }
-                if ((index >= 0) && (regex.IsMatch(words[wordsIndexes[index]])))
+                var index = wordsIndexes[random.Next(0, wordsIndexes.Count)];
+                if ((index >= 0) && (regex.IsMatch(words[index])))
                 {
                     var word = words[wordsIndexes[index]];
                     var newWord = "";
@@ -395,8 +388,6 @@ namespace BotClient.Bussines.Services
             var result = TextPart;
             try
             {
-                var constantText = GetConstantTexts(result.Text, new Regex(@"(\(\w*\))"));
-                result.Text = ReplaceConstantStringToKey(result.Text, constantText);
                 var words = result.Text.Split(" ");
                 var settingsCapsChancePerThousandWords = settingsService.GetServerSettings().CapsChancePerThousandWords;
                 if (settingsCapsChancePerThousandWords < 1)
@@ -440,9 +431,7 @@ namespace BotClient.Bussines.Services
             var result = Text;
             try
             {
-                var constantText = GetConstantTexts(Text, new Regex(@"(\(\w*\))"));
                 var textNumbers = GetConstantTexts(Text, new Regex(@"\b[0-9]{12}\b"));
-                Text = ReplaceConstantStringToKey(Text, constantText);
                 Text = ReplaceConstantStringToKey(Text, textNumbers);
                 if (textNumbers.Count > 0)
                 {
@@ -498,13 +487,42 @@ namespace BotClient.Bussines.Services
                         textNumbers.RemoveAll(item => item.TextGuid == textNumbers[i].TextGuid);
                     }
                 }
-                Text = ConstructMessage(Text, constantText);
                 Text = ConstructMessage(Text, textNumbers);
                 return Text;
             }
             catch (Exception ex)
             {
                 await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
+        private List<MessageConstantText> GetConstantTexts(string Text)
+        {
+            var result = new List<MessageConstantText>();
+            for (int i = 0; i < Text.Length; i++)
+            {
+                if ((Text[i] == '(') && (isTechBrackets(Text, i)))
+                {
+                    var constantText = "";
+                    for (int j = i + 1; j < Text.Length; j++)
+                    {
+                        constantText += Text[j];
+                        if ((Text[j] == ')') && (isTechBrackets(Text, j)))
+                        {
+                            constantText = constantText.Remove(constantText.Length - 1);
+                            var messageConstantText = new MessageConstantText()
+                            {
+                                Text = constantText,
+                                TextGuid = Guid.NewGuid()
+                            };
+                            result.Add(messageConstantText);
+                            Text = Text.Remove(i, constantText.Length).Insert(i, messageConstantText.TextGuid.ToString());
+                            i = -1;
+                            break;
+                        }
+                    }
+                }
             }
             return result;
         }
@@ -793,23 +811,55 @@ namespace BotClient.Bussines.Services
             return Text;
         }
         
-        private string ReplaceSecondaryText(string Text)
+        private async Task<string> ReplaceSecondaryText(string Text)
         {
-            var lastOpen = -1;
-            for (int i = 0; i < Text.Length; i++)
+            try
             {
-                if ((Text[i] == '[') && (isTechBrackets(Text, i)))
-                    lastOpen = i;
-                if ((Text[i] == ']') && (lastOpen != -1) && (isTechBrackets(Text, i)))
+                var lastOpen = -1;
+                for (int i = 0; i < Text.Length; i++)
                 {
-                    var substring = Text.Substring(lastOpen+1, i - lastOpen);
-                    var parts = substring.Split("_").ToList();
-                    parts = settingsService.Shuffle(parts).ToList();
-                    Text = Text.Replace(substring, string.Join(" ", parts));
-                    i = -1;
+                    if ((Text[i] == '[') && (isTechBrackets(Text, i)))
+                        lastOpen = i;
+                    if ((Text[i] == ']') && (lastOpen != -1) && (isTechBrackets(Text, i)))
+                    {
+                        var substring = Text.Substring(lastOpen+1, i - lastOpen);
+                        var parts = substring.Split("_").ToList();
+                        parts = settingsService.Shuffle(parts).ToList();
+                        Text = Text.Replace(substring, string.Join(" ", parts));
+                        i = -1;
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("TextService", ex);
+            }
             return Text;
+        }
+
+        private async Task<List<int>> SetMissClickErrorIndex(List<string> TextParts)
+        {
+            var result = new List<int>();
+            try
+            {
+                var errorChancePerTenWords = settingsService.GetServerSettings().ErrorChancePerTenWords;
+                var spaceCount = TextParts.Count;
+                for (int i = 0; i < TextParts.Count; i++)
+                {
+                    spaceCount += TextParts[i].Split(' ').Length;
+                    if (random.Next(0, 100) < ((spaceCount / 10) * errorChancePerTenWords))
+                    {
+                        result.Add(i);
+                        spaceCount = 0;
+                    }
+                }
+                var t = 0;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("TextService", ex);
+            }
+            return result;
         }
     }
 }

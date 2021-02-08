@@ -93,14 +93,14 @@
         }
       }
     },
-    "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+    "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
         "projectName": "BotDataModels",
-        "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
+        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\obj\\",
+        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -148,14 +148,14 @@
         }
       }
     },
-    "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+    "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
         "projectName": "BotMySQL",
-        "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
+        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\obj\\",
+        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -171,8 +171,8 @@
         "frameworks": {
           "netcoreapp3.1": {
             "projectReferences": {
-              "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
-                "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
+              "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+                "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
               }
             }
           }

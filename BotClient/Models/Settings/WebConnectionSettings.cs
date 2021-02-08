@@ -15,7 +15,11 @@ namespace BotClient.Models.Settings
         public int HTMLPageWaitingTime { get; set; }
         public int HTMLElementWaitingTime { get; set; }
         public int ScrollCount { get; set; }
-        public int ErrorChanceInWords { get; set; }
+        public int ErrorChancePerTenWords { get; set; }
+
+        public int MinErrorWordLength { get; set; }
+        public int MaxErrorWordLength { get; set; }
+
         public int CapsChancePerThousandWords { get; set; }
         public int NumberChancePerHundredWords { get; set; }
 
@@ -37,6 +41,9 @@ namespace BotClient.Models.Settings
         public int MaxRoleActionCountPerSession { get; set; }
         public int MinNightSecondActionCountPerSession { get; set; }
         public int MaxNightSecondActionCountPerSession { get; set; }
+        public int MinRoleAtteptCount { get; set; }
+        public int MaxRoleAtteptCount { get; set; }
+        public int MaxChillQueue { get; set; }
 
 
         public int MusicWaitingTime { get; set; }

@@ -3,6 +3,7 @@ using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLElements;
 using BotClient.Models.Settings;
 using BotClient.Models.WebReports;
+using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -206,7 +207,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 CreateConfigurationFile();
-                webConnectionSettings.ErrorChanceInWords = ErrorChancePerTenWords;
+                webConnectionSettings.ErrorChancePerTenWords = ErrorChancePerTenWords;
                 File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
                 return new SettingsReport();
             }
@@ -618,6 +619,50 @@ namespace BotClient.Bussines.Services
             return list;
         }
 
+        public List<EnumBotActionType> ShuffleSchedule(List<EnumBotActionType> ScheduleList)
+        {
+            try
+            {
+                var settings = GetServerSettings();
+                ScheduleList = Shuffle(ScheduleList).ToList();
+                var chillActionCount = 0;
+                for (int i = 0; i < ScheduleList.Count; i++)
+                {
+                    if (ScheduleList[i] == EnumBotActionType.RoleMission)
+                    {
+                        if (((i > 0) && (ScheduleList[i - 1] == EnumBotActionType.RoleMission))
+                            || ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == EnumBotActionType.RoleMission)))
+                        {
+                            ScheduleList[i] = (EnumBotActionType)random.Next(1, 5);
+                            ScheduleList = AddEnumBotActionTypeRole(ScheduleList);
+                        }
+                    }
+                    else
+                    {
+                        while (((i > 0) && (ScheduleList[i - 1] == ScheduleList[i])) || ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == ScheduleList[i])))
+                            ScheduleList[i] = (EnumBotActionType)random.Next(1, 5);
+                    }
+                }
+                for (int i = 0; i < ScheduleList.Count; i++)
+                {
+                    if (ScheduleList[i] != EnumBotActionType.RoleMission)
+                    {
+                        chillActionCount++;
+                        if (chillActionCount >= settings.MaxChillQueue)
+                            ScheduleList[i] = 0;
+                    }
+                    else
+                        chillActionCount = 0;
+                }
+                ScheduleList.RemoveAll(item => item == 0);
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return ScheduleList;
+        }
+
         public IList<T> Split<T>(IList<T> list, int Index)
         {
             try
@@ -637,6 +682,25 @@ namespace BotClient.Bussines.Services
                 AddLog("SettingsService", ex);
             }
             return list;
+        }
+
+        private List<EnumBotActionType> AddEnumBotActionTypeRole(List<EnumBotActionType> ScheduleList)
+        {
+            try
+            {
+                if (ScheduleList[ScheduleList.Count - 1] == EnumBotActionType.RoleMission)
+                {
+                    var chillActionsCount = random.Next(1, 3);
+                    for (int i = 0; i < chillActionsCount; i++)
+                        ScheduleList.Add((EnumBotActionType)random.Next(1, 5));
+                }
+                ScheduleList.Add(EnumBotActionType.RoleMission);
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return ScheduleList;
         }
 
         private void CreateErrorLogFile()

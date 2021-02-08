@@ -26,6 +26,7 @@ namespace BotClient.Controllers
         private readonly IVkActionService vkActionService;
         private readonly IBotWorkService botWorkService;
         private readonly IPhraseService phraseService;
+        private readonly ITextService textService;
 
         public TestController(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -34,7 +35,8 @@ namespace BotClient.Controllers
                               ISettingsService SettingsService,
                               IVkActionService VkActionService,
                               IBotWorkService BotWorkService,
-                              IPhraseService PhraseService)
+                              IPhraseService PhraseService,
+                              ITextService TextService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -44,29 +46,18 @@ namespace BotClient.Controllers
             vkActionService = VkActionService;
             botWorkService = BotWorkService;
             phraseService = PhraseService;
+            textService = TextService;
         }
 
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            Random rand = new Random();
-            var tl = new List<t>();
-            for (int i = 0; i < 10; i++)
-            {
-                tl.Add(new t()
-                {
-                    a = rand.Next(0, 100)
-                });
-            }
-            var f = tl[0];
-            tl.Remove(f);
-            tl.Add(f);
-            return Ok();
+            var t = await textService.RandOriginalMessage(Text).ConfigureAwait(false);
+            var f = new List<BotMessageText>();
+            for (int i = 0; i < 1000; i++)
+                f.Add(t);
+            return Ok(f);
         }
 
-        class t
-        {
-            public int a;
-        }
     }
 }

@@ -2,6 +2,7 @@
 using BotClient.Models.HTMLElements;
 using BotClient.Models.Settings;
 using BotClient.Models.WebReports;
+using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,11 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId);
 
         Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots);
+
         IList<T> Shuffle<T>(IList<T> list);
+        
+        List<EnumBotActionType> ShuffleSchedule(List<EnumBotActionType> ScheduleList);
+        
         IList<T> Split<T>(IList<T> list, int Index);
     }
 }
