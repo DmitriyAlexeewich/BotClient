@@ -23,8 +23,7 @@ namespace BotClient.Models.Settings
         public int CapsChancePerThousandWords { get; set; }
         public int NumberChancePerHundredWords { get; set; }
 
-        public int MinSpaceCountToSplit { get; set; }
-        public int MaxSpaceCountToSplit { get; set; }
+        public int SpaceSplitChance { get; set; }
         public int PlotCommaSplitChance { get; set; }
         public int MinAtteptCountToRandMessage { get; set; }
         public int MaxAtteptCountToRandMessage { get; set; }
@@ -44,6 +43,8 @@ namespace BotClient.Models.Settings
         public int MinRoleAtteptCount { get; set; }
         public int MaxRoleAtteptCount { get; set; }
         public int MaxChillQueue { get; set; }
+        public int WebDriverClosingWaitingTime { get; set; }
+        public int WebDriverStartWaitingTime { get; set; }
 
 
         public int MusicWaitingTime { get; set; }

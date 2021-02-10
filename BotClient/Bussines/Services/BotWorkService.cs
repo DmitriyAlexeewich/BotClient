@@ -59,7 +59,7 @@ namespace BotClient.Bussines.Services
             platformGroupService = PlatformGroupService;
         }
 
-        private Random random = new Random();
+        private Random random = new Random(DateTime.Now.Millisecond);
         private List<BotRoleActionsDaySchedule> botsRoleActions = new List<BotRoleActionsDaySchedule>();
         private List<string> randomMessages = new List<string>();
         private List<BotWorkStatusModel> botsWorkStatus = new List<BotWorkStatusModel>();
@@ -174,6 +174,7 @@ namespace BotClient.Bussines.Services
                             await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             var roleAttept = 0;
                             var roleAtteptMaxCount = random.Next(setting.MinRoleAtteptCount, setting.MaxRoleAtteptCount);
+                            botSchedule[0] = EnumBotActionType.RoleMission;
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
                                 var isActionError = false;
@@ -208,6 +209,7 @@ namespace BotClient.Bussines.Services
                                                     clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
                                                     roleAttept = 0;
                                                     roleAtteptMaxCount = random.Next(1, 3);
+                                                    botSchedule = await SimplifySchedule(botSchedule, j).ConfigureAwait(false);
                                                 }
                                                 else if (roleAttept < roleAtteptMaxCount)
                                                 {
@@ -218,6 +220,8 @@ namespace BotClient.Bussines.Services
                                                 clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
                                             }
                                         }
+                                        break;
+                                    default:
                                         break;
                                 }
                                 if (botSchedule[j] != EnumBotActionType.RoleMission)
@@ -991,6 +995,7 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
+                /*
                 if ((!isSubscribe) && (botGroups.Count > 0))
                 {
                     botGroups = botGroups.OrderBy(item => item.RepostCount).ToList();
@@ -1019,6 +1024,7 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
+                */
             }
             catch(Exception ex)
             {
@@ -1027,27 +1033,35 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-
-
-        public async Task Test(string Text)//UPDATE `BotClientRoleConnector` SET `MissionPath` = NULL, `BotId`=-1, `IsComplete`=0 WHERE `BotClientRoleConnector`.`Id` = 41065;
+        private async Task<List<EnumBotActionType>> SimplifySchedule(List<EnumBotActionType> BotSchedule, int StartIndex)
         {
-            var newMessage = await textService.RandOriginalMessage(Text).ConfigureAwait(false);
-            for (int i = 0; i < newMessage.TextParts.Count; i++)
+            var result = BotSchedule;
+            try
             {
-                if (newMessage.TextParts[i].hasMissClickError)
+                for (int i = StartIndex; i < result.Count; i++)
                 {
-                    var apologies = await GetApologies(newMessage, i).ConfigureAwait(false);
-                    if (apologies.Length > 0)
-                    {
-                        newMessage.TextParts.Insert(i+1, new BotMessageTextPartModel()
-                        {
-                            BotMessageCorrectTexts = apologies
-                        });
-                        i++;
-                    }
+                    if (result[i] == EnumBotActionType.RoleMission)
+                        result[i] = EnumBotActionType.Skip;
+                    else
+                        break;
                 }
             }
-            var t = 0;
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
+        public async Task Test(string Text)
+        {
+            var t = new List<EnumBotActionType>();
+            for (int i = 0; i < 10; i++)
+                t.Add(EnumBotActionType.ListenMusic);
+            t[2] = EnumBotActionType.RoleMission;
+            t[3] = EnumBotActionType.RoleMission;
+            t = await SimplifySchedule(t, 2).ConfigureAwait(false);
+            var f = 0;
         }
     }
 }

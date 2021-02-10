@@ -54,32 +54,51 @@ namespace BotClient.Bussines.Services
                 result.Text = await SetContact(Name, Gender, result.Text);
                 result.Text = Regex.Replace(result.Text, @"\s+", " ");
                 var textParts = new List<string>();
-                if (random.Next(0, 100) < settings.PlotCommaSplitChance)
-                    textParts = result.Text.Split(".,".ToCharArray()).ToList();
-                else
-                    textParts.Add(result.Text);
+                var splitChance = 0;
+                var text = "";
+                for (int i = 0; i < result.Text.Length; i++)
+                {
+                    text += result.Text[i];
+                    if ((result.Text[i] == '.') || (result.Text[i] == ','))
+                    {
+                        splitChance += settings.PlotCommaSplitChance;
+                        if (random.Next(0, 100) < splitChance)
+                        {
+                            textParts.Add(text);
+                            text = "";
+                            splitChance = 0;
+                        }
+                    }
+                }
+                splitChance = 0;
+                if (textParts.IndexOf(text) == -1)
+                    textParts.Add(text);
                 for (int i = 0; i < textParts.Count; i++)
                 {
-                    var maxSpace = random.Next(settings.MinSpaceCountToSplit, settings.MaxSpaceCountToSplit);
-                    if (textParts[i].Count(item => item == ' ') > maxSpace)
+                    splitChance = 0;
+                    var spaceTextParts = new List<string>();
+                    for (int j = 0; j < textParts[i].Length; j++)
                     {
-                        var spaceTextParts = new List<string>();
-                        for (int j = 0; j < textParts[i].Length; j++)
+                        if (textParts[i][j] == ' ')
                         {
-                            if (textParts[i][j] == ' ')
-                                maxSpace--;
-                            if (maxSpace < 1)
+                            splitChance += settings.SpaceSplitChance;
+                            if (random.Next(0, 100) < splitChance)
                             {
                                 var part = textParts[i].Substring(j + 1);
                                 spaceTextParts.Add(textParts[i].Replace(part, ""));
                                 spaceTextParts.Add(part);
+                                splitChance = 0;
                                 break;
                             }
                         }
+                    }
+                    if (spaceTextParts.Count > 0)
+                    {
                         spaceTextParts.Reverse();
                         textParts.RemoveAt(i);
                         for (int j = 0; j < spaceTextParts.Count; j++)
                             textParts.Insert(i, spaceTextParts[j]);
+                        i += spaceTextParts.Count;
                     }
                 }
                 //bool predicate(string item) { return item.Length < 1; }
@@ -120,7 +139,7 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                var regexstres = Text.Split('\n');
+                var regexstres = Text.Split("#|;|#");
                 Text = "";
                 for (int k = 0; k < regexstres.Length; k++)
                 {

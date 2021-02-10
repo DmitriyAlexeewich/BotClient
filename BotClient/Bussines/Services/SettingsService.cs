@@ -33,7 +33,7 @@ namespace BotClient.Bussines.Services
             CreateScreenshotFolder();
         }
 
-        private Random random = new Random();
+        private Random random = new Random(DateTime.Now.Millisecond);
         private WebConnectionSettings webConnectionSettings = new WebConnectionSettings();
         private string configurationFilePath = string.Empty;
         private string errorLogFilePath = string.Empty;
@@ -248,46 +248,6 @@ namespace BotClient.Bussines.Services
             {
                 CreateConfigurationFile();
                 webConnectionSettings.NumberChancePerHundredWords = NumberChancePerHundredWords;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetMinSpaceCountToSplit(int MinSpaceCountToSplit)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.MinSpaceCountToSplit = MinSpaceCountToSplit;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetMaxSpaceCountToSplit(int MaxSpaceCountToSplit)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.MaxSpaceCountToSplit = MaxSpaceCountToSplit;
                 File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
                 return new SettingsReport();
             }

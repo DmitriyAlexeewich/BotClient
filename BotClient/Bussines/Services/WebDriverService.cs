@@ -70,12 +70,14 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                var settings = settingsService.GetServerSettings();
                 DriverReport result = new DriverReport();
                 var webDriver = webDrivers.FirstOrDefault(item => item.Id == WebDriverId);
                 if (webDriver != null)
                 {
                     webDrivers[webDrivers.IndexOf(webDriver)].Status = EnumWebDriverStatus.Start;
                     webDriver.WebDriver.Quit();
+                    Thread.Sleep(settings.WebDriverClosingWaitingTime);
                     var startResult = StartWebDriver(webDriver.WebDriverPlatform);
                     startResult.Item1.SetNewId(WebDriverId);
                     webDrivers[webDrivers.IndexOf(webDriver)] = startResult.Item1;
@@ -627,7 +629,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settingsService.GetServerSettings());
+                var settings = settingsService.GetServerSettings();
+                var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settings, settings.WebDriverStartWaitingTime);
                 if (bufferWebDriver.Status == EnumWebDriverStatus.Start)
                 {
                     var oldURL = bufferWebDriver.WebDriver.Url;

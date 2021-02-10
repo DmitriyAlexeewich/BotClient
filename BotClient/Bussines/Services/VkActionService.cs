@@ -28,7 +28,7 @@ namespace BotClient.Bussines.Services
             settingsService = SettingsService;
             webElementService = WebElementService;
         }
-        Random random = new Random();
+        Random random = new Random(DateTime.Now.Millisecond);
 
         public async Task<AlgoritmResult> Login(Guid WebDriverId, string Username, string Password)
         {
@@ -68,7 +68,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var settings = settingsService.GetServerSettings();
-                //Thread.Sleep(settings.LoginWaitingTime);
+                Thread.Sleep(settings.LoginWaitingTime);
                 var checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_blocked_wrap").ConfigureAwait(false);
                 result = !webElementService.isElementAvailable(checkElement);
             }

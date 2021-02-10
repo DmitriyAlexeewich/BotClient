@@ -52,10 +52,9 @@ namespace BotClient.Controllers
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            var t = await textService.RandOriginalMessage(Text).ConfigureAwait(false);
             var f = new List<BotMessageText>();
-            for (int i = 0; i < 1000; i++)
-                f.Add(t);
+            for (int i = 0; i < 10; i++)
+                f.Add(await textService.RandOriginalMessage(Text).ConfigureAwait(false));
             return Ok(f);
         }
 
