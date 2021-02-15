@@ -45,6 +45,8 @@ namespace BotClient.Models.Settings
         public int MaxChillQueue { get; set; }
         public int WebDriverClosingWaitingTime { get; set; }
         public int WebDriverStartWaitingTime { get; set; }
+        public int MinRoleWaitingTime { get; set; }
+        public int MaxRoleWaitingTime { get; set; }
 
 
         public int MusicWaitingTime { get; set; }

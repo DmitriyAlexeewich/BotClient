@@ -19,7 +19,7 @@ namespace BotClient.Models.HTMLElements
 
         IWebDriver webDriver;
         IWebElement element = null;
-        Random rand = new Random(DateTime.Now.Millisecond);
+        Random rand = new Random();
 
         public WebHTMLElement(IWebDriver WebDriver, EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired, WebConnectionSettings ConnectionSettings)
         {

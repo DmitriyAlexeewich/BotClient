@@ -28,7 +28,7 @@ namespace BotClient.Bussines.Services
             settingsService = SettingsService;
             webElementService = WebElementService;
         }
-        Random random = new Random(DateTime.Now.Millisecond);
+        Random random = new Random();
 
         public async Task<AlgoritmResult> Login(Guid WebDriverId, string Username, string Password)
         {
@@ -993,7 +993,6 @@ namespace BotClient.Bussines.Services
                 }
                 if (sendResult)
                 {
-                    await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnectorId, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                     var messages = await GetMessages(WebDriverId).ConfigureAwait(false);
                     if ((messages != null) && (messages.Count > 0))
                     {

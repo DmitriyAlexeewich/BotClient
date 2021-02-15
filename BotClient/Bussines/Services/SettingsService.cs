@@ -33,7 +33,7 @@ namespace BotClient.Bussines.Services
             CreateScreenshotFolder();
         }
 
-        private Random random = new Random(DateTime.Now.Millisecond);
+        private Random random = new Random();
         private WebConnectionSettings webConnectionSettings = new WebConnectionSettings();
         private string configurationFilePath = string.Empty;
         private string errorLogFilePath = string.Empty;
@@ -650,7 +650,7 @@ namespace BotClient.Bussines.Services
             {
                 if (ScheduleList[ScheduleList.Count - 1] == EnumBotActionType.RoleMission)
                 {
-                    var chillActionsCount = random.Next(1, 3);
+                    var chillActionsCount = random.Next(2, 5);
                     for (int i = 0; i < chillActionsCount; i++)
                         ScheduleList.Add((EnumBotActionType)random.Next(1, 5));
                 }
