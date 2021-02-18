@@ -61,8 +61,6 @@ namespace BotClient.Bussines.Services
         }
 
         private Random random = new Random();
-        private List<BotRoleActionsDaySchedule> botsRoleActions = new List<BotRoleActionsDaySchedule>();
-        private List<string> randomMessages = new List<string>();
         private List<BotWorkStatusModel> botsWorkStatus = new List<BotWorkStatusModel>();
         private List<HTMLWebDriver> browsers = new List<HTMLWebDriver>();
         private List<int> missionsId = new List<int>();
@@ -103,16 +101,6 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<List<BotRoleActionsDaySchedule>> GetBotRoleActions()
-        {
-            return botsRoleActions;
-        }
-
-        public async Task<List<string>> GetRandomMessages()
-        {
-            return randomMessages;
-        }
-
         private async Task RunBot(Guid WebDriverId, int ServerId)
         {
             try
@@ -140,31 +128,16 @@ namespace BotClient.Bussines.Services
                                     botCompositeService.SetIsUpdatedCustomizeInfo(bot.BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();
-                            var nowTime = DateTime.Now;
-                            var startTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 8, 0, 0);
-                            var endTime = new DateTime(nowTime.Year, nowTime.Month, nowTime.Day, 23, 0, 0);
+                            var startTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 8, 0, 0);
+                            var endTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 23, 0, 0);
                             var maxSecondActionsCount = 0;
-                            var botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.BotData.Id);
-                            if (botRoleActions == null)
+                            if ((currentDay > startTime) && (currentDay < endTime))
                             {
-                                botsRoleActions.Add(new BotRoleActionsDaySchedule()
+                                var maxClientsRoleConnectionActionsCount = random.Next(setting.MinRoleActionCountPerSession, setting.MaxRoleActionCountPerSession);
+                                for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
                                 {
-                                    BotId = bot.BotData.Id,
-                                    RoleActionCount = random.Next(setting.MinRoleActionCountPerDay, setting.MaxRoleActionCountPerDay)
-                                });
-                                botRoleActions = botsRoleActions.FirstOrDefault(item => item.BotId == bot.BotData.Id);
-                            }
-                            if ((nowTime > startTime) && (nowTime < endTime))
-                            {
-                                if (botRoleActions.RoleActionCount > 0)
-                                {
-                                    var maxClientsRoleConnectionActionsCount = random.Next(setting.MinRoleActionCountPerSession, setting.MaxRoleActionCountPerSession);
-                                    botRoleActions.RoleActionCount -= maxClientsRoleConnectionActionsCount;
-                                    for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
-                                    {
-                                        botSchedule.Add(EnumBotActionType.RoleMission);
-                                        maxSecondActionsCount++;
-                                    }
+                                    botSchedule.Add(EnumBotActionType.RoleMission);
+                                    maxSecondActionsCount++;
                                 }
                             }
                             else
@@ -216,7 +189,7 @@ namespace BotClient.Bussines.Services
                                                 {
                                                     clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, false);
                                                     botSchedule.Insert(j + 1, EnumBotActionType.RoleMission);
-                                                    botSchedule.Insert(j + 1, (EnumBotActionType)random.Next(1, 3));
+                                                    botSchedule.Insert(j + 1, (EnumBotActionType)random.Next(1, 5));
                                                     roleAttept++;
                                                 }
                                                 clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
@@ -249,8 +222,6 @@ namespace BotClient.Bussines.Services
                         {
                             for (int i = 0; i < botsWorkStatus.Count; i++)
                                 botsWorkStatus[i].RepostCount = 0;
-                            botsRoleActions = new List<BotRoleActionsDaySchedule>();
-                            randomMessages = new List<string>();
                         /*
                                 var deleteDay = DateTime.Now;
                                 deleteDay = deleteDay.AddDays(-7);
@@ -332,7 +303,7 @@ namespace BotClient.Bussines.Services
                     }
                     else
                         await vkActionService.PlayAddedMusic(WebDriverId).ConfigureAwait(false);
-                    Task.Run(() => { vkActionService.StopMusic(WebDriverId).ConfigureAwait(false); });
+                    await vkActionService.StopMusic(WebDriverId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -789,6 +760,7 @@ namespace BotClient.Bussines.Services
                             }
                         }
                     }
+                    await webDriverService.GetScreenshot(WebDriverId, botClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                     return await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, false, newMessageText, null).ConfigureAwait(false);
                 }
             }
@@ -977,15 +949,9 @@ namespace BotClient.Bussines.Services
             try
             {
                 var botData = botCompositeService.GetBotById(BotId);
-                var settings = settingsService.GetServerSettings();
-                if (botData.MaxGroupCount <= 0)
-                {
-                    botData.MaxGroupCount = random.Next(settings.MinSubscribeCount, settings.MaxSubscribeCount);
-                    botCompositeService.SetMaxGroupCount(BotId, botData.MaxGroupCount);
-                }
                 var botGroups = botCompositeService.GetBotPlatformGroupConnectionsByBotId(BotId);
                 var isSubscribe = false;
-                if (botGroups.Count < botData.MaxGroupCount)
+                if (botGroups.Count > 0)
                 {
                     var groups = platformGroupService.GetByPlatformId((int)EnumSocialPlatform.Vk);
                     for (int i = 0; i < botGroups.Count; i++)

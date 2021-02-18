@@ -54,18 +54,6 @@ namespace BotClient.Controllers
             return Ok(botCompositeService.GetBotById(5));
         }
 
-        [HttpGet("GetActions")]
-        public async Task<IActionResult> GetActions()
-        {
-            return Ok(await botWorkService.GetBotRoleActions().ConfigureAwait(false));
-        }
-
-        [HttpGet("GetUsedMessages")]
-        public async Task<IActionResult> GetUsedMessages()
-        {
-            return Ok(await botWorkService.GetRandomMessages().ConfigureAwait(false));
-        }
-
         [HttpPost("GetScreenshotsLink")]
         public async Task<IActionResult> GetScreenshot(List<GetScreenshotURLModel> Dialogs)
         {

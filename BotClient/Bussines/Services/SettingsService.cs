@@ -585,6 +585,7 @@ namespace BotClient.Bussines.Services
             {
                 var settings = GetServerSettings();
                 ScheduleList = Shuffle(ScheduleList).ToList();
+                var maxGroupSubscribeCount = random.Next(settings.MinSubscribeCount, settings.MaxSubscribeCount);
                 var chillActionCount = 0;
                 for (int i = 0; i < ScheduleList.Count; i++)
                 {
@@ -603,6 +604,7 @@ namespace BotClient.Bussines.Services
                             ScheduleList[i] = (EnumBotActionType)random.Next(1, 5);
                     }
                 }
+                var maxGroupCount = random.Next(settings.MinSubscribeCount, settings.MaxSubscribeCount);
                 for (int i = 0; i < ScheduleList.Count; i++)
                 {
                     if (ScheduleList[i] != EnumBotActionType.RoleMission)
@@ -610,6 +612,16 @@ namespace BotClient.Bussines.Services
                         chillActionCount++;
                         if (chillActionCount >= settings.MaxChillQueue)
                             ScheduleList[i] = 0;
+                        if (ScheduleList[i] == EnumBotActionType.Group)
+                        {
+                            maxGroupCount--;
+                            if (maxGroupCount < 1)
+                            {
+                                ScheduleList[i] = (EnumBotActionType)random.Next(1, 4);
+                                while(((i > 0) && (ScheduleList[i - 1] == ScheduleList[i])) && ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == ScheduleList[i])))
+                                    ScheduleList[i] = (EnumBotActionType)random.Next(1, 4);
+                            }
+                        }
                     }
                     else
                         chillActionCount = 0;
