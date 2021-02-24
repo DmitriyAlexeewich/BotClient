@@ -737,10 +737,7 @@ namespace BotClient.Bussines.Services
                                             var sendResult = await PrintAnswerMessage(WebDriverId, botMessage, botClientRoleConnector.Id, ClientVkId).ConfigureAwait(false);
                                             if (sendResult)
                                             {
-                                                int nodeId = -1;
-                                                if (i > 0)
-                                                    nodeId = nodes[i - 1].NodeId;
-                                                var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, sendResult, newMessageText, botMessage.Text, nodeId).ConfigureAwait(false);
+                                                var saveResult = await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, sendResult, newMessageText, botMessage.Text, nodes[i].NodeId).ConfigureAwait(false);
                                                 if (botClientRoleConnector.MissionPath.Length > 0)
                                                     botClientRoleConnector.MissionPath += ";";
                                                 botClientRoleConnector.MissionPath += nodes[i].NodeId + ";" + patternAction[0].NodeId;
