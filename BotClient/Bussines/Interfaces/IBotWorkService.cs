@@ -10,6 +10,6 @@ namespace BotClient.Bussines.Interfaces
     public interface IBotWorkService
     {
         Task<bool> StartBot(int ServerId, int BotCount);
-        Task Test(string Text);
+        Task<List<string>> Test(string Text);
     }
 }

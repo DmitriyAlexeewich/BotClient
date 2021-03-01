@@ -841,16 +841,16 @@ namespace BotClient.Bussines.Services
             {
                 if (BotMessageText != null)
                 {
-                    if (TextPartIndex == null)
+                    if (TextPartIndex != null)
                     {
-                        if ((BotMessageText.TextParts[TextPartIndex.Value].hasMissClickError) && (random.Next(0, 100) > 70))
+                        if (BotMessageText.TextParts[TextPartIndex.Value].hasMissClickError)
                             result = await textService.GetApologies(BotMessageText.TextParts[TextPartIndex.Value]).ConfigureAwait(false);
-                        else if ((BotMessageText.TextParts[TextPartIndex.Value].hasCaps) && (random.Next(0, 100) > 70))
+                        else if (BotMessageText.TextParts[TextPartIndex.Value].hasCaps)
                             result = await textService.GetCapsApologies().ConfigureAwait(false);
                     }
                     else
                     {
-                        if ((BotMessageText.hasMultiplyMissClickError) && (random.Next(0, 100) > 70))
+                        if (BotMessageText.hasMultiplyMissClickError)
                             result = await textService.GetApologies().ConfigureAwait(false);
                     }
                 }
@@ -1025,15 +1025,19 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task Test(string Text)
+        public async Task<List<string>> Test(string Text)
         {
-            var t = new List<EnumBotActionType>();
-            for (int i = 0; i < 10; i++)
-                t.Add(EnumBotActionType.ListenMusic);
-            t[2] = EnumBotActionType.RoleMission;
-            t[3] = EnumBotActionType.RoleMission;
-            t = await SimplifySchedule(t, 2).ConfigureAwait(false);
-            var f = 0;
+            var y = new List<string>();
+            var newMessage = await textService.RandOriginalMessage(Text).ConfigureAwait(false);
+            for (int i = 0; i < newMessage.TextParts.Count; i++)
+            {
+                if ((newMessage.TextParts[i].hasMissClickError) || (newMessage.TextParts[i].hasCaps))
+                {
+                    var apologies = await GetApologies(newMessage, i).ConfigureAwait(false);
+                    y.Add(apologies);
+                }
+            }
+            return y;
         }
     }
 }
