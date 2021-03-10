@@ -63,5 +63,7 @@ namespace BotClient.Bussines.Interfaces
         List<EnumBotActionType> ShuffleSchedule(List<EnumBotActionType> ScheduleList);
         
         IList<T> Split<T>(IList<T> list, int Index);
+
+        Task UpdateWebConnectionFile();
     }
 }

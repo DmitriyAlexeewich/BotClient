@@ -160,3 +160,4 @@ C:\Users\User\source\repos\BotClient\BotClient\bin\netcoreapp3.1\BotDataModels.d
 C:\Users\User\source\repos\BotClient\BotClient\bin\netcoreapp3.1\BotMySQL.dll
 C:\Users\User\source\repos\BotClient\BotClient\bin\netcoreapp3.1\BotDataModels.pdb
 C:\Users\User\source\repos\BotClient\BotClient\bin\netcoreapp3.1\BotMySQL.pdb
+C:\Users\User\source\repos\BotClient\BotClient\bin\netcoreapp3.1\Telegram.Bot.dll

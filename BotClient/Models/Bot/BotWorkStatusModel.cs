@@ -15,5 +15,6 @@ namespace BotClient.Models.Bot
         public Guid WebDriverId { get; set; }
         public List<BotWorkMissionStatus> BotWorkMissionsStatus { get; set; } = new List<BotWorkMissionStatus>();
         public int RepostCount { get; set; }
+        public bool hasBlockedDialog { get; set; } = false;
     }
 }

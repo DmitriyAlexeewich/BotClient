@@ -656,6 +656,12 @@ namespace BotClient.Bussines.Services
             return list;
         }
 
+        public async Task UpdateWebConnectionFile()
+        {
+            if (File.Exists(configurationFilePath))
+                webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
+        }
+
         private List<EnumBotActionType> AddEnumBotActionTypeRole(List<EnumBotActionType> ScheduleList)
         {
             try

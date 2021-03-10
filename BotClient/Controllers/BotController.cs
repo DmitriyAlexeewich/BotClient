@@ -35,13 +35,13 @@ namespace BotClient.Controllers
         }
 
         [HttpGet("StartBot")]
-        public async Task<IActionResult> StartBot([FromQuery] int ServerId, [FromQuery] int BotCount)
+        public async Task<IActionResult> StartBot([FromQuery] int ServerId)
         {
             var message = "Invalid ServerId. The ServerId is empty";
             if (ServerId != null)
             {
                 if (ServerId > 0)
-                    return Ok(await botWorkService.StartBot(ServerId, BotCount).ConfigureAwait(false) == true ? "Success" : "Error");
+                    return Ok(await botWorkService.StartBot(ServerId).ConfigureAwait(false) == true ? "Success" : "Error");
                 else
                     message = "Invalid BotsId. Bot id list contains no elements";
             }

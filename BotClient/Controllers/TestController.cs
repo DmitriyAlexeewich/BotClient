@@ -53,8 +53,7 @@ namespace BotClient.Controllers
         public async Task<IActionResult> Test([FromBody] string Text)
         {
             var result = new List<List<string>>();
-            for(int i=0; i<1000; i++)
-                result.Add(await botWorkService.Test(Text).ConfigureAwait(false));
+            await botWorkService.Test(Text).ConfigureAwait(false);
             return Ok(result);
         }
 

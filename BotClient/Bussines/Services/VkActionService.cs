@@ -965,6 +965,20 @@ namespace BotClient.Bussines.Services
             return new List<NewMessageModel>();
         }
 
+        public async Task<bool> isBotDialogBlocked(Guid WebDriver)
+        {
+            try
+            {
+                if (await webDriverService.hasWebHTMLElement(WebDriver, EnumWebHTMLElementSelector.CSSSelector, "._im_chat_input_error").ConfigureAwait(false))
+                    return true;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return false;
+        }
+
         public async Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText, string ClientVkId, int BotClientRoleConnectorId)
         {
             var result = new AlgoritmResult()
@@ -1184,21 +1198,14 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                var postContent = webElementService.GetElementInElement(PlatformPost.Element, EnumWebHTMLElementSelector.CSSSelector, ".wall_text");
-                var postActiveContent = webElementService.GetElementInElement(postContent, EnumWebHTMLElementSelector.TagName, "div");
-                if (webElementService.ClickToElement(postActiveContent, EnumClickType.URLClick))
+                if (isRepost)
                 {
-                    result.hasError = false;
-                    result.ActionResultMessage = EnumActionResult.Success;
-                    if (isRepost)
+                    await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
+                    var repostResult = await RepostPostToSelfPage(WebDriverId, PlatformPost.Element).ConfigureAwait(false);
+                    if ((repostResult.hasError) || (repostResult.ActionResultMessage != EnumActionResult.Success))
                     {
-                        await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
-                        var repostResult = await RepostPostToSelfPage(WebDriverId, PlatformPost.Element).ConfigureAwait(false);
-                        if ((repostResult.hasError) || (repostResult.ActionResultMessage != EnumActionResult.Success))
-                        {
-                            result.hasError = true;
-                            result.ActionResultMessage = EnumActionResult.ElementError;
-                        }
+                        result.hasError = true;
+                        result.ActionResultMessage = EnumActionResult.ElementError;
                     }
                 }
             }

@@ -44,7 +44,7 @@
           "dependencies": {
             "HtmlAgilityPack": {
               "target": "Package",
-              "version": "[1.11.30, )"
+              "version": "[1.11.31, )"
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
@@ -68,7 +68,11 @@
             },
             "Selenium.WebDriver.ChromeDriver": {
               "target": "Package",
-              "version": "[88.0.4324.9600, )"
+              "version": "[89.0.4389.2300, )"
+            },
+            "Telegram.Bot": {
+              "target": "Package",
+              "version": "[15.7.1, )"
             }
           },
           "imports": [

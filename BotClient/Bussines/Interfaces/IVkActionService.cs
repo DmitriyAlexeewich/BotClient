@@ -43,6 +43,7 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
         Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId);
         Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId, string ClientVkId);
+        Task<bool> isBotDialogBlocked(Guid WebDriver);
         Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText, string ClientVkId, int BotClientRoleConnectorId);
         Task<bool> Logout(Guid WebDriverId);
         Task<string> GetClientName(Guid WebDriverId);
