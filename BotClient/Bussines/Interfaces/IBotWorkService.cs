@@ -9,7 +9,7 @@ namespace BotClient.Bussines.Interfaces
 {
     public interface IBotWorkService
     {
-        Task<bool> StartBot(int ServerId);
+        Task<List<BotWorkStatusModel>> StartBot(int ServerId);
         Task<List<string>> Test(string Text);
     }
 }

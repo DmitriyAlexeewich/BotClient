@@ -1216,6 +1216,26 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<string> GetVkId(Guid WebDriverId)
+        {
+            var result = "";
+            try
+            {
+                var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_pr", EnumWebHTMLElementSelector.TagName, "a").ConfigureAwait(false);
+                var id = webElementService.GetAttributeValue(element, "href");
+                while(id.IndexOf("/") != -1)
+                    id = id.Remove(0, id.IndexOf("/") + 1);
+                if (id.IndexOf("id") != -1)
+                    id = id.Remove(0, id.IndexOf("id") + 2);
+                result = id;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
         private async Task<int> GetRating(WebHTMLElement Element)
         {
             var result = 0;

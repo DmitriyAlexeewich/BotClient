@@ -41,7 +41,12 @@ namespace BotClient.Controllers
             if (ServerId != null)
             {
                 if (ServerId > 0)
-                    return Ok(await botWorkService.StartBot(ServerId).ConfigureAwait(false) == true ? "Success" : "Error");
+                {
+                    var startResult = await botWorkService.StartBot(ServerId).ConfigureAwait(false);
+                    if(startResult.Count > 0)
+                        return Ok(startResult);
+                    message = "No bots for this ServerId";
+                }
                 else
                     message = "Invalid BotsId. Bot id list contains no elements";
             }

@@ -6,6 +6,7 @@ using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLWebDriver;
 using BotClient.Models.WebReports;
+using BotDataModels.Bot;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Role;
 using BotDataModels.Role.Enumerators;
@@ -66,45 +67,44 @@ namespace BotClient.Bussines.Services
         private List<HTMLWebDriver> browsers = new List<HTMLWebDriver>();
         private List<int> missionsId = new List<int>();
 
-        public async Task<bool> StartBot(int ServerId)
+        public async Task<List<BotWorkStatusModel>> StartBot(int ServerId)
         {
-            var result = true;
             try
             {
-                var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
-                if (bots.Count > 0)
+                if (botsWorkStatus.Count < 1)
                 {
-                    browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
-                    var sessionBotsCount = bots.Count / browsers.Count;
-                    for (int i = 0; i < browsers.Count; i++)
+                    var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
+                    if (bots.Count > 0)
                     {
-                        for (int j = 0; j < sessionBotsCount; j++)
+                        browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
+                        var sessionBotsCount = bots.Count / browsers.Count;
+                        for (int i = 0; i < browsers.Count; i++)
                         {
-                            var bot = bots[random.Next(0, bots.Count)];
-                            botsWorkStatus.Add(new BotWorkStatusModel()
+                            for (int j = 0; j < sessionBotsCount; j++)
                             {
-                                BotData = bot,
-                                WebDriverId = browsers[i].Id
-                            });
-                            bots.Remove(bot);
+                                var bot = bots[random.Next(0, bots.Count)];
+                                botsWorkStatus.Add(new BotWorkStatusModel()
+                                {
+                                    BotData = bot,
+                                    WebDriverId = browsers[i].Id
+                                });
+                                bots.Remove(bot);
+                            }
+                        }
+                        UpdateMissionList(ServerId);
+                        for (int i = 0; i < browsers.Count; i++)
+                        {
+                            var browserId = browsers[i].Id;
+                            Task.Run(() => { RunBot(browserId, ServerId); });
                         }
                     }
-                    UpdateMissionList(ServerId);
-                    for (int i = 0; i < browsers.Count; i++)
-                    {
-                        var browserId = browsers[i].Id;
-                        Task.Run(() => { RunBot(browserId, ServerId); });
-                    }
                 }
-                else
-                    result = false;
             }
             catch(Exception ex)
             {
                 await settingsService.AddLog("BotWorkService", ex);
-                result = false;
             }
-            return result;
+            return botsWorkStatus;
         }
 
         private async Task RunBot(Guid WebDriverId, int ServerId)
@@ -120,9 +120,23 @@ namespace BotClient.Bussines.Services
                     if (bot != null)
                     {
                         var currentDay = DateTime.Now;
+                        if ((bot.BotData.isPrintBlock) && (bot.BotData.PrintBlockDate.AddDays(2) > currentDay))
+                        {
+                            botCompositeService.SetIsPrintBlock(bot.BotData.Id, false);
+                            bot.BotData = botCompositeService.GetBotById(bot.BotData.Id);
+                        }
                         var loginflag = await vkActionService.Login(WebDriverId, bot.BotData.Login, bot.BotData.Password).ConfigureAwait(false);
                         if ((!loginflag.hasError) && (await vkActionService.isLoginSuccess(WebDriverId).ConfigureAwait(false)))
                         {
+                            if (bot.BotData.VkId.Length < 1)
+                            {
+                                var vkId = await vkActionService.GetVkId(WebDriverId).ConfigureAwait(false);
+                                if (vkId.Length > 0)
+                                {
+                                    botCompositeService.SetIsVkId(bot.BotData.Id, vkId);
+                                    bot.BotData = botCompositeService.GetBotById(bot.BotData.Id);
+                                }
+                            }
                             var updateOnlineDateResult = botCompositeService.UpdateOnlineDate(bot.BotData.Id, DateTime.Now);
                             if (updateOnlineDateResult.HasError)
                                 await settingsService.AddLog("BotWorkService", updateOnlineDateResult.ExceptionMessage).ConfigureAwait(false);
@@ -140,7 +154,7 @@ namespace BotClient.Bussines.Services
                             var maxSecondActionsCount = 0;
                             if ((currentDay > startTime) && (currentDay < endTime))
                             {
-                                if (!bot.BotData.isPrintBlock)
+                                if ((!bot.BotData.isPrintBlock) && (!isMassSetPrintBlock(ServerId, currentDay)))
                                 {
                                     var maxClientsRoleConnectionActionsCount = random.Next(setting.MinRoleActionCountPerSession, setting.MaxRoleActionCountPerSession);
                                     for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
@@ -150,7 +164,7 @@ namespace BotClient.Bussines.Services
                                     }
                                 }
                                 else
-                                    maxSecondActionsCount = random.Next(1, 3);
+                                    maxSecondActionsCount = random.Next(2, 4);
                             }
                             else
                                 maxSecondActionsCount = random.Next(setting.MinNightSecondActionCountPerSession, setting.MaxNightSecondActionCountPerSession);
@@ -158,8 +172,6 @@ namespace BotClient.Bussines.Services
                                 botSchedule.Add((EnumBotActionType)random.Next(1, 5));
                             botSchedule = settingsService.ShuffleSchedule(botSchedule);
                             botCompositeService.CreateBotActionHistory(bot.BotData.Id, EnumBotActionType.RoleMission, $"Рассписание: {JsonConvert.SerializeObject(botSchedule)}");
-                            await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
-                            await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
@@ -212,8 +224,6 @@ namespace BotClient.Bussines.Services
                                 }
                                 await CheckMessage(WebDriverId, bot.BotData.Id).ConfigureAwait(false);
                                 bot.BotData = botCompositeService.GetBotById(bot.BotData.Id);
-                                if((bot.BotData.isPrintBlock) && (j != botSchedule.Count - 1))
-                                    botSchedule.RemoveRange(j + 1, botSchedule.Count - (j + 1));
                             }
                             botCompositeService.CreateBotActionHistory(bot.BotData.Id, EnumBotActionType.RoleMission, $"Выход из профиля");
                         }
@@ -232,21 +242,22 @@ namespace BotClient.Bussines.Services
                                 botsWorkStatus[i].RepostCount = 0;
                                 botsWorkStatus[i].hasBlockedDialog = false;
                             }
-                        /*
-                                var deleteDay = DateTime.Now;
-                                deleteDay = deleteDay.AddDays(-7);
-                                var screenshots = dialogScreenshotService.GetByDateTime(deleteDay);
-                                if ((screenshots != null) && (screenshots.Count > 0))
-                                {
-                                    screenshots = screenshots.Where(item => item.UpdateDate < deleteDay && item.ScreenshotsCount < 2).ToList();
-                                    var deleteResult = await settingsService.DeleteScreenshotFolder(screenshots).ConfigureAwait(false);
-                                    if (deleteResult)
+                            UpdateBotsList(ServerId);
+                            /*
+                                    var deleteDay = DateTime.Now;
+                                    deleteDay = deleteDay.AddDays(-7);
+                                    var screenshots = dialogScreenshotService.GetByDateTime(deleteDay);
+                                    if ((screenshots != null) && (screenshots.Count > 0))
                                     {
-                                        var screenshotsId = screenshots.Select(item => item.Id).ToList();
-                                        dialogScreenshotService.SetIsDeleted(screenshotsId);
+                                        screenshots = screenshots.Where(item => item.UpdateDate < deleteDay && item.ScreenshotsCount < 2).ToList();
+                                        var deleteResult = await settingsService.DeleteScreenshotFolder(screenshots).ConfigureAwait(false);
+                                        if (deleteResult)
+                                        {
+                                            var screenshotsId = screenshots.Select(item => item.Id).ToList();
+                                            dialogScreenshotService.SetIsDeleted(screenshotsId);
+                                        }
                                     }
-                                }
-                        */
+                            */
                             dayUpdate = true;
                         }
                         if (DateTime.Now.Hour > 7)
@@ -1042,42 +1053,43 @@ namespace BotClient.Bussines.Services
         private async Task<bool> SendMessageToBot(int BotId)
         {
             var bot = botCompositeService.GetBotById(BotId);
-
+            
         }
         */
-        private async Task<bool> UpdateBotsList(int ServerId)
+        private async Task UpdateBotsList(int ServerId)
         {
-            var result = false;
             try
             {
-                botsWorkStatus.RemoveRange(0, botsWorkStatus.Count);
                 var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
-                if (bots.Count > 0)
+                for (int i = 0; i < botsWorkStatus.Count; i++)
+                    bots.RemoveAll(item => item.Id == botsWorkStatus[i].BotData.Id);
+                var sessionBotsCount = bots.Count / browsers.Count;
+                for (int i = 0; i < browsers.Count; i++)
                 {
-                    browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
-                    var sessionBotsCount = bots.Count / browsers.Count;
-                    for (int i = 0; i < browsers.Count; i++)
+                    for (int j = 0; j < sessionBotsCount; j++)
                     {
-                        for (int j = 0; j < sessionBotsCount; j++)
+                        var bot = bots[random.Next(0, bots.Count)];
+                        botsWorkStatus.Add(new BotWorkStatusModel()
                         {
-                            var bot = bots[random.Next(0, bots.Count)];
-                            botsWorkStatus.Add(new BotWorkStatusModel()
-                            {
-                                BotData = bot,
-                                WebDriverId = browsers[i].Id
-                            });
-                            bots.Remove(bot);
-                        }
+                            BotData = bot,
+                            WebDriverId = browsers[i].Id
+                        });
+                        bots.Remove(bot);
                     }
-                    UpdateMissionList(ServerId);
-                    result = true;
                 }
             }
             catch (Exception ex)
             {
                 await settingsService.AddLog("BotWorkService", ex);
             }
-            return result;
+        }
+
+        private bool isMassSetPrintBlock(int ServerId, DateTime CurrentDate)
+        {
+            var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
+            if (bots.Select(item => item.PrintBlockDate > CurrentDate.AddDays(-2)).ToList().Count > bots.Count / 3)
+                return true;
+            return false;
         }
 
         public async Task<List<string>> Test(string Text)

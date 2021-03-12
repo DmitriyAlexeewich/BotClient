@@ -48,5 +48,6 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> Logout(Guid WebDriverId);
         Task<string> GetClientName(Guid WebDriverId);
         Task<bool> hasCaptcha(Guid WebDriverId);
+        Task<string> GetVkId(Guid WebDriverId);
     }
 }

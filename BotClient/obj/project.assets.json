@@ -5816,11 +5816,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\obj\\",
+      "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -5836,8 +5836,8 @@
       "frameworks": {
         "netcoreapp3.1": {
           "projectReferences": {
-            "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
-              "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
+            "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
             }
           }
         }
