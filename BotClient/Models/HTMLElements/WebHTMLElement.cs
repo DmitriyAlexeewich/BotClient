@@ -1,5 +1,5 @@
 ﻿using BotClient.Models.HTMLElements.Enumerators;
-using BotClient.Models.Settings;
+using BotDataModels.Settings;
 using HtmlAgilityPack;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
@@ -264,11 +264,13 @@ namespace BotClient.Models.HTMLElements
                     htmlDocument.LoadHtml(text);
                     text = htmlDocument.DocumentNode.InnerText;
                 }
+                if (text == null)
+                    text = "";
                 return text;
             }
             catch
             {
-                return null;
+                return "";
             }
         }
 

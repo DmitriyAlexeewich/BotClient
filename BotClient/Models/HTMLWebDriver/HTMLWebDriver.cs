@@ -1,10 +1,11 @@
 ﻿using BotClient.Models.Enumerators;
-using BotClient.Models.Settings;
+using BotDataModels.Settings;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace BotClient.Models.HTMLWebDriver
@@ -24,14 +25,14 @@ namespace BotClient.Models.HTMLWebDriver
         private Exception _exception = new Exception();
         private Guid _id = Guid.NewGuid();
 
-        public HTMLWebDriver(EnumSocialPlatform SocialPlatform, WebConnectionSettings ConnectionSettings, int WaitingTime)
+        public HTMLWebDriver(EnumSocialPlatform SocialPlatform, WebConnectionSettings ConnectionSettings, string DriverPath, int WaitingTime)
         {
             try
             {
                 var options = new ChromeOptions();
                 for (int i = 0; i < ConnectionSettings.Options.Count; i++)
                     options.AddArgument(ConnectionSettings.Options[i]);
-                WebDriver = new ChromeDriver(ChromeDriverService.CreateDefaultService(), options, TimeSpan.FromMinutes(10));
+                WebDriver = new ChromeDriver(DriverPath, options, TimeSpan.FromMinutes(10));
                 WebDriver.Manage().Timeouts().PageLoad.Add(TimeSpan.FromMinutes(10));
                 Thread.Sleep(WaitingTime);
                 switch (SocialPlatform)

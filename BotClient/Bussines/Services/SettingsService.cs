@@ -1,10 +1,10 @@
 ﻿using BotClient.Bussines.Interfaces;
 using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLElements;
-using BotClient.Models.Settings;
 using BotClient.Models.WebReports;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
+using BotDataModels.Settings;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BotClient.Bussines.Services
@@ -28,6 +29,7 @@ namespace BotClient.Bussines.Services
             algoritmFilePath = configuration.GetSection("AlgoritmFilePath").Value;
             screenshotPath = configuration.GetSection("ScreenshotPath").Value;
             errorWebElementLogFilePath = configuration.GetSection("ErrorWebElementLogFilePath").Value;
+            passwordConstructorString = configuration.GetSection("PasswordConstructorString").Value;
             CreateConfigurationFile();
             CreateErrorLogFile();
             CreateScreenshotFolder();
@@ -40,369 +42,7 @@ namespace BotClient.Bussines.Services
         private string errorWebElementLogFilePath = string.Empty;
         private string algoritmFilePath = string.Empty;
         private string screenshotPath = string.Empty;
-
-        public async Task<SettingsReport> CreateLink(WebConnectionSettings settings)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings = settings;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService",ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetServerId(Guid ServerId)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.ServerId = ServerId;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetParentServerIP(string ParentServerIP)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.ParentServerIP = ParentServerIP;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetBrowserOptions(List<string> Options)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.Options = Options;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetKeyWaitingTime(int KeyWaitingTimeMin, int KeyWaitingTimeMax)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.KeyWaitingTimeMin = KeyWaitingTimeMin;
-                webConnectionSettings.KeyWaitingTimeMax = KeyWaitingTimeMax;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetHTMLPageWaitingTime(int HTMLPageWaitingTime)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.HTMLPageWaitingTime = HTMLPageWaitingTime;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetHTMLElementWaitingTime(int HTMLElementWaitingTime)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.HTMLElementWaitingTime = HTMLElementWaitingTime;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetScrollCount(int ScrollCount)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.ScrollCount = ScrollCount;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetErrorChancePerTenWords(int ErrorChancePerTenWords)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.ErrorChancePerTenWords = ErrorChancePerTenWords;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-        
-        public async Task<SettingsReport> SetCapsChancePerThousandWords(int CapsChancePerThousandWords)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.CapsChancePerThousandWords = CapsChancePerThousandWords;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetNumberChancePerHundredWords(int NumberChancePerHundredWords)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.NumberChancePerHundredWords = NumberChancePerHundredWords;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetPlotCommaSplitChance(int PlotCommaSplitChance)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.PlotCommaSplitChance = PlotCommaSplitChance;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetMinAtteptCountToRandMessage(int MinAtteptCountToRandMessage)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.MinAtteptCountToRandMessage = MinAtteptCountToRandMessage;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetMaxAtteptCountToRandMessage(int MaxAtteptCountToRandMessage)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.MaxAtteptCountToRandMessage = MaxAtteptCountToRandMessage;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetUseDateTimeHelloPhraseChance(int UseDateTimeHelloPhraseChance)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.UseDateTimeHelloPhraseChance = UseDateTimeHelloPhraseChance;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetMusicWaitingTime(int MusicWaitingTime, int MusicWaitingDeltaTime)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.MusicWaitingTime = MusicWaitingTime;
-                webConnectionSettings.MusicWaitingDeltaTime = MusicWaitingDeltaTime;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetVideoWaitingTime(int VideoWaitingTime, int VideoWaitingDeltaTime)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.VideoWaitingTime = VideoWaitingTime;
-                webConnectionSettings.VideoWaitingDeltaTime = VideoWaitingDeltaTime;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<SettingsReport> SetVideoLoadingWaitingTime(int VideoLoadingWaitingTime)
-        {
-            try
-            {
-                CreateConfigurationFile();
-                webConnectionSettings.VideoLoadingWaitingTime = VideoLoadingWaitingTime;
-                File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
+        private string passwordConstructorString = string.Empty;
 
         public WebConnectionSettings GetServerSettings()
         {
@@ -583,9 +223,7 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                var settings = GetServerSettings();
                 ScheduleList = Shuffle(ScheduleList).ToList();
-                var maxGroupSubscribeCount = random.Next(settings.MinSubscribeCount, settings.MaxSubscribeCount);
                 var chillActionCount = 0;
                 for (int i = 0; i < ScheduleList.Count; i++)
                 {
@@ -603,28 +241,6 @@ namespace BotClient.Bussines.Services
                         while (((i > 0) && (ScheduleList[i - 1] == ScheduleList[i])) || ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == ScheduleList[i])))
                             ScheduleList[i] = (EnumBotActionType)random.Next(1, 5);
                     }
-                }
-                var maxGroupCount = random.Next(settings.MinSubscribeCount, settings.MaxSubscribeCount);
-                for (int i = 0; i < ScheduleList.Count; i++)
-                {
-                    if (ScheduleList[i] != EnumBotActionType.RoleMission)
-                    {
-                        chillActionCount++;
-                        if (chillActionCount >= settings.MaxChillQueue)
-                            ScheduleList[i] = 0;
-                        if (ScheduleList[i] == EnumBotActionType.Group)
-                        {
-                            maxGroupCount--;
-                            if (maxGroupCount < 1)
-                            {
-                                ScheduleList[i] = (EnumBotActionType)random.Next(1, 4);
-                                while(((i > 0) && (ScheduleList[i - 1] == ScheduleList[i])) && ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == ScheduleList[i])))
-                                    ScheduleList[i] = (EnumBotActionType)random.Next(1, 4);
-                            }
-                        }
-                    }
-                    else
-                        chillActionCount = 0;
                 }
                 ScheduleList.RemoveAll(item => item == 0);
             }
@@ -660,6 +276,26 @@ namespace BotClient.Bussines.Services
         {
             if (File.Exists(configurationFilePath))
                 webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
+        }
+
+        public async Task<string> GeneratePassword(int Length)
+        {
+            var result = "";
+            try
+            {
+                StringBuilder res = new StringBuilder();
+                Random rnd = new Random();
+                while (0 < Length--)
+                {
+                    res.Append(passwordConstructorString[rnd.Next(passwordConstructorString.Length)]);
+                }
+                result = res.ToString();
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+            return result;
         }
 
         private List<EnumBotActionType> AddEnumBotActionTypeRole(List<EnumBotActionType> ScheduleList)

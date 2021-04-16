@@ -1,9 +1,9 @@
 ﻿using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLElements;
-using BotClient.Models.Settings;
 using BotClient.Models.WebReports;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
+using BotDataModels.Settings;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,33 +12,6 @@ namespace BotClient.Bussines.Interfaces
 {
     public interface ISettingsService
     {
-        Task<SettingsReport> CreateLink(WebConnectionSettings settings);
-
-        Task<SettingsReport> SetServerId(Guid ServerId);
-
-        Task<SettingsReport> SetParentServerIP(string ParentServerIP);
-
-        Task<SettingsReport> SetBrowserOptions(List<string> Options);
-
-        Task<SettingsReport> SetKeyWaitingTime(int KeyWaitingTimeMin, int KeyWaitingTimeMax);
-
-        Task<SettingsReport> SetHTMLPageWaitingTime(int HTMLPageWaitingTime);
-
-        Task<SettingsReport> SetHTMLElementWaitingTime(int HTMLElementWaitingTime);
-
-        Task<SettingsReport> SetScrollCount(int ScrollCount);
-
-        Task<SettingsReport> SetErrorChancePerTenWords(int ErrorChancePerTenWords);
-
-        Task<SettingsReport> SetCapsChancePerThousandWords(int CapsChancePerThousandWords);
-
-        Task<SettingsReport> SetNumberChancePerHundredWords(int NumberChancePerHundredWords);
-
-        Task<SettingsReport> SetMusicWaitingTime(int MusicWaitingTime, int MusicWaitingDeltaTime);
-
-        Task<SettingsReport> SetVideoWaitingTime(int VideoWaitingTime, int VideoWaitingDeltaTime);
-
-        Task<SettingsReport> SetVideoLoadingWaitingTime(int VideoLoadingWaitingTime);
 
         WebConnectionSettings GetServerSettings();
 
@@ -65,5 +38,6 @@ namespace BotClient.Bussines.Interfaces
         IList<T> Split<T>(IList<T> list, int Index);
 
         Task UpdateWebConnectionFile();
+        Task<string> GeneratePassword(int Length);
     }
 }

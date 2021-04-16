@@ -71,6 +71,11 @@ namespace BotClient.Bussines.Services
                 Thread.Sleep(settings.LoginWaitingTime);
                 var checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_blocked_wrap").ConfigureAwait(false);
                 result = !webElementService.isElementAvailable(checkElement);
+                if (result)
+                {
+                    checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_reg_button").ConfigureAwait(false);
+                    result = !webElementService.isElementAvailable(checkElement);
+                }
             }
             catch (Exception ex)
             {
@@ -459,17 +464,20 @@ namespace BotClient.Bussines.Services
                     {
                         for (int i = 0; i < videos.Count; i++)
                         {
+                            if(videos[i] != null)
+                            {
                             var attribute = webElementService.GetAttributeValue(videos[i], "href");
                             var innerText = webElementService.GetElementINNERText(videos[i], true);
-                            if ((attribute != null) && (innerText.IndexOf("YouTube") == -1))
-                            {
-                                var botVKVideo = new BotVkVideo()
+                                if ((attribute != null) && (innerText != null) && (innerText.IndexOf("YouTube") == -1))
                                 {
-                                    URL = attribute,
-                                    HTMLElement = videos[i]
-                                };
-                                if (result.IndexOf(botVKVideo) == -1)
-                                    result.Add(botVKVideo);
+                                    var botVKVideo = new BotVkVideo()
+                                    {
+                                        URL = attribute,
+                                        HTMLElement = videos[i]
+                                    };
+                                    if (result.IndexOf(botVKVideo) == -1)
+                                        result.Add(botVKVideo);
+                                }
                             }
                         }
                         break;
@@ -518,7 +526,10 @@ namespace BotClient.Bussines.Services
             try
             {
                 var videoWaitingDeltaTime = settingsService.GetServerSettings().VideoWaitingDeltaTime;
-                Thread.Sleep(settingsService.GetServerSettings().VideoWaitingTime + random.Next(-videoWaitingDeltaTime, videoWaitingDeltaTime));
+                var waitTime = settingsService.GetServerSettings().VideoWaitingTime + random.Next(-videoWaitingDeltaTime, videoWaitingDeltaTime);
+                if (!((waitTime > 0) && (waitTime<Int32.MaxValue)))
+                    waitTime = settingsService.GetServerSettings().VideoWaitingTime;
+                Thread.Sleep(waitTime);
                 var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "VideoLayerInfo__topControls", EnumWebHTMLElementSelector.TagName, "div");
                 var closeResult = webElementService.ClickToElement(element, EnumClickType.URLClick);
                 result = new AlgoritmResult()
@@ -859,8 +870,9 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId)
+        public async Task<List<DialogWithNewMessagesModel>> GetDialogsWithNewMessages(Guid WebDriverId)
         {
+            var result = new List<DialogWithNewMessagesModel>();
             try
             {
                 var dialogsWithNewMessagesCont = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg",
@@ -899,11 +911,13 @@ namespace BotClient.Bussines.Services
                                         var vkId = webElementService.GetAttributeValue(parent, "data-peer");
                                         if (vkId != null)
                                         {
-                                            return new DialogWithNewMessagesModel()
-                                            {
-                                                ClientVkId = vkId,
-                                                MessagesCount = parseResult
-                                            };
+                                            result.Add(
+                                                          new DialogWithNewMessagesModel()
+                                                          {
+                                                              ClientVkId = vkId,
+                                                              MessagesCount = parseResult
+                                                          }
+                                                      );
                                         }
                                     }
                                 }
@@ -916,7 +930,19 @@ namespace BotClient.Bussines.Services
             {
                 await settingsService.AddLog("VkActionService", ex);
             }
-            return null;
+            return result;
+        }
+
+        public async Task CloseDialog(Guid WebDriverId)
+        {
+            try
+            {
+                await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
         }
 
         public async Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId, string ClientVkId)
@@ -1060,6 +1086,20 @@ namespace BotClient.Bussines.Services
                 await settingsService.AddLog("VkActionService", ex);
             }
             return "";
+        }
+
+        public async Task<bool> GetCanRecievedMessage(Guid WebDriverId)
+        {
+            var result = false;
+            try
+            {
+                result = await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left").ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
         }
 
         public async Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, string GroupURL, string GroupName)
@@ -1228,6 +1268,106 @@ namespace BotClient.Bussines.Services
                 if (id.IndexOf("id") != -1)
                     id = id.Remove(0, id.IndexOf("id") + 2);
                 result = id;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> GoToSelfPage(Guid WebDriverId)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_pr", EnumClickType.URLClick).ConfigureAwait(false))
+                {
+                    result.hasError = false;
+                    result.ActionResultMessage = EnumActionResult.Success;
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> GoToSettings(Guid WebDriverId)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_link", EnumClickType.ElementClick).ConfigureAwait(false))
+                {
+                    Thread.Sleep(random.Next(100, 500));
+                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_settings_link", EnumClickType.URLClick).ConfigureAwait(false))
+                    {
+                        result.hasError = false;
+                        result.ActionResultMessage = EnumActionResult.Success;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> ChangePassword(Guid WebDriverId, string OldPassword, string NewPassword)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                var changePasswordLink = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "chgpass",
+                                                                                     EnumWebHTMLElementSelector.CSSSelector, ".settings_right_control").ConfigureAwait(false);
+                if (webElementService.ClickToElement(changePasswordLink, EnumClickType.ElementClick))
+                {
+                    if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "settings_old_pwd", OldPassword).ConfigureAwait(false))
+                    {
+                        if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "settings_new_pwd", NewPassword).ConfigureAwait(false))
+                        {
+                            if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "settings_confirm_pwd", NewPassword).ConfigureAwait(false))
+                            {
+                                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "settings_pwd_btn", EnumClickType.ElementClick).ConfigureAwait(false))
+                                {
+                                    result.hasError = false;
+                                    result.ActionResultMessage = EnumActionResult.Success;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<string> GetPageName(Guid WebDriverId)
+        {
+            var result = "";
+            try
+            {
+                result = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "page_name", true).ConfigureAwait(false);
+                if (result == null)
+                    result = "";
             }
             catch (Exception ex)
             {

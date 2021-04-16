@@ -30,6 +30,7 @@ namespace BotClient.Settings
             services.AddSingleton<IBotCompositeService, BotCompositeService>();
             services.AddSingleton<IClientCompositeService, ClientCompositeService>();
             services.AddSingleton<IMissionCompositeService, MissionCompositeService>();
+            services.AddSingleton<IServerCompositeService, ServerCompositeService>();
             //single
             services.AddSingleton<IBotActionHistoryService, BotActionHistoryService>();
             services.AddSingleton<IBotClientRoleConnectorService, BotClientRoleConnectorService>();
@@ -52,7 +53,7 @@ namespace BotClient.Settings
             services.AddSingleton<IRoleServerConnectorService, RoleServerConnectorService>();
             services.AddSingleton<IRoleService, RoleService>();
             services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
-
+            services.AddSingleton<IServerService, ServerService>();
             return services;
         }
     }

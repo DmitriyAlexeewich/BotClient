@@ -40,6 +40,9 @@ namespace BotClient.Bussines.Services
                 }
                 webDrivers = new List<HTMLWebDriver>();
                 List<DriverReport> result = new List<DriverReport>();
+                var settings = settingsService.GetServerSettings();
+                if (BrowserCount > settings.MaxBrowserCount)
+                    BrowserCount = settings.MaxBrowserCount;
                 for (int i = 0; i < BrowserCount; i++)
                 {
                     var startResult = StartWebDriver(SocialPlatform);
@@ -91,6 +94,23 @@ namespace BotClient.Bussines.Services
                 await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
             }
         }
+
+        public async Task Stop(Guid WebDriverId)
+        {
+            try
+            {
+                var webDriver = webDrivers.FirstOrDefault(item => item.Id == WebDriverId);
+                if (webDriver != null)
+                {
+                    webDrivers[webDrivers.IndexOf(webDriver)].WebDriver.Quit();
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
+            }
+        }
+        
         /*
         //Not working
         public async Task ExecuteAlgoritm(Guid WebDriverId, List<WebHTMLElementModel> WebHTMLElementModels)
@@ -630,7 +650,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var settings = settingsService.GetServerSettings();
-                var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settings, settings.WebDriverStartWaitingTime);
+                var bufferWebDriver = new HTMLWebDriver(SocialPlatform, settings, settings.WebDriverFilePath, settings.WebDriverStartWaitingTime);
                 if (bufferWebDriver.Status == EnumWebDriverStatus.Start)
                 {
                     var oldURL = bufferWebDriver.WebDriver.Url;

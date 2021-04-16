@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
+using BotDataModels.Bot.Enumerators;
 using BotMySQL.Bussines.Interfaces.Composite;
 using BotMySQL.Bussines.Interfaces.MySQL;
 using Microsoft.AspNetCore.Http;
@@ -52,8 +53,11 @@ namespace BotClient.Controllers
         [HttpPost("Test")]
         public async Task<IActionResult> Test([FromBody] string Text)
         {
-            var result = new List<List<string>>();
-            await botWorkService.Test(Text).ConfigureAwait(false);
+            var random = new Random();
+            var result = new List<EnumBotActionType>();
+            for (int i = 0; i < 10; i++)
+                result.Add((EnumBotActionType)random.Next(1, 5));
+            result = settingsService.ShuffleSchedule(result);
             return Ok(result);
         }
 

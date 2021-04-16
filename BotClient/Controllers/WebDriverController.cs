@@ -6,6 +6,7 @@ using BotClient.Bussines.Interfaces;
 using BotClient.Models.Enumerators;
 using BotClient.Models.HTMLElements;
 using BotClient.Models.WebReports;
+using BotMySQL.Bussines.Interfaces.Composite;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -17,10 +18,21 @@ namespace BotClient.Controllers
     public class WebDriverController : ControllerBase
     {
         private readonly IWebDriverService webDriverService;
+        private readonly ISettingsService settingsService;
+        private readonly IServerCompositeService serverCompositeService;
+        private readonly IBotWorkService botWorkService;
 
-        public WebDriverController(IWebDriverService WebDriverService)
+        public WebDriverController(
+                                    IWebDriverService WebDriverService,
+                                    ISettingsService SettingsService,
+                                    IServerCompositeService ServerCompositeService,
+                                    IBotWorkService BotWorkService
+                                  )
         {
+            settingsService = SettingsService;
             webDriverService = WebDriverService;
+            serverCompositeService = ServerCompositeService;
+            botWorkService = BotWorkService;
         }
 
         [HttpGet("Start")]
@@ -31,7 +43,10 @@ namespace BotClient.Controllers
             {
                 if ((EnumSocialPlatform)SocialPlatform != 0)
                 {
+                    var settings = settingsService.GetServerSettings();
+                    var server = serverCompositeService.GetServerByGuidCode(settings.ServerId);
                     await webDriverService.Start(BrowserCount, (EnumSocialPlatform)SocialPlatform).ConfigureAwait(false);
+                    await botWorkService.StartBot(server.Id).ConfigureAwait(false);
                     return Ok(new DriverStartReport()
                     {
                         IsSuccess = true,

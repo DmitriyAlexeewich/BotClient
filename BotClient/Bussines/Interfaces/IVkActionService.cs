@@ -41,7 +41,8 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> RepostPostToSelfPage(Guid WebDriverId, WebHTMLElement Post);
         Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
-        Task<DialogWithNewMessagesModel> GetDialogWithNewMessages(Guid WebDriverId);
+        Task<List<DialogWithNewMessagesModel>> GetDialogsWithNewMessages(Guid WebDriverId);
+        Task CloseDialog(Guid WebDriverId);
         Task<List<NewMessageModel>> GetNewMessagesInDialog(Guid WebDriverId, string ClientVkId);
         Task<bool> isBotDialogBlocked(Guid WebDriver);
         Task<AlgoritmResult> SendAnswerMessage(Guid WebDriverId, string MessageText, string ClientVkId, int BotClientRoleConnectorId);
@@ -49,5 +50,10 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetClientName(Guid WebDriverId);
         Task<bool> hasCaptcha(Guid WebDriverId);
         Task<string> GetVkId(Guid WebDriverId);
+        Task<AlgoritmResult> GoToSelfPage(Guid WebDriverId);
+        Task<AlgoritmResult> GoToSettings(Guid WebDriverId);
+        Task<AlgoritmResult> ChangePassword(Guid WebDriverId, string OldPassword, string NewPassword);
+        Task<string> GetPageName(Guid WebDriverId);
+        Task<bool> GetCanRecievedMessage(Guid WebDriverId);
     }
 }

@@ -15,6 +15,7 @@ namespace BotClient.Bussines.Interfaces
     {
         Task Start(int BrowserCount, EnumSocialPlatform SocialPlatform);
         Task Restart(Guid WebDriverId);
+        Task Stop(Guid WebDriverId);
         Task<List<HTMLWebDriver>> GetWebDrivers();
         Task<HTMLWebDriver> GetWebDriverById(Guid WebDriverId);
         Task<bool> hasWebDriver(Guid WebDriverId);

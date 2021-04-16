@@ -1,21 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj": {}
+    "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj": {
+    "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
+        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
         "projectName": "BotClient",
-        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
+        "projectPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
+        "outputPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\"
+        ],
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
@@ -27,8 +31,8 @@
         "frameworks": {
           "netcoreapp3.1": {
             "projectReferences": {
-              "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
-                "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
+              "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+                "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
               }
             }
           }
@@ -44,7 +48,7 @@
           "dependencies": {
             "HtmlAgilityPack": {
               "target": "Package",
-              "version": "[1.11.31, )"
+              "version": "[1.11.32, )"
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
@@ -60,7 +64,7 @@
             },
             "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[12.0.3, )"
+              "version": "[13.0.1, )"
             },
             "Selenium.WebDriver": {
               "target": "Package",
@@ -97,18 +101,22 @@
         }
       }
     },
-    "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+    "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
+        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
         "projectName": "BotDataModels",
-        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
+        "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\obj\\",
+        "outputPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\"
+        ],
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netstandard2.0"
@@ -152,18 +160,22 @@
         }
       }
     },
-    "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+    "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
+        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
         "projectName": "BotMySQL",
-        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
+        "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\obj\\",
+        "outputPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\"
+        ],
         "configFilePaths": [
           "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "netcoreapp3.1"
@@ -175,8 +187,8 @@
         "frameworks": {
           "netcoreapp3.1": {
             "projectReferences": {
-              "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
-                "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
+              "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+                "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
               }
             }
           }

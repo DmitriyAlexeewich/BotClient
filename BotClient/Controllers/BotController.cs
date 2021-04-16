@@ -34,25 +34,6 @@ namespace BotClient.Controllers
             httpContextAccessor = HttpContextAccessor;
         }
 
-        [HttpGet("StartBot")]
-        public async Task<IActionResult> StartBot([FromQuery] int ServerId)
-        {
-            var message = "Invalid ServerId. The ServerId is empty";
-            if (ServerId != null)
-            {
-                if (ServerId > 0)
-                {
-                    var startResult = await botWorkService.StartBot(ServerId).ConfigureAwait(false);
-                    if(startResult.Count > 0)
-                        return Ok(startResult);
-                    message = "No bots for this ServerId";
-                }
-                else
-                    message = "Invalid BotsId. Bot id list contains no elements";
-            }
-            return BadRequest(message);
-        }
-
         [HttpGet("GetBot")]
         public async Task<IActionResult> GetBot()
         {
