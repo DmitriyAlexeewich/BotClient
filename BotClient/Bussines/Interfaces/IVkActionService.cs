@@ -4,6 +4,7 @@ using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
 using BotClient.Models.HTMLElements;
 using BotDataModels.Bot;
+using BotDataModels.Client;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -55,5 +56,6 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> ChangePassword(Guid WebDriverId, string OldPassword, string NewPassword);
         Task<string> GetPageName(Guid WebDriverId);
         Task<bool> GetCanRecievedMessage(Guid WebDriverId);
+        Task<List<ParsedClientCreateModel>> GetContacts(Guid WebDriverId);
     }
 }

@@ -104,6 +104,7 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
+        //!--
         public async Task<List<string>> GetLogLines()
         {
             try
@@ -178,7 +179,7 @@ namespace BotClient.Bussines.Services
             }
             return null;
         }
-
+        
         public async Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots)
         {
             try
@@ -197,6 +198,7 @@ namespace BotClient.Bussines.Services
             }
             return false;
         }
+        //--!
 
         public IList<T> Shuffle<T>(IList<T> list)
         {
@@ -272,11 +274,13 @@ namespace BotClient.Bussines.Services
             return list;
         }
 
+        //!--
         public async Task UpdateWebConnectionFile()
         {
             if (File.Exists(configurationFilePath))
                 webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
         }
+        //--!
 
         public async Task<string> GeneratePassword(int Length)
         {
@@ -317,6 +321,7 @@ namespace BotClient.Bussines.Services
             return ScheduleList;
         }
 
+        //!--
         private void CreateErrorLogFile()
         {
             try
@@ -378,5 +383,8 @@ namespace BotClient.Bussines.Services
                 AddLog("SettingsService", ex);
             }
         }
+    
+        //--!
+    
     }
 }

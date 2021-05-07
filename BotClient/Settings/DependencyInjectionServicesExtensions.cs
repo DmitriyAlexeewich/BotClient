@@ -54,6 +54,8 @@ namespace BotClient.Settings
             services.AddSingleton<IRoleService, RoleService>();
             services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
             services.AddSingleton<IServerService, ServerService>();
+            services.AddSingleton<IParsedClientService, ParsedClientService>();
+
             return services;
         }
     }

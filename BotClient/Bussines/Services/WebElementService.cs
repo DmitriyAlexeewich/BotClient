@@ -89,7 +89,7 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        public async Task<bool> ScrollElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string Text, bool? isElementRequired = true)
+        public async Task<bool> ScrollElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true)
         {
             var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
             if (element == null)
@@ -182,9 +182,9 @@ namespace BotClient.Bussines.Services
             return new List<WebHTMLElement>();
         }
 
-        public async Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
+        public async Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelectorType, string ParentLink, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true)
         {
-            var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+            var body = await webDriverService.GetElement(WebDriverId, ParentSelectorType, ParentLink).ConfigureAwait(false);
             if (body != null)
             {
                 var childs = body.GetChildElements(SelectorType, Link, isRequired.Value);

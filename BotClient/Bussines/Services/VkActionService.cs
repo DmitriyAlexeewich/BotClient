@@ -6,6 +6,7 @@ using BotClient.Models.Client;
 using BotClient.Models.HTMLElements;
 using BotClient.Models.HTMLElements.Enumerators;
 using BotDataModels.Bot;
+using BotDataModels.Client;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -327,7 +328,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                var musics = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".blind_label._audio_row__play_btn").ConfigureAwait(false);
+                var musics = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.TagName, "Body", 
+                                                                      EnumWebHTMLElementSelector.CSSSelector, ".blind_label._audio_row__play_btn").ConfigureAwait(false);
                 webElementService.ClickToElement(musics[random.Next(0, musics.Count)], EnumClickType.ElementClick);
             }
             catch (Exception ex)
@@ -1094,6 +1096,54 @@ namespace BotClient.Bussines.Services
             try
             {
                 result = await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left").ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<List<ParsedClientCreateModel>> GetContacts(Guid WebDriverId)
+        {
+            var result = new List<ParsedClientCreateModel>();
+            try
+            {
+                var goToContactsBtn = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "profile_friends", 
+                                                                                  EnumWebHTMLElementSelector.CSSSelector, ".module_header").ConfigureAwait(false);
+                if (webElementService.ClickToElement(goToContactsBtn, EnumClickType.URLClick))
+                {
+                    var contanctsContainers = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "list_content",
+                                                                                       EnumWebHTMLElementSelector.CSSSelector, ".friends_list_bl").ConfigureAwait(false);
+                    var scrollCount = 20;
+                    for (int i = 0; i < scrollCount; i++)
+                    {
+                        await webElementService.ScrollElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                        var newContanctsContainers = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "list_content",
+                                                                                              EnumWebHTMLElementSelector.CSSSelector, ".friends_list_bl").ConfigureAwait(false);
+                        if (newContanctsContainers.Count > contanctsContainers.Count)
+                            scrollCount++;
+                        contanctsContainers = newContanctsContainers;
+                    }
+
+                    for (int i = 0; i < contanctsContainers.Count; i++)
+                    {
+                        var contacts = webElementService.GetChildElements(contanctsContainers[i], EnumWebHTMLElementSelector.CSSSelector, ".friends_user_row.friends_user_row--fullRow");
+                        for (int j = 0; j < contacts.Count; j++)
+                        {
+                            var parsedClient = new ParsedClientCreateModel();
+                            var contactIdElement = webElementService.GetElementInElement(contacts[j], EnumWebHTMLElementSelector.TagName, "div");
+                            var contactVkId = webElementService.GetAttributeValue(contactIdElement, "Id");
+                            if ((contactVkId != null) && (contactVkId.Length > 0))
+                            {
+                                parsedClient.VkId = contactVkId.Replace("res", "");
+                                if (webElementService.GetElementInElement(contacts[j], EnumWebHTMLElementSelector.CSSSelector, ".friends_field_act") != null)
+                                    parsedClient.canRecievedMessage = true;
+                            }
+                            result.Add(parsedClient);
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {

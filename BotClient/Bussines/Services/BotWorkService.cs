@@ -36,6 +36,7 @@ namespace BotClient.Bussines.Services
         private readonly ITextService textService;
         private readonly IRoleServerConnectorService roleServerConnectorService;
         private readonly IPlatformGroupService platformGroupService;
+        private readonly IParsedClientService parsedClientService;
 
         public BotWorkService(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -47,7 +48,8 @@ namespace BotClient.Bussines.Services
                               IVideoDictionaryService VideoDictionaryService,
                               ITextService TextService,
                               IRoleServerConnectorService RoleServerConnectorService,
-                              IPlatformGroupService PlatformGroupService)
+                              IPlatformGroupService PlatformGroupService,
+                              IParsedClientService ParsedClientService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -60,6 +62,7 @@ namespace BotClient.Bussines.Services
             textService = TextService;
             roleServerConnectorService = RoleServerConnectorService;
             platformGroupService = PlatformGroupService;
+            parsedClientService = ParsedClientService;
         }
 
         private Random random = new Random();
@@ -171,7 +174,7 @@ namespace BotClient.Bussines.Services
                                 var maxSecondActionsCount = 0;
                                 if ((currentDay > startTime) && (currentDay < endTime))
                                 {
-                                    if (!bot.BotData.isPrintBlock)
+                                    if ((!bot.BotData.isPrintBlock) && (!bot.BotData.isChill))
                                     {
                                         var maxClientsRoleConnectionActionsCount = random.Next(setting.MinRoleActionCountPerSession, setting.MaxRoleActionCountPerSession);
                                         for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
@@ -181,7 +184,11 @@ namespace BotClient.Bussines.Services
                                         }
                                     }
                                     else
+                                    {
                                         maxSecondActionsCount = random.Next(1, 3);
+                                        if(bot.BotData.isChill)
+                                            maxSecondActionsCount = random.Next(5, 10);
+                                    }
                                 }
                                 else
                                     maxSecondActionsCount = random.Next(setting.MinNightSecondActionCountPerSession, setting.MaxNightSecondActionCountPerSession);
@@ -196,6 +203,7 @@ namespace BotClient.Bussines.Services
                                 for (int i = 0; i < 65000; i++)
                                     botSchedule.Add(EnumBotActionType.RoleMission);
                             }
+                            botSchedule[0] = EnumBotActionType.RoleMission;
                             for (int j = 0; j < botSchedule.Count; j++)
                             {
                                 switch (botSchedule[j])
@@ -421,10 +429,12 @@ namespace BotClient.Bussines.Services
                     if ((currentMission != null) && (currentMission.Count > 0))
                     {
                         var mission = missionCompositeService.GetMissionById(currentMission[0].Id);
+                        if (BotClientRoleConnector.MissionId != -1)
+                            mission = missionCompositeService.GetMissionById(BotClientRoleConnector.MissionId);
                         botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission, 
                                                                        $"Выполнение миссии {mission.Id} ({mission.Title}, {role.UpdateDate}) " +
                                                                        $"с контактёром {BotClientRoleConnector.ClientId}");
-                        var nodes = missionCompositeService.GetNodes(currentMission[0].Id, null, null);
+                        var nodes = missionCompositeService.GetNodes(mission.Id, null, null);
                         if ((nodes != null) && (nodes.Count > 0))
                         {
                             nodes.Sort((a, b) => a.NodeId.CompareTo(b.NodeId));
@@ -584,6 +594,11 @@ namespace BotClient.Bussines.Services
                                             break;
                                         case EnumMissionActionType.WaitAnswerMessage:
                                             stepResult = true;
+                                            break;
+                                        case EnumMissionActionType.ParseContacts:
+                                            var parsedClients = await vkActionService.GetContacts(WebDriverId).ConfigureAwait(false);
+                                            parsedClients = parsedClients.Select(item => { item.RoleId = BotClientRoleConnector.RoleId; return item; }).ToList();
+                                            parsedClientService.CreateParsedClients(parsedClients);
                                             break;
                                     }
                                     if ((stepResult) && (nodes[i].isRequired) && (BotClientRoleConnector.MissionId < 0))

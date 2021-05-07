@@ -69,8 +69,6 @@ C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Ubiety.Dn
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Zstandard.Net.dll
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\WebDriver.dll
-C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Renci.SshNet.dll
-C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\SshNet.Security.Cryptography.dll
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Configuration.ConfigurationManager.dll
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Security.Cryptography.ProtectedData.dll
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Telegram.Bot.dll

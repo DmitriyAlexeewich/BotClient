@@ -18,7 +18,7 @@ namespace BotClient.Bussines.Interfaces
         bool ClearElement(WebHTMLElement Element);
         Task<bool> ClearElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true);
         bool ScrollElement(WebHTMLElement Element);
-        Task<bool> ScrollElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string Text, bool? isElementRequired = true);
+        Task<bool> ScrollElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true);
         bool CompareElementAttribute(WebHTMLElement Element, string AttributeName, string AttributeValue);
         Task<bool> CompareElementAttribute(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string AttributeName, string AttributeValue, bool? isElementRequired = true);
         string GetElementINNERText(WebHTMLElement Element, bool? removeHTMLTags = false);
@@ -29,6 +29,6 @@ namespace BotClient.Bussines.Interfaces
         WebHTMLElement GetElementInElement(WebHTMLElement Element, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true);
         Task<WebHTMLElement> GetElementInElement(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelector, string ParentLink, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true);
         List<WebHTMLElement> GetChildElements(WebHTMLElement Element, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true);
-        Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true);
+        Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelectorType, string ParentLink, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true);
     }
 }

@@ -5,5 +5,6 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_PublishTargetUrl>C:\Users\User\source\repos\BotClient\BotClient\bin\Release\netcoreapp3.1\publish\BotClient</_PublishTargetUrl>
+    <History>True|2021-05-05T13:19:39.6679351Z;True|2021-05-05T14:14:13.1994783+03:00;False|2021-05-05T14:13:42.4654801+03:00;False|2021-05-05T14:12:22.0434056+03:00;</History>
   </PropertyGroup>
 </Project>
