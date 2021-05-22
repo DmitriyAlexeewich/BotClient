@@ -27,9 +27,7 @@ namespace BotClient.Bussines.Interfaces
 
         Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform);
 
-        Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId);
-
-        Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots);
+        Task<string> GetScreenshotFolderPath(string RoleId, string BotClientRoleConnectionId);
 
         IList<T> Shuffle<T>(IList<T> list);
         

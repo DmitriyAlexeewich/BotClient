@@ -209,6 +209,25 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<string> InsertText(string Message, string InsertableText = "")
+        {
+            string result = Message;
+            try
+            {
+                if ((InsertableText.Length > 0) && (result.IndexOf("<#ITP>") != -1))
+                {
+                    result = result.Replace("<#ITP>", InsertableText);
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            if(result.IndexOf("<#ITP>") != -1)
+                result = result.Replace("<#ITP>", "");
+            return result;
+        }
+
         private async Task<string> RandMessage(string message)
         {
             try

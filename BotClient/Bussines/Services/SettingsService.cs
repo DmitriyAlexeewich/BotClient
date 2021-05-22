@@ -164,11 +164,14 @@ namespace BotClient.Bussines.Services
             return new List<WebHTMLElementModel>();
         }
 
-        public async Task<string> GetScreenshotFolderPath(string BotClientRoleConnectionId)
+        public async Task<string> GetScreenshotFolderPath(string RoleId, string BotClientRoleConnectionId)
         {
             try
             {
-                var screenshotFolderPath = $"{screenshotPath}{BotClientRoleConnectionId}";
+                var screenshotFolderPath = $"{screenshotPath}{RoleId}";
+                if (!Directory.Exists(screenshotFolderPath))
+                    Directory.CreateDirectory(@screenshotFolderPath);
+                screenshotFolderPath = $"{screenshotPath}{RoleId}\\{BotClientRoleConnectionId}";
                 if (!Directory.Exists(screenshotFolderPath))
                     Directory.CreateDirectory(@screenshotFolderPath);
                 return screenshotFolderPath;
@@ -180,26 +183,6 @@ namespace BotClient.Bussines.Services
             return null;
         }
         
-        public async Task<bool> DeleteScreenshotFolder(List<DialogScreenshotModel> DialogScreenshots)
-        {
-            try
-            {
-                for (int i = 0; i < DialogScreenshots.Count; i++)
-                {
-                    var path = await GetScreenshotFolderPath(DialogScreenshots[i].BotClientRoleConnectionId.ToString()).ConfigureAwait(false);
-                    if(!Directory.Exists(path))
-                        Directory.Delete(path, true);
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-            return false;
-        }
-        //--!
-
         public IList<T> Shuffle<T>(IList<T> list)
         {
             try
@@ -226,25 +209,27 @@ namespace BotClient.Bussines.Services
             try
             {
                 ScheduleList = Shuffle(ScheduleList).ToList();
-                var chillActionCount = 0;
+
                 for (int i = 0; i < ScheduleList.Count; i++)
                 {
                     if (ScheduleList[i] == EnumBotActionType.RoleMission)
                     {
-                        if (((i > 0) && (ScheduleList[i - 1] == EnumBotActionType.RoleMission))
-                            || ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == EnumBotActionType.RoleMission)))
+                        if (isSimilarPreviousAction(i, ScheduleList))
                         {
-                            ScheduleList[i] = (EnumBotActionType)random.Next(1, 5);
-                            ScheduleList = AddEnumBotActionTypeRole(ScheduleList);
+                            var chillActionsCount = random.Next(1, 3);
+                            var prevSecondAction = (EnumBotActionType)random.Next(1, 5);
+                            for (int j = 0; j < chillActionsCount; j++)
+                            {
+                                var currentSecondAction = (EnumBotActionType)random.Next(1, 5);
+                                while(currentSecondAction == prevSecondAction)
+                                    currentSecondAction = (EnumBotActionType)random.Next(1, 5);
+                                ScheduleList.Insert(i, currentSecondAction);
+                                prevSecondAction = currentSecondAction;
+                            }
+                            i = -1;
                         }
                     }
-                    else
-                    {
-                        while (((i > 0) && (ScheduleList[i - 1] == ScheduleList[i])) || ((i < ScheduleList.Count - 1) && (ScheduleList[i + 1] == ScheduleList[i])))
-                            ScheduleList[i] = (EnumBotActionType)random.Next(1, 5);
-                    }
                 }
-                ScheduleList.RemoveAll(item => item == 0);
             }
             catch (Exception ex)
             {
@@ -302,23 +287,19 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        private List<EnumBotActionType> AddEnumBotActionTypeRole(List<EnumBotActionType> ScheduleList)
+        private bool isSimilarPreviousAction(int OriginalIndex, List<EnumBotActionType> ScheduleList)
         {
             try
             {
-                if (ScheduleList[ScheduleList.Count - 1] == EnumBotActionType.RoleMission)
-                {
-                    var chillActionsCount = random.Next(2, 5);
-                    for (int i = 0; i < chillActionsCount; i++)
-                        ScheduleList.Add((EnumBotActionType)random.Next(1, 5));
-                }
-                ScheduleList.Add(EnumBotActionType.RoleMission);
+                if (OriginalIndex > 0)
+                    return ScheduleList[OriginalIndex - 1] == ScheduleList[OriginalIndex];
+
             }
             catch (Exception ex)
             {
                 AddLog("SettingsService", ex);
             }
-            return ScheduleList;
+            return false;
         }
 
         //!--

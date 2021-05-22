@@ -554,7 +554,7 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        public async Task GetScreenshot(Guid WebDriverId, int BotClientRoleConnectionId, string ScreenshotName)
+        public async Task GetScreenshot(Guid WebDriverId, int RoleId, int BotClientRoleConnectionId, string ScreenshotName)
         {
             try
             {
@@ -564,7 +564,7 @@ namespace BotClient.Bussines.Services
                 {
                     Screenshot image = ((ITakesScreenshot)webDriver.WebDriver).GetScreenshot();
                     ScreenshotName = ScreenshotName.Replace('-', '_');
-                    var folderPath = await settingsService.GetScreenshotFolderPath(BotClientRoleConnectionId.ToString());
+                    var folderPath = await settingsService.GetScreenshotFolderPath(RoleId.ToString(), BotClientRoleConnectionId.ToString());
                     if (folderPath != null)
                     {
                         image.SaveAsFile($"{folderPath}\\{ScreenshotName}.png", ScreenshotImageFormat.Png);
@@ -615,6 +615,26 @@ namespace BotClient.Bussines.Services
                 await settingsService.AddLog("WebDriverService", ex);
             }
         }
+
+        public async Task<string> GetCurrentURL(Guid WebDriverId)
+        {
+            try
+            {
+                var webDriver = await GetWebDriverById(WebDriverId).ConfigureAwait(false);
+                if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
+                    && (webDriver.Status != EnumWebDriverStatus.Loading))
+                {
+                    var url = webDriver.WebDriver.Url;
+                    return url;
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("WebDriverService", ex);
+            }
+            return "";
+        }
+
         private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver, string OldURL)
         {
             bool urlNotChanged = false;

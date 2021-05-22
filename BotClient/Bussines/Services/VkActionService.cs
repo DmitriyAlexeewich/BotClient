@@ -307,8 +307,6 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                var MusicWaitingDeltaTime = settingsService.GetServerSettings().MusicWaitingDeltaTime;
-                Thread.Sleep(settingsService.GetServerSettings().MusicWaitingTime + random.Next(-MusicWaitingDeltaTime, MusicWaitingDeltaTime));
                 await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
                     ".top_audio_player_btn.top_audio_player_play._top_audio_player_play", EnumClickType.ElementClick);
                 result = new AlgoritmResult()
@@ -527,11 +525,6 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                var videoWaitingDeltaTime = settingsService.GetServerSettings().VideoWaitingDeltaTime;
-                var waitTime = settingsService.GetServerSettings().VideoWaitingTime + random.Next(-videoWaitingDeltaTime, videoWaitingDeltaTime);
-                if (!((waitTime > 0) && (waitTime<Int32.MaxValue)))
-                    waitTime = settingsService.GetServerSettings().VideoWaitingTime;
-                Thread.Sleep(waitTime);
                 var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "VideoLayerInfo__topControls", EnumWebHTMLElementSelector.TagName, "div");
                 var closeResult = webElementService.ClickToElement(element, EnumClickType.URLClick);
                 result = new AlgoritmResult()
@@ -881,11 +874,10 @@ namespace BotClient.Bussines.Services
                     EnumWebHTMLElementSelector.CSSSelector, ".inl_bl.left_count").ConfigureAwait(false);
                 if (dialogsWithNewMessagesCont != null)
                 {
-                    var dialogsWithNewMessagesCount = webElementService.GetElementINNERText(dialogsWithNewMessagesCont, true);
-                    var parseResult = 0;
-                    if ((int.TryParse(dialogsWithNewMessagesCount, out parseResult)) && (parseResult > 0))
+                    var newDialogsCount = await GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
+                    if (newDialogsCount > 0)
                     {
-                        if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false))
+                        if ((await webDriverService.isUrlContains(WebDriverId, "im").ConfigureAwait(false)) || (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false)))
                         {
                             await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             var dialogContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "im_dialogs").ConfigureAwait(false);
@@ -893,7 +885,7 @@ namespace BotClient.Bussines.Services
                             for (int i = 0; i < dialogsUnreadMarks.Count; i++)
                             {
                                 var text = webElementService.GetElementINNERText(dialogsUnreadMarks[i], true);
-                                parseResult = 0;
+                                var parseResult = 0;
                                 if ((int.TryParse(text, out parseResult)) && (parseResult > 0))
                                 {
                                     var parent = dialogsUnreadMarks[i];
@@ -927,6 +919,24 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<int> GetNewDialogsCount(Guid WebDriverId)
+        {
+            var result = 0;
+            try
+            {
+                var dialogsWithNewMessagesCont = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg",
+                    EnumWebHTMLElementSelector.CSSSelector, ".inl_bl.left_count").ConfigureAwait(false);
+                var innerText = webElementService.GetElementINNERText(dialogsWithNewMessagesCont, true);
+                if (!int.TryParse(innerText, out result))
+                    result = 0;
             }
             catch (Exception ex)
             {

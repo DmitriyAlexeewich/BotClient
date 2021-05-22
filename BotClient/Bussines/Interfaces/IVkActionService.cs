@@ -57,5 +57,6 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetPageName(Guid WebDriverId);
         Task<bool> GetCanRecievedMessage(Guid WebDriverId);
         Task<List<ParsedClientCreateModel>> GetContacts(Guid WebDriverId);
+        Task<int> GetNewDialogsCount(Guid WebDriverId);
     }
 }
