@@ -51,14 +51,10 @@ namespace BotClient.Controllers
         }
 
         [HttpPost("Test")]
-        public async Task<IActionResult> Test([FromBody] string Text)
+        public async Task<IActionResult> Test([FromQuery] string Text)
         {
-            var random = new Random();
-            var result = new List<EnumBotActionType>();
-            for (int i = 0; i < 10; i++)
-                result.Add((EnumBotActionType)random.Next(1, 5));
-            result = settingsService.ShuffleSchedule(result);
-            return Ok(result);
+            var regex = new Regex("[A-zА-я]{1,}");
+            return Ok(regex.IsMatch(Text));
         }
 
     }

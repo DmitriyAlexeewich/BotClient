@@ -44,10 +44,12 @@ namespace BotClient.Bussines.Services
                         break;
                     }
                 }*/
+                var constantText = await GetURLS(message).ConfigureAwait(false);
+                message = ReplaceConstantStringToKey(message, constantText);
+                constantText = await UpdateLinks(constantText).ConfigureAwait(false);
                 if (result.Text == null)
                     result.Text = await RandMessage(message).ConfigureAwait(false);
-                var constantText = new List<MessageConstantText>();
-                constantText = GetConstantTexts(result.Text);
+                constantText.AddRange(GetConstantTexts(result.Text));
                 result.Text = ReplaceConstantStringToKey(result.Text, constantText);
                 result.Text = await SetPhrases(result.Text).ConfigureAwait(false);
                 result.Text = await ReplaceSecondaryText(result.Text).ConfigureAwait(false);
@@ -56,52 +58,56 @@ namespace BotClient.Bussines.Services
                 var textParts = new List<string>();
                 var splitChance = 0;
                 var text = "";
-                for (int i = 0; i < result.Text.Length; i++)
+                if ((settings.PlotCommaSplitChance > 0) && (settings.SpaceSplitChance > 0))
                 {
-                    text += result.Text[i];
-                    if ((result.Text[i] == '.') || (result.Text[i] == ','))
+                    for (int i = 0; i < result.Text.Length; i++)
                     {
-                        splitChance += settings.PlotCommaSplitChance;
-                        if (random.Next(0, 100) < splitChance)
+                        text += result.Text[i];
+                        if ((result.Text[i] == '.') || (result.Text[i] == ','))
                         {
-                            textParts.Add(text);
-                            text = "";
-                            splitChance = 0;
-                        }
-                    }
-                }
-                splitChance = 0;
-                if (textParts.IndexOf(text) == -1)
-                    textParts.Add(text);
-                for (int i = 0; i < textParts.Count; i++)
-                {
-                    splitChance = 0;
-                    var spaceTextParts = new List<string>();
-                    for (int j = 0; j < textParts[i].Length; j++)
-                    {
-                        if (textParts[i][j] == ' ')
-                        {
-                            splitChance += settings.SpaceSplitChance;
+                            splitChance += settings.PlotCommaSplitChance;
                             if (random.Next(0, 100) < splitChance)
                             {
-                                var part = textParts[i].Substring(j + 1);
-                                spaceTextParts.Add(textParts[i].Replace(part, ""));
-                                spaceTextParts.Add(part);
+                                textParts.Add(text);
+                                text = "";
                                 splitChance = 0;
-                                break;
                             }
                         }
                     }
-                    if (spaceTextParts.Count > 0)
+                    splitChance = 0;
+                    if (textParts.IndexOf(text) == -1)
+                        textParts.Add(text);
+                    for (int i = 0; i < textParts.Count; i++)
                     {
-                        spaceTextParts.Reverse();
-                        textParts.RemoveAt(i);
-                        for (int j = 0; j < spaceTextParts.Count; j++)
-                            textParts.Insert(i, spaceTextParts[j]);
-                        i += spaceTextParts.Count;
+                        splitChance = 0;
+                        var spaceTextParts = new List<string>();
+                        for (int j = 0; j < textParts[i].Length; j++)
+                        {
+                            if (textParts[i][j] == ' ')
+                            {
+                                splitChance += settings.SpaceSplitChance;
+                                if (random.Next(0, 100) < splitChance)
+                                {
+                                    var part = textParts[i].Substring(j + 1);
+                                    spaceTextParts.Add(textParts[i].Replace(part, ""));
+                                    spaceTextParts.Add(part);
+                                    splitChance = 0;
+                                    break;
+                                }
+                            }
+                        }
+                        if (spaceTextParts.Count > 0)
+                        {
+                            spaceTextParts.Reverse();
+                            textParts.RemoveAt(i);
+                            for (int j = 0; j < spaceTextParts.Count; j++)
+                                textParts.Insert(i, spaceTextParts[j]);
+                            i += spaceTextParts.Count;
+                        }
                     }
                 }
-                //bool predicate(string item) { return item.Length < 1; }
+                else
+                    textParts.Add(result.Text);
                 textParts.RemoveAll(item => item.Length < 1);
                 var errorIndexList = await SetMissClickErrorIndex(textParts).ConfigureAwait(false);
                 var keyboardErrorCount = 0;
@@ -588,8 +594,7 @@ namespace BotClient.Bussines.Services
         {
             for (int i = 0; i < ConstantTexts.Count; i++)
             {
-                var regex = new Regex(@ConstantTexts[i].Text);
-                Text = regex.Replace(Text, ConstantTexts[i].TextGuid.ToString(), 1);
+                Text = ReplaceFirst(Text, ConstantTexts[i].Text, ConstantTexts[i].TextGuid.ToString());
             }
             return Text;
         }
@@ -898,6 +903,52 @@ namespace BotClient.Bussines.Services
                 await settingsService.AddLog("TextService", ex);
             }
             return result;
+        }
+
+        private async Task<List<MessageConstantText>> GetURLS(string message)
+        {
+            var result = new List<MessageConstantText>();
+            while (message.IndexOf("<#PURLLinkStart>") != -1)
+            {
+                int urlLinkIndexStart = message.IndexOf("<#PURLLinkStart>");
+                if (urlLinkIndexStart != -1)
+                {
+                    int urlLinkIndexEnd = message.IndexOf("<#PURLLinkEnd>");
+                    if (urlLinkIndexEnd != -1)
+                    {
+                        string link = "";
+                        link = message.Substring(urlLinkIndexStart, urlLinkIndexEnd - urlLinkIndexStart + 14);
+                        message = message.Replace(link, "");
+                        var linkConstantText = new MessageConstantText()
+                        {
+                            Text = link,
+                            TextGuid = Guid.NewGuid()
+                        };
+                        result.Add(linkConstantText);
+                    }
+                }
+            }
+            return result;
+        }
+
+        private string ReplaceFirst(string text, string search, string replace)
+        {
+            int pos = text.IndexOf(search);
+            if (pos < 0)
+            {
+                return text;
+            }
+            return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+        }
+
+        private async Task<List<MessageConstantText>> UpdateLinks(List<MessageConstantText> Links)
+        {
+            for (int i = 0; i < Links.Count; i++)
+            {
+                Links[i].Text = Links[i].Text.Replace("<#PURLLinkStart>", "");
+                Links[i].Text = Links[i].Text.Replace("<#PURLLinkEnd>", "");
+            }
+            return Links;
         }
     }
 }

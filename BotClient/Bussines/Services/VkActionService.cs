@@ -881,38 +881,16 @@ namespace BotClient.Bussines.Services
                         {
                             await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                             var dialogContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "im_dialogs").ConfigureAwait(false);
-                            var dialogsUnreadMarks = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
-                            for (int i = 0; i < dialogsUnreadMarks.Count; i++)
+                            var dialogsLink = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
+                            for (int i = 0; i < dialogsLink.Count; i++)
                             {
-                                var text = webElementService.GetElementINNERText(dialogsUnreadMarks[i], true);
-                                var parseResult = 0;
-                                if ((int.TryParse(text, out parseResult)) && (parseResult > 0))
+                                var senderElement = webElementService.GetChildElements(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--who");
+                                if (senderElement.Count < 1)
                                 {
-                                    var parent = dialogsUnreadMarks[i];
-                                    for (int j = 0; j < 4; j++)
+                                    var vkId = webElementService.GetAttributeValue(dialogsLink[i], "data-peer");
+                                    if (vkId != null)
                                     {
-                                        if (parent != null)
-                                        {
-                                            parent = webElementService.GetElementInElement(parent, EnumWebHTMLElementSelector.XPath, "./..");
-                                            if (!parent.isAvailable)
-                                                parent = null;
-                                        }
-                                        else
-                                            break;
-                                    }
-                                    if (parent != null)
-                                    {
-                                        var vkId = webElementService.GetAttributeValue(parent, "data-peer");
-                                        if (vkId != null)
-                                        {
-                                            result.Add(
-                                                          new DialogWithNewMessagesModel()
-                                                          {
-                                                              ClientVkId = vkId,
-                                                              MessagesCount = parseResult
-                                                          }
-                                                      );
-                                        }
+                                        result.Add(new DialogWithNewMessagesModel(){ClientVkId = vkId});
                                     }
                                 }
                             }

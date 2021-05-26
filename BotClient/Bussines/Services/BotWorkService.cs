@@ -80,6 +80,7 @@ namespace BotClient.Bussines.Services
                     var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
                     if (bots.Count > 0)
                     {
+                        var settings = settingsService.GetServerSettings();
                         browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
                         var sessionBotsCount = bots.Count / browsers.Count;
                         for (int i = 0; i < browsers.Count; i++)
@@ -239,8 +240,6 @@ namespace BotClient.Bussines.Services
                                                     if (roleMissionResult)
                                                     {
                                                         clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
-                                                        if(!bot.BotData.isSkipSecondAction)
-                                                            botSchedule = await SimplifySchedule(botSchedule, j).ConfigureAwait(false);
                                                         break;
                                                     }
                                                     else
@@ -279,9 +278,10 @@ namespace BotClient.Bussines.Services
                         UpdateMissionList(ServerId);
                         botCompositeService.UpdateOnlineDate(bot.BotData.Id, DateTime.Now);
                         botCompositeService.UpdateNextOnlineDate(bot.BotData.Id, currentDay.AddDays(random.Next(1, 3)).AddHours(random.Next(1, 10)).AddMinutes(random.Next(1, 60)));
+                        UpdateBotList(ServerId);
                         if ((DateTime.Now.Hour > 6) && (DateTime.Now.Hour < 7) && (!dayUpdate))
                         {
-                            UpdateBotsList(ServerId);
+                            await UpdateBotsList(ServerId).ConfigureAwait(false);
                             /*
                                     var deleteDay = DateTime.Now;
                                     deleteDay = deleteDay.AddDays(-7);
@@ -666,7 +666,15 @@ namespace BotClient.Bussines.Services
                     var botClientRoleConnector = clientCompositeService.GetBotClientRoleConnectionByBotClientVkId(BotId, dialogs[i].ClientVkId, true);
                     if (botClientRoleConnector != null)
                     {
-                        var readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector, dialogs[i].ClientVkId).ConfigureAwait(false);
+                        var readNewMessagesResult = false;
+                        var mission = missionCompositeService.GetMissionById(botClientRoleConnector.MissionId);
+                        if (mission.isQuiz)
+                        {
+                            if (!botClientRoleConnector.isScenarioComplete)
+                                readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector, dialogs[i].ClientVkId).ConfigureAwait(false);
+                        }
+                        else
+                            readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector, dialogs[i].ClientVkId).ConfigureAwait(false);
                         if (!readNewMessagesResult)
                             clientCompositeService.SetBotClientRoleConnectionSuccess(botClientRoleConnector.Id, false);
                     }
@@ -1127,6 +1135,7 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                var settings = settingsService.GetServerSettings();
                 var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
                 for (int i = 0; i < botsWorkStatus.Count; i++)
                     bots.RemoveAll(item => item.Id == botsWorkStatus[i].BotData.Id);
@@ -1211,33 +1220,7 @@ namespace BotClient.Bussines.Services
             }
         }
 
-        private async Task<bool> hasAnswer(int BotId)
-        {
-            try
-            {
-
-                var connections = clientCompositeService.GetBotClientRoleConnectionsByBotId(BotId);
-                if (connections.Count > 0)
-                {
-                    var currentDayTime = DateTime.Now;
-                    currentDayTime = new DateTime(currentDayTime.Year, currentDayTime.Month, currentDayTime.Day, 0, 0, 0);
-                    connections.RemoveAll(item => item.UpdateDate > currentDayTime);
-                    if (connections.Count > 0)
-                    {
-                        connections = connections.OrderBy(item => item.UpdateDate).ToList();
-                        connections.Reverse();
-                        currentDayTime = new DateTime(currentDayTime.Year, currentDayTime.Month, currentDayTime.Day, currentDayTime.Hour - 5, currentDayTime.Minute - 5, 0);
-                        if (connections[0].UpdateDate > currentDayTime)
-                            return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("BotWorkService", ex);
-            }
-            return false;
-        }
+        
 
         private async Task ScanningNewDialogs(int WaitingTime, Guid WebDriverId, int? DialogCount = null)
         {
@@ -1257,6 +1240,45 @@ namespace BotClient.Bussines.Services
             {
                 await settingsService.AddLog("BotWorkService", ex);
             }
+        }
+
+        private void UpdateBotList(int ServerId)
+        {
+            var botList = botCompositeService.GetBotsByServerId(ServerId, null, null);
+            for (int i = 0; i < botsWorkStatus.Count; i++)
+            {
+                var bot = botList.FirstOrDefault(item => item.Id == botsWorkStatus[i].BotData.Id);
+                if (bot != null)
+                {
+                    botsWorkStatus[i].BotData.isDead = bot.isDead;
+                    botList.Remove(bot);
+                }
+            }
+            for (int i = 0; i < botList.Count; i++)
+            {
+                var webDriverId = GetMinBotBrowserId();
+                botsWorkStatus.Add(new BotWorkStatusModel()
+                {
+                    BotData = botList[i],
+                    WebDriverId = webDriverId
+                });
+            }
+        }
+
+        private Guid GetMinBotBrowserId()
+        {
+            var webDriversBotCount = new List<WebDriverBotCountModel>();
+            for (int i = 0; i < browsers.Count; i++)
+            {
+                var browserBots = botsWorkStatus.Select(item => item.WebDriverId == browsers[i].Id).ToList();
+                webDriversBotCount.Add(new WebDriverBotCountModel()
+                {
+                    WebDriverId = browsers[i].Id,
+                    BotCount = browserBots.Count
+                });
+            }
+            webDriversBotCount = webDriversBotCount.OrderBy(item => item.BotCount).ToList();
+            return webDriversBotCount[0].WebDriverId;
         }
 
         public async Task<List<string>> Test(string Text)

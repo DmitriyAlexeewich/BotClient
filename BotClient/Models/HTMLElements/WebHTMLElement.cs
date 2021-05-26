@@ -158,7 +158,10 @@ namespace BotClient.Models.HTMLElements
                     for (int i = 0; i < Text.Length; i++)
                     {
                         string letter = Text[i].ToString();
-                        element.SendKeys(letter);
+                        if (letter.IndexOf("\n") != -1)
+                            element.SendKeys(Keys.Control + Keys.Enter);
+                        else
+                            element.SendKeys(letter);
                         printedText += letter;
                         Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
                     }

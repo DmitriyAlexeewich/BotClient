@@ -9,6 +9,5 @@ namespace BotClient.Models.Client
     {
         public string ClientVkId { get; set; }
         public string ReceiptMessageDatePlatformFormat { get; set; }
-        public int MessagesCount { get; set; }
     }
 }

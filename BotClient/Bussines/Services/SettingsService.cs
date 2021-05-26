@@ -208,6 +208,7 @@ namespace BotClient.Bussines.Services
         {
             try
             {
+                var settings = GetServerSettings();
                 ScheduleList = Shuffle(ScheduleList).ToList();
 
                 for (int i = 0; i < ScheduleList.Count; i++)
@@ -216,7 +217,7 @@ namespace BotClient.Bussines.Services
                     {
                         if (isSimilarPreviousAction(i, ScheduleList))
                         {
-                            var chillActionsCount = random.Next(1, 3);
+                            var chillActionsCount = random.Next(settings.MinChillActionsCount, settings.MaxChillActionsCount);
                             var prevSecondAction = (EnumBotActionType)random.Next(1, 5);
                             for (int j = 0; j < chillActionsCount; j++)
                             {

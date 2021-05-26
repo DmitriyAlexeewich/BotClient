@@ -47,7 +47,6 @@ D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\hosting.
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\appsettings.Development.json
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\appsettings.json
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\hosting.json
-C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Properties\launchSettings.json
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotClient.exe
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotClient.deps.json
 C:\Users\User\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotClient.runtimeconfig.json
@@ -89,3 +88,4 @@ C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\staticweb
 C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.dll
 C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.pdb
 C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.genruntimeconfig.cache
+C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\scopedcss\bundle\BotClient.styles.css
