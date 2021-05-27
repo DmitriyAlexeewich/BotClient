@@ -51,10 +51,13 @@ namespace BotClient.Controllers
         }
 
         [HttpPost("Test")]
-        public async Task<IActionResult> Test([FromQuery] string Text)
+        public async Task<IActionResult> Test()
         {
-            var regex = new Regex("[A-zА-я]{1,}");
-            return Ok(regex.IsMatch(Text));
+            var nowTime = new DateTime(2021, 1, 31, 23, 59, 59, 0);
+            var nextTime = nowTime.AddMilliseconds(6000);
+            var timer = DateTime.Now.AddMilliseconds(6000);
+            while (DateTime.Now < timer) { }
+            return Ok();
         }
 
     }

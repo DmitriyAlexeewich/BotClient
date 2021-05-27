@@ -94,7 +94,7 @@ namespace BotClient.Models.HTMLElements
                 {
                     return EnumWebHTMLPageStatus.Error;
                 }
-                Thread.Sleep(1000);
+                WaitTime(1000);
             }
             return EnumWebHTMLPageStatus.Loading;
         }
@@ -163,7 +163,7 @@ namespace BotClient.Models.HTMLElements
                         else
                             element.SendKeys(letter);
                         printedText += letter;
-                        Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
+                        WaitTime(1000);
                     }
                     if (printedText == Text)
                         return true;
@@ -178,7 +178,7 @@ namespace BotClient.Models.HTMLElements
                         string letter = Text[i].ToString();
                         executor.ExecuteScript("arguments[0].click();", letter);
                         printedText += letter;
-                        Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
+                        WaitTime(1000);
                     }
                     if (printedText == Text)
                         return true;
@@ -209,7 +209,7 @@ namespace BotClient.Models.HTMLElements
                 for (int i = 0; i < WebSettings.ScrollCount; i++)
                 {
                     element.SendKeys(Keys.End);
-                    Thread.Sleep(rand.Next(WebSettings.KeyWaitingTimeMin, WebSettings.KeyWaitingTimeMax));
+                    WaitTime(1000);
                 }
                 return true;
             }
@@ -234,7 +234,7 @@ namespace BotClient.Models.HTMLElements
                     var bufferElement = FindWebElement(ElementModel, isParentElementIsDriver);
                     if (bufferElement != null)
                         return true;
-                    Thread.Sleep(1000);
+                    WaitTime(1000);
                 }
             }
             catch (Exception ex)
@@ -446,6 +446,13 @@ namespace BotClient.Models.HTMLElements
             {
                 return false;
             }
+        }
+
+        private bool WaitTime(int Milliseconds)
+        {
+            var waitingTime = DateTime.Now.AddMilliseconds(Milliseconds / 10);
+            while (DateTime.Now < waitingTime) { }
+            return true;
         }
     }
 }

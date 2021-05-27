@@ -80,7 +80,7 @@ namespace BotClient.Bussines.Services
                 {
                     webDrivers[webDrivers.IndexOf(webDriver)].Status = EnumWebDriverStatus.Start;
                     webDriver.WebDriver.Quit();
-                    Thread.Sleep(settings.WebDriverClosingWaitingTime);
+                    settingsService.WaitTime(settings.WebDriverClosingWaitingTime);
                     var startResult = StartWebDriver(webDriver.WebDriverPlatform);
                     startResult.Item1.SetNewId(WebDriverId);
                     webDrivers[webDrivers.IndexOf(webDriver)] = startResult.Item1;
@@ -652,7 +652,7 @@ namespace BotClient.Bussines.Services
                     }
                     catch
                     {
-                        Thread.Sleep(1000);
+                        settingsService.WaitTime(1000);
                     }
                 }
             }

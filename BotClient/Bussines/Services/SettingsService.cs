@@ -288,6 +288,13 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public bool WaitTime(int Milliseconds)
+        {
+            var waitingTime = DateTime.Now.AddMilliseconds(Milliseconds / 10);
+            while (DateTime.Now < waitingTime) { }
+            return true;
+        }
+
         private bool isSimilarPreviousAction(int OriginalIndex, List<EnumBotActionType> ScheduleList)
         {
             try

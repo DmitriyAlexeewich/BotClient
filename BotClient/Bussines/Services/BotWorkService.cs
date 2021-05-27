@@ -88,10 +88,14 @@ namespace BotClient.Bussines.Services
                             for (int j = 0; j < sessionBotsCount; j++)
                             {
                                 var bot = bots[random.Next(0, bots.Count)];
+                                var missionInitializations = random.Next(settings.MinRoleActionCountPerSession, settings.MaxRoleActionCountPerSession);
+                                if (sessionBotsCount < 2)
+                                    missionInitializations = random.Next(settings.MinRoleActionCountPerDay, settings.MaxRoleActionCountPerDay);
                                 botsWorkStatus.Add(new BotWorkStatusModel()
                                 {
                                     BotData = bot,
-                                    WebDriverId = browsers[i].Id
+                                    WebDriverId = browsers[i].Id,
+                                    CompletedMissionInitializations = missionInitializations
                                 });
                                 bots.Remove(bot);
                             }
@@ -178,8 +182,7 @@ namespace BotClient.Bussines.Services
                                 {
                                     if ((!bot.BotData.isPrintBlock) && (!bot.BotData.isChill))
                                     {
-                                        var maxClientsRoleConnectionActionsCount = random.Next(setting.MinRoleActionCountPerSession, setting.MaxRoleActionCountPerSession);
-                                        for (int j = 0; j < maxClientsRoleConnectionActionsCount; j++)
+                                        for (int j = 0; j < bot.CompletedMissionInitializations; j++)
                                             botSchedule.Add(EnumBotActionType.RoleMission);
                                     }
                                     else
@@ -230,7 +233,7 @@ namespace BotClient.Bussines.Services
                                             var roleAttept = random.Next(setting.MinRoleAtteptCount, setting.MinRoleAtteptCount);
                                             for (int k = 0; k < roleAttept; k++)
                                             {
-                                                Thread.Sleep(random.Next(setting.MinRoleWaitingTime, setting.MaxRoleWaitingTime));
+                                                settingsService.WaitTime(random.Next(setting.MinRoleWaitingTime, setting.MaxRoleWaitingTime));
                                                 var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.BotData.Id, GetMissionId(bot.BotData.Id));
                                                 if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
                                                 {
@@ -239,6 +242,7 @@ namespace BotClient.Bussines.Services
                                                     clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
                                                     if (roleMissionResult)
                                                     {
+                                                        bot.CompletedMissionInitializations--;
                                                         clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
                                                         break;
                                                     }
@@ -258,7 +262,7 @@ namespace BotClient.Bussines.Services
                             var dialogsCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                             for (int j=0; j< 300; j++)
                             {
-                                Thread.Sleep(1000);
+                                settingsService.WaitTime(1000);
                                 var newDialogsCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                                 if (dialogsCount < newDialogsCount)
                                 {
@@ -278,7 +282,7 @@ namespace BotClient.Bussines.Services
                         UpdateMissionList(ServerId);
                         botCompositeService.UpdateOnlineDate(bot.BotData.Id, DateTime.Now);
                         botCompositeService.UpdateNextOnlineDate(bot.BotData.Id, currentDay.AddDays(random.Next(1, 3)).AddHours(random.Next(1, 10)).AddMinutes(random.Next(1, 60)));
-                        UpdateBotList(ServerId);
+                        //UpdateBotList(ServerId);
                         if ((DateTime.Now.Hour > 6) && (DateTime.Now.Hour < 7) && (!dayUpdate))
                         {
                             await UpdateBotsList(ServerId).ConfigureAwait(false);
@@ -375,7 +379,7 @@ namespace BotClient.Bussines.Services
                     else
                         Task.Run(async () => 
                         {
-                            Thread.Sleep(MusicWaitingDeltaTime);
+                            settingsService.WaitTime(MusicWaitingDeltaTime);
                             await vkActionService.StopMusic(WebDriverId).ConfigureAwait(false);
                         });
                 }
@@ -972,7 +976,7 @@ namespace BotClient.Bussines.Services
                 {
                     var sendAnswerResult = await vkActionService.SendAnswerMessage(WebDriverId,
                                                   BotMessage.TextParts[j].Text, ClientVkId, BotClientRoleConnector.Id).ConfigureAwait(false);
-                    if ((sendAnswerResult.ActionResultMessage == EnumActionResult.Success) && (!sendAnswerResult.hasError))
+                    if ((sendAnswerResult.ActionResultMessage == EnumActionResult.Success) && (!sendAnswerResult.hasError) && (!result))
                         result = true;
                     if ((result) && (!BotMessage.hasMultiplyMissClickError))
                     {
@@ -1084,9 +1088,9 @@ namespace BotClient.Bussines.Services
                                 var isRepost = false;
                                 if (settings.RepostChancePerDay < random.Next(0, 100))
                                     isRepost = true;
-                                Thread.Sleep(random.Next(1000, 60000));
+                                settingsService.WaitTime(random.Next(1000, 60000));
                                 var watchResult = await vkActionService.WatchPost(WebDriverId, posts[random.Next(0, posts.Count)], isRepost).ConfigureAwait(false);
-                                Thread.Sleep(random.Next(1000, 60000));
+                                settingsService.WaitTime(random.Next(1000, 60000));
                                 if ((watchResult.ActionResultMessage == EnumActionResult.Success) && (isRepost))
                                 {
                                     botCompositeService.AddRepostCount(botGroups[0].Id, botGroups[0].RepostCount + 1);
@@ -1145,10 +1149,14 @@ namespace BotClient.Bussines.Services
                     for (int j = 0; j < sessionBotsCount; j++)
                     {
                         var bot = bots[random.Next(0, bots.Count)];
+                        var missionInitializations = random.Next(settings.MinRoleActionCountPerSession, settings.MaxRoleActionCountPerSession);
+                        if (sessionBotsCount < 2)
+                            missionInitializations = random.Next(settings.MinRoleActionCountPerDay, settings.MaxRoleActionCountPerDay);
                         botsWorkStatus.Add(new BotWorkStatusModel()
                         {
                             BotData = bot,
-                            WebDriverId = browsers[i].Id
+                            WebDriverId = browsers[i].Id,
+                            CompletedMissionInitializations = missionInitializations
                         });
                         bots.Remove(bot);
                     }
@@ -1231,7 +1239,7 @@ namespace BotClient.Bussines.Services
                     newDialogsCount = DialogCount.Value;
                 for (int i=0; i < WaitingTime; i++)
                 {
-                    Thread.Sleep(1000);
+                    settingsService.WaitTime(1000);
                     if (newDialogsCount != await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false))
                         break;
                 }

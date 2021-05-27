@@ -69,7 +69,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var settings = settingsService.GetServerSettings();
-                Thread.Sleep(settings.LoginWaitingTime);
+                settingsService.WaitTime(settings.LoginWaitingTime);
                 var checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_blocked_wrap").ConfigureAwait(false);
                 result = !webElementService.isElementAvailable(checkElement);
                 if (result)
@@ -225,7 +225,7 @@ namespace BotClient.Bussines.Services
                                         music = bufferMusic;
                                         break;
                                     }
-                                    Thread.Sleep(1000);
+                                    settingsService.WaitTime(1000);
                                     musicLoadingWaitingTime -= 1000;
                                 }
                                 return music;
@@ -259,7 +259,7 @@ namespace BotClient.Bussines.Services
                         if (music != null)
                             break;
                         music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
-                        Thread.Sleep(1000);
+                        settingsService.WaitTime(1000);
                     }
                     return music;
                 }
@@ -355,7 +355,7 @@ namespace BotClient.Bussines.Services
                         element = webElementService.GetElementInElement(element, EnumWebHTMLElementSelector.TagName, "a");
                         if (webElementService.ClickToElement(element, EnumClickType.URLClick))
                         {
-                            Thread.Sleep(180000 + random.Next(-60000, 60000));
+                            settingsService.WaitTime(180000 + random.Next(-60000, 60000));
                             element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "VideoLayerInfo__topControls", EnumWebHTMLElementSelector.TagName, "div");
                             closeResult = webElementService.ClickToElement(element, EnumClickType.URLClick);
                             result = new AlgoritmResult()
@@ -482,7 +482,7 @@ namespace BotClient.Bussines.Services
                         }
                         break;
                     }
-                    Thread.Sleep(1000);
+                    settingsService.WaitTime(1000);
                     waitingVideo -= 1000;
                 }
             }
@@ -1163,7 +1163,7 @@ namespace BotClient.Bussines.Services
                                 for (int i = 0; i < 60; i++)
                                 {
                                     searchResult = webElementService.GetElementInElement(searchResultContainer, EnumWebHTMLElementSelector.TagName, "div");
-                                    Thread.Sleep(1000);
+                                    settingsService.WaitTime(1000);
                                     if (searchResult != null)
                                         break;
                                 }
@@ -1347,7 +1347,7 @@ namespace BotClient.Bussines.Services
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_link", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
-                    Thread.Sleep(random.Next(100, 500));
+                    settingsService.WaitTime(random.Next(100, 500));
                     if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_settings_link", EnumClickType.URLClick).ConfigureAwait(false))
                     {
                         result.hasError = false;
@@ -1572,7 +1572,7 @@ namespace BotClient.Bussines.Services
                         else if (nextSongName != CurrentSongName)
                             break;
                     }
-                    Thread.Sleep(1000);
+                    settingsService.WaitTime(1000);
                 }
                 CurrentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
                 ".audio_page_player_title_song_title", true).ConfigureAwait(false);
@@ -1591,7 +1591,7 @@ namespace BotClient.Bussines.Services
                     };
                     break;
                 }
-                Thread.Sleep(1000);
+                settingsService.WaitTime(1000);
             }
             return result;
         }

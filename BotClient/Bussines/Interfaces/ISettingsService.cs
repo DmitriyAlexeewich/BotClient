@@ -37,5 +37,7 @@ namespace BotClient.Bussines.Interfaces
 
         Task UpdateWebConnectionFile();
         Task<string> GeneratePassword(int Length);
+
+        bool WaitTime(int Milliseconds);
     }
 }
