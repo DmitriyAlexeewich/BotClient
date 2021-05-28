@@ -955,13 +955,15 @@ namespace BotClient.Bussines.Services
                                 if (messageCont != null)
                                 {
                                     var text = webElementService.GetElementINNERText(messageCont, true);
-                                    if (text != null)
+                                    var audio = webElementService.GetElementInElement(messageCont, EnumWebHTMLElementSelector.CSSSelector, ".im_msg_audiomsg");
+                                    if ((text != null) || (audio != null))
                                     {
                                         messageText.Add(new NewMessageModel()
                                         {
                                             AttachedText = "",
                                             ReceiptMessageDatePlatformFormat = "",
-                                            Text = text
+                                            Text = text,
+                                            hasAudio = audio == null
                                         });
                                     }
                                 }
@@ -1406,6 +1408,26 @@ namespace BotClient.Bussines.Services
                 result = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "page_name", true).ConfigureAwait(false);
                 if (result == null)
                     result = "";
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> hasChatBlock(Guid WebDriverId)
+        {
+            var result = false;
+            try
+            {
+                var blockMessageContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._im_chat_input_error").ConfigureAwait(false);
+                if (blockMessageContainer != null)
+                {
+                    var blockMessage = webElementService.GetElementINNERText(blockMessageContainer, true);
+                    if (blockMessage.Length > 5)
+                        result = true;
+                }
             }
             catch (Exception ex)
             {

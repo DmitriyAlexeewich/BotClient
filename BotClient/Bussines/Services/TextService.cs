@@ -234,6 +234,21 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<string> AudioReaction()
+        {
+            string result = null;
+            try
+            {
+                result = "(Простите_Извините_Извеняюсь_Прошу прощения), (не могли бы вы_можете ли вы_не затруднит ли вас) (написать_изложить_ответить) текстом, (своё_ваше_присланное вами) (аудио_голосовое) сообщение.";
+                result = await RandMessage(result).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
         private async Task<string> RandMessage(string message)
         {
             try

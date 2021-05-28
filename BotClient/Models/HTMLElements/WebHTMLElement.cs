@@ -163,7 +163,6 @@ namespace BotClient.Models.HTMLElements
                         else
                             element.SendKeys(letter);
                         printedText += letter;
-                        WaitTime(1000);
                     }
                     if (printedText == Text)
                         return true;

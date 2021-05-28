@@ -15,5 +15,6 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetApologies();
         Task<string> GetCapsApologies();
         Task<string> InsertText(string Message, string InsertableText = "");
+        Task<string> AudioReaction();
     }
 }
