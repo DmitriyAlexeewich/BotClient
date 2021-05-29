@@ -972,6 +972,10 @@ namespace BotClient.Bussines.Services
                                 break;
                         }
                         if (messageText.Count > 0)
+                        {
+                            messageText[0].hasChatBlocked = await hasChatBlock(WebDriverId).ConfigureAwait(false);
+                        }
+                        if (messageText.Count > 0)
                             return messageText;
                     }
                 }

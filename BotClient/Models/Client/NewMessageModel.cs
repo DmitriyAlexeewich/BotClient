@@ -11,5 +11,6 @@ namespace BotClient.Models.Client
         public string AttachedText { get; set; }
         public string ReceiptMessageDatePlatformFormat { get; set; }
         public bool hasAudio { get; set; } = false;
+        public bool hasChatBlocked { get; set; } = false;
     }
 }
