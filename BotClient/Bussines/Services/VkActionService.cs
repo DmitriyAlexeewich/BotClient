@@ -1440,6 +1440,44 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<List<ClientGroupCreateModel>> GetClientGroups(Guid WebDriverId, string ClientVkId)
+        {
+            var result = new List<ClientGroupCreateModel>();
+            try
+            {
+                var goToGroupsPageresult = await webDriverService.GoToURL(WebDriverId, "groups?id=" + ClientVkId).ConfigureAwait(false);
+                if (goToGroupsPageresult)
+                {
+                    var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                    for (int i = 0; i < 100; i++)
+                    {
+                        webElementService.ScrollElement(body);
+                        settingsService.WaitTime(1000);
+                    }
+                    var groups = webElementService.GetChildElements(body, EnumWebHTMLElementSelector.CSSSelector, ".group_list_row.clear_fix._gl_row");
+                    for (int i = 0; i < groups.Count; i++)
+                    {
+                        var innerText = webElementService.GetElementINNERText(groups[i], true);
+                        if (innerText.IndexOf("Закрытая группа") == -1)
+                        {
+                            var groupName = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".group_row_title");
+                            var groupId = webElementService.GetAttributeValue(groups[i], "id");
+                            result.Add(new ClientGroupCreateModel()
+                            {
+                                GroupName = webElementService.GetElementINNERText(groupName, true),
+                                GroupVkId = groupId.Replace("gl_groups","")
+                            });
+                        }    
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
         private async Task<int> GetRating(WebHTMLElement Element)
         {
             var result = 0;

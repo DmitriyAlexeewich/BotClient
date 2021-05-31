@@ -295,6 +295,25 @@ namespace BotClient.Bussines.Services
             return true;
         }
 
+        public void ClearChromeDriverFolder()
+        {
+            try
+            {
+                if (Directory.Exists("C:\\Users\\Administrator\\AppData\\Local\\Temp"))
+                {
+                    var directory = new DirectoryInfo("C:\\Users\\Administrator\\AppData\\Local\\Temp");
+                    foreach (FileInfo file in directory.GetFiles())
+                        file.Delete();
+                    foreach (DirectoryInfo subDirectory in directory.GetDirectories())
+                        subDirectory.Delete();
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+        }
+
         private bool isSimilarPreviousAction(int OriginalIndex, List<EnumBotActionType> ScheduleList)
         {
             try

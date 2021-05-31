@@ -8,7 +8,7 @@ namespace BotClient.Models.WebReports
 {
     public class DriverReport
     {
-        public Guid ServerId { get; set; }
+        public int ServerId { get; set; }
         public Guid DriverId { get; set; }
         public bool HasError { get; set; } = false;
         public EnumWebDriverStatus DriverStatus { get; set; }

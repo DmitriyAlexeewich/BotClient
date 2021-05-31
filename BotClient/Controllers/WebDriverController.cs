@@ -44,7 +44,8 @@ namespace BotClient.Controllers
                 if ((EnumSocialPlatform)SocialPlatform != 0)
                 {
                     var settings = settingsService.GetServerSettings();
-                    var server = serverCompositeService.GetServerByGuidCode(settings.ServerId);
+                    settingsService.ClearChromeDriverFolder();
+                    var server = serverCompositeService.GetServerById(settings.ServerId);
                     await webDriverService.Start(BrowserCount, (EnumSocialPlatform)SocialPlatform).ConfigureAwait(false);
                     await botWorkService.StartBot(server.Id).ConfigureAwait(false);
                     return Ok(new DriverStartReport()
@@ -75,7 +76,8 @@ namespace BotClient.Controllers
                 if ((EnumSocialPlatform)SocialPlatform != 0)
                 {
                     var settings = settingsService.GetServerSettings();
-                    var server = serverCompositeService.GetServerByGuidCode(settings.ServerId);
+                    //settingsService.ClearChromeDriverFolder();
+                    var server = serverCompositeService.GetServerById(settings.ServerId);
                     await webDriverService.Start(BrowserCount, (EnumSocialPlatform)SocialPlatform).ConfigureAwait(false);
                     await botWorkService.StartQuizBot(server.Id, RoleId).ConfigureAwait(false);
                     return Ok(new DriverStartReport()

@@ -29,9 +29,14 @@ namespace BotClient.Models.HTMLWebDriver
         {
             try
             {
+                Random random = new Random();
                 var options = new ChromeOptions();
                 for (int i = 0; i < ConnectionSettings.Options.Count; i++)
                     options.AddArgument(ConnectionSettings.Options[i]);
+                var proxyIP = new List<int>();
+                for(int i=0; i<4; i++)
+                    proxyIP.Add(random.Next(1, 256));
+                options.AddArgument($"--proxy-server={proxyIP[0]}.{proxyIP[1]}.{proxyIP[2]}.{proxyIP[3]}:8080");
                 WebDriver = new ChromeDriver(DriverPath, options, TimeSpan.FromMinutes(10));
                 WebDriver.Manage().Timeouts().PageLoad.Add(TimeSpan.FromMinutes(10));
                 Thread.Sleep(WaitingTime);

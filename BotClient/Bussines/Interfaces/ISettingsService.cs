@@ -39,5 +39,7 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GeneratePassword(int Length);
 
         bool WaitTime(int Milliseconds);
+
+        void ClearChromeDriverFolder();
     }
 }
