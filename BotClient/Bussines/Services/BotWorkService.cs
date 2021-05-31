@@ -136,6 +136,112 @@ namespace BotClient.Bussines.Services
             }
         }
 
+        public async Task StartQuizBot(int ServerId, int RoleId)
+        {
+            try
+            {
+                var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
+                var settings = settingsService.GetServerSettings();
+                var browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
+                bots.RemoveAll(item => item.isDead);
+                for (int i = 0; i < browsers.Count; i++)
+                {
+                    if (i < bots.Count)
+                    {
+                        var browserId = browsers[i].Id;
+                        var botId = bots[i].Id;
+                        Task.Run(() => { RunQuiz(browserId, botId, RoleId); });
+                    }
+                    else
+                        await webDriverService.Stop(browsers[i].Id).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+        }
+
+        private async Task RunQuiz(Guid WebDriverId, int BotId, int RoleId)
+        {
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                var bot = botCompositeService.GetBotById(BotId);
+                var loginflag = await vkActionService.Login(WebDriverId, bot.Login, bot.Password).ConfigureAwait(false);
+                if ((!loginflag.hasError) && (await vkActionService.isLoginSuccess(WebDriverId).ConfigureAwait(false)))
+                {
+                    await UpdateLoginPassword(WebDriverId, BotId).ConfigureAwait(false);
+                    if (bot.VkId.Length < 1)
+                    {
+                        var vkId = await vkActionService.GetVkId(WebDriverId).ConfigureAwait(false);
+                        if (vkId.Length > 0)
+                        {
+                            botCompositeService.SetIsVkId(BotId, vkId);
+                            bot = botCompositeService.GetBotById(BotId);
+                        }
+                    }
+                    if (bot.FullName.Length < 1)
+                        await GetFullName(WebDriverId, BotId).ConfigureAwait(false);
+                    if (bot.isUpdatedCustomizeInfo)
+                    {
+                        var cusomizeData = botCompositeService.GetBotCustomizeByBotId(BotId);
+                        var cusomizeResult = await vkActionService.Customize(WebDriverId, cusomizeData).ConfigureAwait(false);
+                        if (!cusomizeResult.hasError)
+                            botCompositeService.SetIsUpdatedCustomizeInfo(BotId, false);
+                    }
+
+                    while (true)
+                    {
+                        var currentDay = DateTime.Now;
+                        var offTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 8, 0, 0);/*
+                        while (DateTime.Now < offTime)
+                            await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);*/
+                        int roleActionCount = random.Next(settings.MinRoleActionCountPerDay, settings.MaxRoleActionCountPerDay);
+                        var missions = missionCompositeService.GetRoleMissionConnections(RoleId, true);
+                        float waitingTime = (4f * 60f) / (float)roleActionCount;
+                        for (int i = 0; i < roleActionCount; i++)
+                        {
+                            if (!bot.isPrintBlock)
+                            {
+                                botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
+                                var roleAttept = random.Next(settings.MinRoleAtteptCount, settings.MinRoleAtteptCount);
+                                for (int k = 0; k < roleAttept; k++)
+                                {
+                                    var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.Id, missions[random.Next(0, missions.Count)].MissionId);
+                                    if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
+                                    {
+                                        var botClientsRoleConnection = setBotClientsRoleConnection.Result;
+                                        var roleMissionResult = await ExecuteRoleMission(WebDriverId, botClientsRoleConnection).ConfigureAwait(false);
+                                        clientCompositeService.SetBotClientRoleConnectionComplete(botClientsRoleConnection.Id);
+                                        if (roleMissionResult)
+                                        {
+                                            clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, true);
+                                            break;
+                                        }
+                                        else
+                                            clientCompositeService.SetBotClientRoleConnectionSuccess(botClientsRoleConnection.Id, false);
+                                    }
+                                }
+                            }
+                            var nextTime = DateTime.Now.AddMinutes(waitingTime);
+                            while (DateTime.Now < nextTime)
+                                await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                        }
+                        offTime.AddDays(1);
+                        while (DateTime.Now < offTime)
+                            await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                    }
+                }
+                await Logout(WebDriverId).ConfigureAwait(false);
+                await webDriverService.Stop(WebDriverId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+        }
+
         private async Task RunBot(Guid WebDriverId, int ServerId)
         {
             try
@@ -821,7 +927,7 @@ namespace BotClient.Bussines.Services
                         for (int i = 0; i < newMessages.Count; i++)
                             newMessageText += newMessages[i].Text + " ";
                         newMessageText = newMessageText.Remove(newMessageText.Length - 1);
-                        if (newMessages.FirstOrDefault(item => item.hasAudio) == null)
+                        if (true)//newMessages.FirstOrDefault(item => item.hasAudio) == null)
                         {
                             var mission = missionCompositeService.GetMissionById(botClientRoleConnector.MissionId);
                             if (!mission.isQuiz)
@@ -887,9 +993,9 @@ namespace BotClient.Bussines.Services
                             }
                             await webDriverService.GetScreenshot(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                         }
-                        else
+                        /*else
                             await vkActionService.SendAnswerMessage(WebDriverId, await textService.AudioReaction().ConfigureAwait(false), ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
-                        return await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, false, newMessageText, null).ConfigureAwait(false);
+                        */return await SaveNewMessage(WebDriverId, botClientRoleConnector.Id, false, newMessageText, null).ConfigureAwait(false);
                     }
                     else
                         clientCompositeService.SetIsChatBlocked(botClientRoleConnector.Id, true);

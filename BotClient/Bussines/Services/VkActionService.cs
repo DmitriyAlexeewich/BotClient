@@ -1409,7 +1409,7 @@ namespace BotClient.Bussines.Services
             var result = "";
             try
             {
-                result = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "page_name", true).ConfigureAwait(false);
+                result = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".page_name", true).ConfigureAwait(false);
                 if (result == null)
                     result = "";
             }
