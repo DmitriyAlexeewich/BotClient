@@ -1,5 +1,6 @@
 ﻿using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
+using BotClient.Models.Bot.Enumerators;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
@@ -1230,6 +1231,150 @@ namespace BotClient.Bussines.Services
                                 break;
                             }
                         }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> GoToGroupsSection(Guid WebDriverId)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                var goToGroupResult = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "", EnumClickType.URLClick).ConfigureAwait(false);
+                if (goToGroupResult)
+                {
+                    result.hasError = false;
+                    result.ActionResultMessage = EnumActionResult.Success;
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> SearchGroups(Guid WebDriverId, string KeyWord, bool FilteredBySubscribersCount, EnumSearchGroupType SearchGroupType, string Country, string City, bool isSaftySearch)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                if (KeyWord.Length > 0)
+                {
+                    var searchInput = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "search_query").ConfigureAwait(false);
+                    var printResult = webElementService.PrintTextToElement(searchInput, KeyWord);
+                    if (printResult)
+                        webElementService.SendKeyToElement(searchInput, Keys.Return);
+                }
+                if (FilteredBySubscribersCount)
+                {
+                    var expandSunscribeSelectorClick = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[sort]", EnumClickType.ElementClick).ConfigureAwait(false);
+                    if (expandSunscribeSelectorClick)
+                    {
+                        var selectors = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "list_options_container_1", EnumWebHTMLElementSelector.TagName, "li").ConfigureAwait(false);
+                        if (selectors.Count > 1)
+                            webElementService.ClickToElement(selectors[1], EnumClickType.ElementClick);
+                    }
+                }
+                if (SearchGroupType != EnumSearchGroupType.AllTypes)
+                {
+                    var expandGroupTypeSelectorClick = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[type]", EnumClickType.ElementClick).ConfigureAwait(false);
+                    if (expandGroupTypeSelectorClick)
+                    {
+                        var selectors = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "list_options_container_2", EnumWebHTMLElementSelector.TagName, "li").ConfigureAwait(false);
+                        if (selectors.Count > 1)
+                        {
+                            if(SearchGroupType == EnumSearchGroupType.Group)
+                                webElementService.ClickToElement(selectors[1], EnumClickType.ElementClick);
+                            else
+                                webElementService.ClickToElement(selectors[2], EnumClickType.ElementClick);
+                        }
+                    }
+                }
+                if (Country.Length > 0)
+                {
+                    if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[country]", Country).ConfigureAwait(false))
+                    {
+                        if (await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[country]", Keys.Return).ConfigureAwait(false))
+                        {
+                            if (City.Length > 0)
+                            {
+                                if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[city]", Country).ConfigureAwait(false))
+                                {
+                                    await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[city]", Keys.Return).ConfigureAwait(false);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!isSaftySearch)
+                    await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "safe_search", EnumClickType.ElementClick).ConfigureAwait(false);
+                result.hasError = false;
+                result.ActionResultMessage = EnumActionResult.Success;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<List<ClientGroupCreateModel>> GetGroups(Guid WebDriverId)
+        {
+            var result = new List<ClientGroupCreateModel>();
+            try
+            {
+                var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                for (int i = 0; i < 100; i++)
+                {
+                    webElementService.ScrollElement(body);
+                    settingsService.WaitTime(1000);
+                }
+                var groups = new List<WebHTMLElement>();
+                if (await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "groups_list_groups").ConfigureAwait(false) != null)
+                {
+                    groups = webElementService.GetChildElements(body, EnumWebHTMLElementSelector.CSSSelector, ".group_list_row.clear_fix._gl_row");
+                    for (int i = 0; i < groups.Count; i++)
+                    {
+                        var innerText = webElementService.GetElementINNERText(groups[i], true);
+                        if (innerText.IndexOf("Закрытая группа") == -1)
+                        {
+                            var groupName = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".group_row_title");
+                            var groupId = webElementService.GetAttributeValue(groups[i], "id");
+                            result.Add(new ClientGroupCreateModel()
+                            {
+                                GroupName = webElementService.GetElementINNERText(groupName, true),
+                                GroupVkId = groupId.Replace("gl_groups", "")
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    groups = webElementService.GetChildElements(body, EnumWebHTMLElementSelector.CSSSelector, ".groups_row.search_row.clear_fix");
+                    for (int i = 0; i < groups.Count; i++)
+                    {
+                        var groupName = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".labeled.title");
+                        var groupId = webElementService.GetAttributeValue(groups[i], "data-id");
+                        result.Add(new ClientGroupCreateModel()
+                        {
+                            GroupName = webElementService.GetElementINNERText(groupName, true),
+                            GroupVkId = groupId
+                        });
                     }
                 }
             }

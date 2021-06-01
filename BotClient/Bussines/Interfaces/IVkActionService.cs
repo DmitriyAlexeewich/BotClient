@@ -1,4 +1,5 @@
 ﻿using BotClient.Models.Bot;
+using BotClient.Models.Bot.Enumerators;
 using BotClient.Models.Bot.Work;
 using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
@@ -36,6 +37,9 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, string GroupURL, string GroupName);
         Task<AlgoritmResult> GoToGroup(Guid WebDriverId, string GroupURL);
+        Task<AlgoritmResult> GoToGroupsSection(Guid WebDriverId);
+        Task<AlgoritmResult> SearchGroups(Guid WebDriverId, string KeyWord, bool FilteredBySubscribersCount, EnumSearchGroupType SearchGroupType, string Country, string City, bool isSaftySearch);
+        Task<List<ClientGroupCreateModel>> GetGroups(Guid WebDriverId);
         Task<List<PlatformPostModel>> GetPosts(Guid WebDriverId);
         Task<AlgoritmResult> WatchPost(Guid WebDriverId, PlatformPostModel PlatformPost, bool isRepost);
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
