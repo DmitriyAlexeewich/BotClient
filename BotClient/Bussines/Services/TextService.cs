@@ -2,6 +2,7 @@
 using BotClient.Models.Bot;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Enumerators;
+using BotDataModels.Role;
 using BotMySQL.Bussines.Interfaces.MySQL;
 using System;
 using System.Collections.Generic;
@@ -241,6 +242,37 @@ namespace BotClient.Bussines.Services
             {
                 result = "(Простите_Извините_Извеняюсь_Прошу прощения), (не могли бы вы_можете ли вы_не затруднит ли вас) (написать_изложить_ответить) текстом, (своё_ваше_присланное вами) (аудио_голосовое) сообщение.";
                 result = await RandMessage(result).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
+        public async Task<string> GetRememberMessage(int MissionNodeId, List<MissionNodeModel> MissionNodes)
+        {
+            var result = "";
+            try
+            {
+                var rememberCount = 0;
+                for (int i = 0; i < MissionNodes.Count; i++)
+                {
+                    if (MissionNodes[i].Id > MissionNodeId)
+                        rememberCount++;
+                }
+                if (rememberCount > 0)
+                {
+                    result = "(Простите_Извините_Извеняюсь_Прошу прощения), (могли бы вы_можете ли вы) (ответить_дать ответ) на ";
+                    if (rememberCount < 2)
+                        result += "вопрос ";
+                    else if (rememberCount < 5)
+                        result += "вопроса ";
+                    else
+                        result += "вопросов ";
+                    result = await RandMessage(result).ConfigureAwait(false);
+                }
+
             }
             catch (Exception ex)
             {

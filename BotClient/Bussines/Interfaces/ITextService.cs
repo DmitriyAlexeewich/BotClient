@@ -1,5 +1,6 @@
 ﻿using BotClient.Models.Bot;
 using BotDataModels.Enumerators;
+using BotDataModels.Role;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,6 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetCapsApologies();
         Task<string> InsertText(string Message, string InsertableText = "");
         Task<string> AudioReaction();
+        Task<string> GetRememberMessage(int MissionNodeId, List<MissionNodeModel> MissionNodes);
     }
 }

@@ -1194,6 +1194,54 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        private async Task RememberMission(Guid WebDriverId, int BotId)
+        {
+            try
+            {
+                var rememberDate = DateTime.Now.AddHours(-12);
+                var missions = missionCompositeService.GetMissionsByBotId(BotId);
+                var missionsNodes = new List<List<MissionNodeModel>>();
+                for (int i = 0; i < missions.Count; i++)
+                {
+                    var missionNodes = missionCompositeService.GetNodes(missions[i].Id);
+                    missionNodes.RemoveAll(item => !item.isRemember);
+                    if (missionNodes.Count > 0)
+                        missionsNodes.Add(missionNodes);
+                }
+                if (missionsNodes.Count > 0)
+                {
+                    for (int i = 0; i < missionsNodes.Count; i++)
+                    {
+                        var botClientConnections = clientCompositeService.GetBotClientRoleConnectionsByBotId(BotId);
+                        botClientConnections.RemoveAll(item => item.UpdateDate > rememberDate || item.isScenarioComplete || item.MissionId != missionsNodes[i][0].MissionId || item.isChatBlocked);
+                        for (int j = 0; j < botClientConnections.Count; j++)
+                        {
+                            var missionPathNodes = botClientConnections[j].MissionPath.Split(';').ToList();
+                            var missionNodeId = -1;
+                            if ((Int32.TryParse(missionPathNodes[missionPathNodes.Count - 1], out missionNodeId)) && (missionNodeId > 0))
+                            {
+                                if (missionsNodes[i].FirstOrDefault(item => item.NodeId == missionNodeId) != null)
+                                {
+                                    var client = clientCompositeService.GetClientById(botClientConnections[j].ClientId);
+                                    var newClientMessages = await vkActionService.GetNewMessagesInDialog(WebDriverId, client.VkId).ConfigureAwait(false);
+                                    if (newClientMessages.Count < 1)
+                                    {
+                                        var rememberMessage = await textService.GetRememberMessage(missionNodeId, missionsNodes[j]).ConfigureAwait(false);
+                                        var sendResult = await vkActionService.SendAnswerMessage(WebDriverId, rememberMessage, client.VkId, botClientConnections[j].Id).ConfigureAwait(false);
+                                        clientCompositeService.CreateMessage(botClientConnections[j].Id, rememberMessage);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+        }
+
         private void UpdateMissionList(int ServerId)
         {
             var roles = roleServerConnectorService.GetByServerId(ServerId);

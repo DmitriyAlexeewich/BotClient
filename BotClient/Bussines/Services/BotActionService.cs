@@ -41,5 +41,9 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<List<ClientGroupCreateModel>> GetClientGroups(Guid WebDriverId)
+        {
+            
+        }
     }
 }
