@@ -1590,31 +1590,111 @@ namespace BotClient.Bussines.Services
             var result = new List<ClientGroupCreateModel>();
             try
             {
-                var goToGroupsPageresult = await webDriverService.GoToURL(WebDriverId, "groups?id=" + ClientVkId).ConfigureAwait(false);
-                if (goToGroupsPageresult)
+                var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                for (int i = 0; i < 100; i++)
                 {
-                    var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
-                    for (int i = 0; i < 100; i++)
+                    webElementService.ScrollElement(body);
+                    settingsService.WaitTime(1000);
+                }
+                var groups = webElementService.GetChildElements(body, EnumWebHTMLElementSelector.CSSSelector, ".group_list_row.clear_fix._gl_row");
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    var innerText = webElementService.GetElementINNERText(groups[i], true);
+                    if (innerText.IndexOf("Закрытая группа") == -1)
                     {
-                        webElementService.ScrollElement(body);
-                        settingsService.WaitTime(1000);
-                    }
-                    var groups = webElementService.GetChildElements(body, EnumWebHTMLElementSelector.CSSSelector, ".group_list_row.clear_fix._gl_row");
-                    for (int i = 0; i < groups.Count; i++)
-                    {
-                        var innerText = webElementService.GetElementINNERText(groups[i], true);
-                        if (innerText.IndexOf("Закрытая группа") == -1)
+                        var groupName = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".group_row_title");
+                        var groupId = webElementService.GetAttributeValue(groups[i], "id");
+                        result.Add(new ClientGroupCreateModel()
                         {
-                            var groupName = webElementService.GetElementInElement(groups[i], EnumWebHTMLElementSelector.CSSSelector, ".group_row_title");
-                            var groupId = webElementService.GetAttributeValue(groups[i], "id");
-                            result.Add(new ClientGroupCreateModel()
-                            {
-                                GroupName = webElementService.GetElementINNERText(groupName, true),
-                                GroupVkId = groupId.Replace("gl_groups","")
-                            });
-                        }    
+                            GroupName = webElementService.GetElementINNERText(groupName, true),
+                            GroupVkId = groupId.Replace("gl_groups", "")
+                        });
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> GoToClientGroups(Guid WebDriverId, string ClientVkId)
+        {
+            var result = false;
+            try
+            {
+                var goToGroupsPageresult = await webDriverService.GoToURL(WebDriverId, "groups?id=" + ClientVkId).ConfigureAwait(false);
+                if (goToGroupsPageresult)
+                    result = true;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> GoToAudioPageByLink(Guid WebDriverId, string Link)
+        {
+            var result = false;
+            try
+            {
+                var goToGroupsPageresult = await webDriverService.GoToURL(WebDriverId, "audios" + Link).ConfigureAwait(false);
+                if (goToGroupsPageresult)
+                    result = true;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<List<ParsedAudioModel>> ParseAudio(Guid WebDriverId)
+        {
+            var result = new List<ParsedAudioModel>();
+            try
+            {
+                var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body");
+                for (int i = 0; i < 10; i++)
+                {
+                    webElementService.ScrollElement(body);
+                    settingsService.WaitTime(1000);
+                }
+                var audios = webElementService.GetChildElements(body, EnumWebHTMLElementSelector.CSSSelector, ".audio_row_content._audio_row_content");
+                for (int i = 0; i < audios.Count; i++)
+                {
+                    var parent = webElementService.GetElementInElement(audios[i], EnumWebHTMLElementSelector.XPath, "..");
+                    if (parent != null)
+                    {
+                        var nameElement = webElementService.GetElementInElement(parent, EnumWebHTMLElementSelector.CSSSelector, ".audio_row__performer_title");
+                        result.Add(new ParsedAudioModel()
+                        {
+                            AudioCreate = new AudioCreateModel()
+                            {
+                                Name = webElementService.GetElementINNERText(nameElement, true),
+                                VkId = webElementService.GetAttributeValue(parent, "data-full-id")
+                            },
+                            AudioElement = parent
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> AddAudioToSelfPage(WebHTMLElement Audio)
+        {
+            var result = false;
+            try
+            {
+                var addButton = webElementService.GetElementInElement(Audio, EnumWebHTMLElementSelector.CSSSelector, ".audio_row__action.audio_row__action_add._audio_row__action_add");
+                result = webElementService.ClickToElement(addButton, EnumClickType.ElementClick);
             }
             catch (Exception ex)
             {

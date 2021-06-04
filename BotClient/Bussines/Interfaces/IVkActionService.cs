@@ -64,5 +64,9 @@ namespace BotClient.Bussines.Interfaces
         Task<int> GetNewDialogsCount(Guid WebDriverId);
         Task<bool> hasChatBlock(Guid WebDriverId);
         Task<List<ClientGroupCreateModel>> GetClientGroups(Guid WebDriverId, string ClientVkId);
+        Task<bool> GoToClientGroups(Guid WebDriverId, string ClientVkId);
+        Task<bool> GoToAudioPageByLink(Guid WebDriverId, string Link);
+        Task<List<ParsedAudioModel>> ParseAudio(Guid WebDriverId);
+        Task<bool> AddAudioToSelfPage(WebHTMLElement Audio);
     }
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj": {}
+    "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj": {
+    "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
         "projectName": "BotClient",
-        "projectPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\obj\\",
+        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
@@ -32,11 +32,11 @@
           "netcoreapp3.1": {
             "targetAlias": "netcoreapp3.1",
             "projectReferences": {
-              "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
-                "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
+              "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+                "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
               },
-              "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
-                "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
+              "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+                "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
               }
             }
           }
@@ -106,14 +106,14 @@
         }
       }
     },
-    "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+    "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
         "projectName": "BotDataModels",
-        "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
+        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\obj\\",
+        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
@@ -167,14 +167,14 @@
         }
       }
     },
-    "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+    "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
+        "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
         "projectName": "BotMySQL",
-        "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
+        "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\obj\\",
+        "outputPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
@@ -195,8 +195,8 @@
           "netcoreapp3.1": {
             "targetAlias": "netcoreapp3.1",
             "projectReferences": {
-              "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
-                "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
+              "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+                "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
               }
             }
           }
