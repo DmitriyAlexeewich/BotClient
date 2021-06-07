@@ -37,6 +37,7 @@ namespace BotClient.Bussines.Services
         private readonly IRoleServerConnectorService roleServerConnectorService;
         private readonly IPlatformGroupService platformGroupService;
         private readonly IParsedClientService parsedClientService;
+        private readonly IBotActionService botActionService;
 
         public BotWorkService(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -49,7 +50,8 @@ namespace BotClient.Bussines.Services
                               ITextService TextService,
                               IRoleServerConnectorService RoleServerConnectorService,
                               IPlatformGroupService PlatformGroupService,
-                              IParsedClientService ParsedClientService)
+                              IParsedClientService ParsedClientService,
+                              IBotActionService BotActionService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -63,6 +65,7 @@ namespace BotClient.Bussines.Services
             roleServerConnectorService = RoleServerConnectorService;
             platformGroupService = PlatformGroupService;
             parsedClientService = ParsedClientService;
+            botActionService = BotActionService;
         }
 
         private Random random = new Random();
@@ -229,8 +232,9 @@ namespace BotClient.Bussines.Services
                         if (bot.isUpdatedCustomizeInfo)
                         {
                             var cusomizeData = botCompositeService.GetBotCustomizeByBotId(botId);
-                            var cusomizeResult = await vkActionService.Customize(WebDriverId, cusomizeData).ConfigureAwait(false);
-                            if (!cusomizeResult.hasError)
+                            var botCustomizeSttings = botCompositeService.GetBotCustomizeSettings(botId);
+                            var cusomizeResult = await botActionService.CustomizeBot(WebDriverId, bot, botCustomizeSttings, cusomizeData).ConfigureAwait(false);
+                            if (cusomizeResult)
                                 botCompositeService.SetIsUpdatedCustomizeInfo(botId, false);
                         }
 
@@ -1530,6 +1534,8 @@ namespace BotClient.Bussines.Services
             }
         }
         */
+
+
         public async Task<List<string>> Test(string Text)
         {
             var botSchedule = new List<EnumBotActionType>();

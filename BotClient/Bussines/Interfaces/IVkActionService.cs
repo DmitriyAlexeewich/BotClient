@@ -36,10 +36,11 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> Subscribe(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, string GroupURL, string GroupName);
+        Task<AlgoritmResult> SubscribeToGroup(WebHTMLElement GroupElement);
         Task<AlgoritmResult> GoToGroup(Guid WebDriverId, string GroupURL);
         Task<AlgoritmResult> GoToGroupsSection(Guid WebDriverId);
         Task<AlgoritmResult> SearchGroups(Guid WebDriverId, string KeyWord, bool FilteredBySubscribersCount, EnumSearchGroupType SearchGroupType, string Country, string City, bool isSaftySearch);
-        Task<List<ClientGroupCreateModel>> GetGroups(Guid WebDriverId);
+        Task<List<ParsedGroupModel>> GetGroups(Guid WebDriverId);
         Task<List<PlatformPostModel>> GetPosts(Guid WebDriverId);
         Task<AlgoritmResult> WatchPost(Guid WebDriverId, PlatformPostModel PlatformPost, bool isRepost);
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
@@ -63,10 +64,16 @@ namespace BotClient.Bussines.Interfaces
         Task<List<ParsedClientCreateModel>> GetContacts(Guid WebDriverId);
         Task<int> GetNewDialogsCount(Guid WebDriverId);
         Task<bool> hasChatBlock(Guid WebDriverId);
-        Task<List<ClientGroupCreateModel>> GetClientGroups(Guid WebDriverId, string ClientVkId);
+        Task<List<ParsedGroupModel>> GetClientGroups(Guid WebDriverId, string ClientVkId);
         Task<bool> GoToClientGroups(Guid WebDriverId, string ClientVkId);
         Task<bool> GoToAudioPageByLink(Guid WebDriverId, string Link);
         Task<List<ParsedAudioModel>> ParseAudio(Guid WebDriverId);
         Task<bool> AddAudioToSelfPage(WebHTMLElement Audio);
+        Task<bool> GoToDocsPageByLink(Guid WebDriverId, string Link);
+        Task<List<DocumentCreateModel>> ParseDocs(Guid WebDriverId);
+        Task<bool> GoToGroupByVkId(Guid WebDriverId, string VkId);
+        Task<bool> GoToVideoPageByLink(Guid WebDriverId, string Link);
+        Task<List<ParsedVideoModel>> ParseVideos(Guid WebDriverId);
+        Task<bool> AddVideoToSelfPage(WebHTMLElement Video);
     }
 }
