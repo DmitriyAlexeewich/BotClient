@@ -36,7 +36,7 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> Subscribe(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId);
         Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, string GroupURL, string GroupName);
-        Task<AlgoritmResult> SubscribeToGroup(WebHTMLElement GroupElement);
+        Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, WebHTMLElement GroupElement);
         Task<AlgoritmResult> GoToGroup(Guid WebDriverId, string GroupURL);
         Task<AlgoritmResult> GoToGroupsSection(Guid WebDriverId);
         Task<AlgoritmResult> SearchGroups(Guid WebDriverId, string KeyWord, bool FilteredBySubscribersCount, EnumSearchGroupType SearchGroupType, string Country, string City, bool isSaftySearch);
@@ -68,7 +68,7 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> GoToClientGroups(Guid WebDriverId, string ClientVkId);
         Task<bool> GoToAudioPageByLink(Guid WebDriverId, string Link);
         Task<List<ParsedAudioModel>> ParseAudio(Guid WebDriverId);
-        Task<bool> AddAudioToSelfPage(WebHTMLElement Audio);
+        Task<bool> AddAudioToSelfPage(Guid WebDriverId, WebHTMLElement Audio);
         Task<bool> GoToDocsPageByLink(Guid WebDriverId, string Link);
         Task<List<DocumentCreateModel>> ParseDocs(Guid WebDriverId);
         Task<bool> GoToGroupByVkId(Guid WebDriverId, string VkId);

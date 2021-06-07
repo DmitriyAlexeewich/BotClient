@@ -335,8 +335,9 @@ namespace BotClient.Bussines.Services
                             if (bot.BotData.isUpdatedCustomizeInfo)
                             {
                                 var cusomizeData = botCompositeService.GetBotCustomizeByBotId(bot.BotData.Id);
-                                var cusomizeResult = await vkActionService.Customize(WebDriverId, cusomizeData).ConfigureAwait(false);
-                                if (!cusomizeResult.hasError)
+                                var botCustomizeSttings = botCompositeService.GetBotCustomizeSettings(bot.BotData.Id);
+                                var cusomizeResult = await botActionService.CustomizeBot(WebDriverId, bot.BotData, botCustomizeSttings, cusomizeData).ConfigureAwait(false);
+                                if (cusomizeResult)
                                     botCompositeService.SetIsUpdatedCustomizeInfo(bot.BotData.Id, false);
                             }
                             var botSchedule = new List<EnumBotActionType>();

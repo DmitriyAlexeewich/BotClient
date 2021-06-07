@@ -712,7 +712,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> SubscribeToGroup(WebHTMLElement GroupElement)
+        public async Task<AlgoritmResult> SubscribeToGroup(Guid WebDriverId, WebHTMLElement GroupElement)
         {
             var result = new AlgoritmResult()
             {
@@ -721,6 +721,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 var subscribeButton = webElementService.GetElementInElement(GroupElement, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.button_small.button_wide.search_sub_button");
                 if (webElementService.ClickToElement(subscribeButton, EnumClickType.ElementClick))
                 {
@@ -730,6 +732,8 @@ namespace BotClient.Bussines.Services
                         hasError = false
                     };
                 }
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1276,7 +1280,7 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                var goToGroupResult = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "", EnumClickType.URLClick).ConfigureAwait(false);
+                var goToGroupResult = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_gr", EnumClickType.URLClick).ConfigureAwait(false);
                 if (goToGroupResult)
                 {
                     result.hasError = false;
@@ -1311,7 +1315,7 @@ namespace BotClient.Bussines.Services
                     }
                     if (FilteredBySubscribersCount)
                     {
-                        var expandSunscribeSelectorClick = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[sort]", EnumClickType.ElementClick).ConfigureAwait(false);
+                        var expandSunscribeSelectorClick = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "sort_filter", EnumClickType.ElementClick).ConfigureAwait(false);
                         if (expandSunscribeSelectorClick)
                         {
                             var selectors = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "list_options_container_1", EnumWebHTMLElementSelector.TagName, "li").ConfigureAwait(false);
@@ -1336,16 +1340,24 @@ namespace BotClient.Bussines.Services
                     }
                     if (Country.Length > 0)
                     {
-                        if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[country]", Country).ConfigureAwait(false))
+                        var countryContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "cCountry").ConfigureAwait(false);
+                        var clickResult = webElementService.ClickToElement(countryContainer, EnumClickType.ElementClick);
+                        var textField = webElementService.GetElementInElement(countryContainer, EnumWebHTMLElementSelector.CSSSelector, ".selector_input");
+                        if (clickResult)
                         {
-                            if (await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[country]", Keys.Return).ConfigureAwait(false))
+                            webElementService.PrintTextToElement(textField, Country);
+                            settingsService.WaitTime(10000);
+                            webElementService.SendKeyToElement(textField, Keys.Return);
+                            if (City.Length > 0)
                             {
-                                if (City.Length > 0)
+                                var cityContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "cCity").ConfigureAwait(false);
+                                clickResult = webElementService.ClickToElement(cityContainer, EnumClickType.ElementClick);
+                                textField = webElementService.GetElementInElement(cityContainer, EnumWebHTMLElementSelector.CSSSelector, ".selector_input");
+                                if (clickResult)
                                 {
-                                    if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[city]", Country).ConfigureAwait(false))
-                                    {
-                                        await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "c[city]", Keys.Return).ConfigureAwait(false);
-                                    }
+                                    webElementService.PrintTextToElement(textField, City);
+                                    settingsService.WaitTime(10000);
+                                    webElementService.SendKeyToElement(textField, Keys.Return);
                                 }
                             }
                         }
@@ -1368,6 +1380,8 @@ namespace BotClient.Bussines.Services
             var result = new List<ParsedGroupModel>();
             try
             {
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
                 for (int i = 0; i < 100; i++)
                 {
@@ -1408,6 +1422,8 @@ namespace BotClient.Bussines.Services
                         });
                     }
                 }
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1719,13 +1735,17 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<bool> AddAudioToSelfPage(WebHTMLElement Audio)
+        public async Task<bool> AddAudioToSelfPage(Guid WebDriverId, WebHTMLElement Audio)
         {
             var result = false;
             try
             {
-                var addButton = webElementService.GetElementInElement(Audio, EnumWebHTMLElementSelector.CSSSelector, ".audio_row__action.audio_row__action_add._audio_row__action_add");
-                result = webElementService.ClickToElement(addButton, EnumClickType.ElementClick);
+                var playAudioButton = webElementService.GetElementInElement(Audio, EnumWebHTMLElementSelector.CSSSelector, ".blind_label._audio_row__play_btn");
+                if (webElementService.ClickToElement(playAudioButton, EnumClickType.ElementClick))
+                {
+                    settingsService.WaitTime(10000);
+                    result = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {

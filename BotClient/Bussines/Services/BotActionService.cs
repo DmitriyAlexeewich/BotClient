@@ -83,12 +83,12 @@ namespace BotClient.Bussines.Services
             }
         }
 
-        public async Task SubscribeToGroupByElement(List<ParsedGroupModel> ParsedGroups)
+        public async Task SubscribeToGroupByElement(Guid WebDriverId, List<ParsedGroupModel> ParsedGroups)
         {
             try
             {
                 for (int i = 0; i < ParsedGroups.Count; i++)
-                    await vkActionService.SubscribeToGroup(ParsedGroups[i].GroupElement).ConfigureAwait(false);
+                    await vkActionService.SubscribeToGroup(WebDriverId, ParsedGroups[i].GroupElement).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -119,7 +119,7 @@ namespace BotClient.Bussines.Services
             {
                 for (int i = 0; i < Audios.Count; i++)
                 {
-                    result = await vkActionService.AddAudioToSelfPage(Audios[i].AudioElement).ConfigureAwait(false);
+                    result = await vkActionService.AddAudioToSelfPage(WebDriverId, Audios[i].AudioElement).ConfigureAwait(false);
                     if (!result)
                         break;
                 }
@@ -193,32 +193,32 @@ namespace BotClient.Bussines.Services
                     {
                         switch (BotCustomizeSettings[i].CustomizeType)
                         {
-                            case EnumCustomizeType.ParseAudioByLink:
+                            case EnumCustomizeType.ParseAudioByLink:/*
                                 var audios = await GetAudiosByLink(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
                                 audios = RemoveRandomElementsByPercent(audios, BotCustomizeSettings[i].AddPercent);
                                 if (audios.Count > 0)
-                                    await AddAudioToSelfPage(WebDriverId, audios).ConfigureAwait(false);
+                                    await AddAudioToSelfPage(WebDriverId, audios).ConfigureAwait(false);*/
                                 break;
                             case EnumCustomizeType.ParseBooksByLink:
                                 var books = await GetDocsByLink(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
                                 books = RemoveRandomElementsByPercent(books, BotCustomizeSettings[i].AddPercent);
                                 for (int j = 0; j < books.Count; j++)
-                                    BotCustomize.FavoriteBook += books[j].Name += "\n";
+                                    BotCustomize.FavoriteBook += "\n" + books[j].Name;
                                 break;
-                            case EnumCustomizeType.SubscribeGroupsByCity:
+                            case EnumCustomizeType.SubscribeGroupsByCity:/*
                                 var searchedGroups = await SearchGroups(WebDriverId, "", true, EnumSearchGroupType.AllTypes, BotCustomize.Coutry, BotCustomize.City).ConfigureAwait(false);
                                 searchedGroups = RemoveRandomElementsByPercent(searchedGroups, BotCustomizeSettings[i].AddPercent);
-                                await SubscribeToGroupByElement(searchedGroups).ConfigureAwait(false);
+                                await SubscribeToGroupByElement(WebDriverId, searchedGroups).ConfigureAwait(false);*/
                                 break;
-                            case EnumCustomizeType.SubscribeGroupsByClient:
+                            case EnumCustomizeType.SubscribeGroupsByClient:/*
                                 var clientGroups = await GetClientGroups(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
                                 clientGroups = RemoveRandomElementsByPercent(clientGroups, BotCustomizeSettings[i].AddPercent);
-                                await SubscribeToGroupsByVkId(WebDriverId, clientGroups).ConfigureAwait(false);
+                                await SubscribeToGroupsByVkId(WebDriverId, clientGroups).ConfigureAwait(false);*/
                                 break;
-                            case EnumCustomizeType.AddVideoByLink:
+                            case EnumCustomizeType.AddVideoByLink:/*
                                 var videos = await GetVideosByLink(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
                                 videos = RemoveRandomElementsByPercent(videos, BotCustomizeSettings[i].AddPercent);
-                                await AddVideoToSelfPage(WebDriverId, videos).ConfigureAwait(false);
+                                await AddVideoToSelfPage(WebDriverId, videos).ConfigureAwait(false);*/
                                 break;
                             default:
                                 break;
@@ -242,7 +242,7 @@ namespace BotClient.Bussines.Services
         {
             if (SavePercent < 100)
             {
-                int removeCount = (List.Count / 100) * (100 - SavePercent);
+                int removeCount = (int)((List.Count / 100f) * (100f - SavePercent));
                 if (removeCount >= List.Count)
                     removeCount = 0;
                 for (int j = 0; j < removeCount && List.Count > 0; j++)

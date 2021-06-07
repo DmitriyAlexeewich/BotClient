@@ -25,6 +25,7 @@ namespace BotClient.Settings
             services.AddSingleton<IMySQLService, MySQLService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITextService, TextService>();
+            services.AddSingleton<IBotActionService, BotActionService>();
             //data services
             //composite
             services.AddSingleton<IBotCompositeService, BotCompositeService>();
@@ -55,6 +56,7 @@ namespace BotClient.Settings
             services.AddSingleton<IVideoDictionaryService, VideoDictionaryService>();
             services.AddSingleton<IServerService, ServerService>();
             services.AddSingleton<IParsedClientService, ParsedClientService>();
+            services.AddSingleton<IBotCustomizeSettingsService, BotCustomizeSettingsService>();
 
             return services;
         }
