@@ -299,9 +299,9 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                if (Directory.Exists("C:\\Users\\Administrator\\AppData\\Local\\Temp"))
+                if (Directory.Exists("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2"))
                 {
-                    var directory = new DirectoryInfo("C:\\Users\\Administrator\\AppData\\Local\\Temp");
+                    var directory = new DirectoryInfo("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2");
                     foreach (FileInfo file in directory.GetFiles())
                         file.Delete();
                     foreach (DirectoryInfo subDirectory in directory.GetDirectories())

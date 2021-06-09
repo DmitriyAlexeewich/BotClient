@@ -5758,23 +5758,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\stalk\\.nuget\\packages\\": {},
-    "C:\\Microsoft\\Xamarin\\NuGet\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
-      "packagesPath": "C:\\Users\\stalk\\.nuget\\packages\\",
-      "outputPath": "D:\\Users\\stalk\\source\\repos\\BotClient\\BotClient\\obj\\",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Microsoft\\Xamarin\\NuGet\\"
+        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
       ],
       "configFilePaths": [
-        "C:\\Users\\stalk\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
@@ -5787,12 +5787,13 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
           "projectReferences": {
-            "D:\\Users\\stalk\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
-              "projectPath": "D:\\Users\\stalk\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
+            "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
             },
-            "D:\\Users\\stalk\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
-              "projectPath": "D:\\Users\\stalk\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
+            "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
             }
           }
         }
@@ -5805,6 +5806,7 @@
     },
     "frameworks": {
       "netcoreapp3.1": {
+        "targetAlias": "netcoreapp3.1",
         "dependencies": {
           "HtmlAgilityPack": {
             "target": "Package",
@@ -5857,7 +5859,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.409\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.202\\RuntimeIdentifierGraph.json"
       }
     }
   }

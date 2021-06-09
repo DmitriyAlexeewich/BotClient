@@ -95,6 +95,7 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                await ScrollUp(WebDriverId).ConfigureAwait(false);
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_pr", EnumClickType.URLClick).ConfigureAwait(false))
                 {
@@ -136,9 +137,8 @@ namespace BotClient.Bussines.Services
                                                                                                 EnumWebHTMLElementSelector.TagName, "input").ConfigureAwait(false);
                             if ((webElementService.ClearElement(citySearchTextBox)) && (webElementService.PrintTextToElement(citySearchTextBox, CustomizeData.City)))
                             {
-                                var cityRow = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.XPath, @"//*[@id=""list_options_container_9""]",
-                                                                                                EnumWebHTMLElementSelector.TagName, "li").ConfigureAwait(false);
-                                webElementService.ClickToElement(cityRow, EnumClickType.ElementClick);
+                                settingsService.WaitTime(5000);
+                                webElementService.SendKeyToElement(citySearchTextBox, Keys.Return);
                             }
                             customizeBufferResult = await SaveCustomize(WebDriverId, "pedit_contacts").ConfigureAwait(false);
                         }
@@ -155,6 +155,22 @@ namespace BotClient.Bussines.Services
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_interests_quotes", CustomizeData.FavoriteQuote).ConfigureAwait(false);
                             await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "pedit_interests_about", CustomizeData.PersonalInfo).ConfigureAwait(false);
                             customizeBufferResult = await SaveCustomize(WebDriverId, "pedit_interests").ConfigureAwait(false);
+                        }
+                        if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "ui_rmenu_personal", EnumClickType.URLClick).ConfigureAwait(false))
+                        {
+                            await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                            var selectorContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".pedit_labeled").ConfigureAwait(false);
+                            if (webElementService.ClickToElement(selectorContainer, EnumClickType.ElementClick))
+                            {
+                                var variations = webElementService.GetChildElements(selectorContainer, EnumWebHTMLElementSelector.TagName, "li");
+                                for (int i = 0; i < variations.Count; i++)
+                                {
+                                    var innerText = webElementService.GetElementINNERText(variations[i], true);
+                                    if (innerText.IndexOf(CustomizeData.Political) != -1)
+                                        webElementService.ClickToElement(variations[i], EnumClickType.ElementClick);
+                                }
+                            }
+                            customizeBufferResult = await SaveCustomize(WebDriverId, "pedit_general").ConfigureAwait(false);
                         }
                         if (customizeBufferResult)
                         {
@@ -695,6 +711,14 @@ namespace BotClient.Bussines.Services
                 await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "public_subscribe", EnumClickType.ElementClick).ConfigureAwait(false))
+                {
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false
+                    };
+                }
+                else if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "join_button", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
                     result = new AlgoritmResult()
                     {
@@ -1785,9 +1809,13 @@ namespace BotClient.Bussines.Services
                 for (int i = 0; i < docContainers.Count; i++)
                 {
                     var docLinkAndNameElement = webElementService.GetElementInElement(docContainers[i], EnumWebHTMLElementSelector.CSSSelector, ".docs_item_name");
+                    var bookName = webElementService.GetElementINNERText(docLinkAndNameElement, true);
+                    var fileExtensions = new string[4] {".doc", ".rtf", ".txt", ".docx"};
+                    for (int j = 0; j < fileExtensions.Length; j++)
+                        bookName = bookName.Replace(fileExtensions[j], "");
                     result.Add(new DocumentCreateModel()
                     {
-                        Name = webElementService.GetElementINNERText(docLinkAndNameElement, true),
+                        Name = bookName,
                         DownloadLink = webElementService.GetAttributeValue(docLinkAndNameElement, "href")
                     });
                 }
@@ -2052,6 +2080,21 @@ namespace BotClient.Bussines.Services
             }
             return result;
         }
-        
+
+        private async Task ScrollUp(Guid WebDriverId)
+        {
+            try
+            {
+                var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                for (int i = 0; i < 10; i++)
+                {
+                    webElementService.SendKeyToElement(body, Keys.PageUp);
+                    settingsService.WaitTime(1000);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
     }
 }

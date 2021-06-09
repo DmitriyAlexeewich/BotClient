@@ -193,32 +193,40 @@ namespace BotClient.Bussines.Services
                     {
                         switch (BotCustomizeSettings[i].CustomizeType)
                         {
-                            case EnumCustomizeType.ParseAudioByLink:/*
+                            case EnumCustomizeType.ParseAudioByLink:
                                 var audios = await GetAudiosByLink(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
-                                audios = RemoveRandomElementsByPercent(audios, BotCustomizeSettings[i].AddPercent);
+                                audios = RemoveRandom(audios, BotCustomizeSettings[i].AddPercent, BotCustomizeSettings[i].MinAdd, BotCustomizeSettings[i].MaxAdd);
                                 if (audios.Count > 0)
-                                    await AddAudioToSelfPage(WebDriverId, audios).ConfigureAwait(false);*/
+                                    await AddAudioToSelfPage(WebDriverId, audios).ConfigureAwait(false);
                                 break;
                             case EnumCustomizeType.ParseBooksByLink:
                                 var books = await GetDocsByLink(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
-                                books = RemoveRandomElementsByPercent(books, BotCustomizeSettings[i].AddPercent);
+                                books = RemoveRandom(books, BotCustomizeSettings[i].AddPercent, BotCustomizeSettings[i].MinAdd, BotCustomizeSettings[i].MaxAdd);
                                 for (int j = 0; j < books.Count; j++)
                                     BotCustomize.FavoriteBook += "\n" + books[j].Name;
                                 break;
-                            case EnumCustomizeType.SubscribeGroupsByCity:/*
+                            case EnumCustomizeType.SubscribeGroupsByCity:
                                 var searchedGroups = await SearchGroups(WebDriverId, "", true, EnumSearchGroupType.AllTypes, BotCustomize.Coutry, BotCustomize.City).ConfigureAwait(false);
-                                searchedGroups = RemoveRandomElementsByPercent(searchedGroups, BotCustomizeSettings[i].AddPercent);
-                                await SubscribeToGroupByElement(WebDriverId, searchedGroups).ConfigureAwait(false);*/
+                                searchedGroups = RemoveRandom(searchedGroups, BotCustomizeSettings[i].AddPercent, BotCustomizeSettings[i].MinAdd, BotCustomizeSettings[i].MaxAdd);
+                                await SubscribeToGroupByElement(WebDriverId, searchedGroups).ConfigureAwait(false);
                                 break;
-                            case EnumCustomizeType.SubscribeGroupsByClient:/*
+                            case EnumCustomizeType.SubscribeGroupsByClient:
                                 var clientGroups = await GetClientGroups(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
-                                clientGroups = RemoveRandomElementsByPercent(clientGroups, BotCustomizeSettings[i].AddPercent);
-                                await SubscribeToGroupsByVkId(WebDriverId, clientGroups).ConfigureAwait(false);*/
+                                clientGroups = RemoveRandom(clientGroups, BotCustomizeSettings[i].AddPercent, BotCustomizeSettings[i].MinAdd, BotCustomizeSettings[i].MaxAdd);
+                                await SubscribeToGroupsByVkId(WebDriverId, clientGroups).ConfigureAwait(false);
                                 break;
-                            case EnumCustomizeType.AddVideoByLink:/*
+                            case EnumCustomizeType.AddVideoByLink:
                                 var videos = await GetVideosByLink(WebDriverId, BotCustomizeSettings[i].Link).ConfigureAwait(false);
-                                videos = RemoveRandomElementsByPercent(videos, BotCustomizeSettings[i].AddPercent);
-                                await AddVideoToSelfPage(WebDriverId, videos).ConfigureAwait(false);*/
+                                videos = RemoveRandom(videos, BotCustomizeSettings[i].AddPercent, BotCustomizeSettings[i].MinAdd, BotCustomizeSettings[i].MaxAdd);
+                                await AddVideoToSelfPage(WebDriverId, videos).ConfigureAwait(false);
+                                break;
+                            case EnumCustomizeType.SubscribeGroupByLink:
+                                var groups = new List<ParsedGroupModel>();
+                                groups.Add(new ParsedGroupModel()
+                                {
+                                    GroupVkId = BotCustomizeSettings[i].Link
+                                });
+                                await SubscribeToGroupsByVkId(WebDriverId, groups).ConfigureAwait(false);
                                 break;
                             default:
                                 break;
@@ -236,7 +244,14 @@ namespace BotClient.Bussines.Services
         }
 
 
-
+        private List<T> RemoveRandom<T>(List<T> List, int SavePercent, int MinSave, int MaxSave)
+        {
+            if ((MinSave > 0) && (MaxSave > 0))
+                List = RemoveRandomElementsByMinMax(List, MinSave, MaxSave);
+            else
+                List = RemoveRandomElementsByPercent(List, SavePercent);
+            return List;
+        }
 
         private List<T> RemoveRandomElementsByPercent<T>(List<T> List, int SavePercent)
         {
@@ -246,6 +261,19 @@ namespace BotClient.Bussines.Services
                 if (removeCount >= List.Count)
                     removeCount = 0;
                 for (int j = 0; j < removeCount && List.Count > 0; j++)
+                    List.RemoveAt(random.Next(0, List.Count));
+            }
+            return List;
+        }
+
+        private List<T> RemoveRandomElementsByMinMax<T>(List<T> List, int MinSave, int MaxSave)
+        {
+            if ((MinSave > 0) && (MaxSave > 0))
+            {
+                int removeCount = List.Count - random.Next(MinSave, MaxSave);
+                if (removeCount >= List.Count)
+                    removeCount = 0;
+                for (int i=0; i<removeCount; i++)
                     List.RemoveAt(random.Next(0, List.Count));
             }
             return List;
