@@ -243,6 +243,64 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<bool> WatchVideo(Guid WebDriverId, string SearchWord)
+        {
+            var result = false;
+            try
+            {
+                var newDialogsCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
+                var goToCatalogResult = await vkActionService.GoToVideoCatalog(WebDriverId).ConfigureAwait(false);
+                if ((!goToCatalogResult.hasError) && (goToCatalogResult.ActionResultMessage == EnumActionResult.Success))
+                {
+                    var findVideoResult = await vkActionService.FindVideo(WebDriverId, SearchWord).ConfigureAwait(false);
+                    if ((!findVideoResult.hasError) && (findVideoResult.ActionResultMessage == EnumActionResult.Success))
+                    {
+                        var videos = await vkActionService.GetVideos(WebDriverId).ConfigureAwait(false);
+                        if (videos.Count > 0)
+                        {
+                            var randomVideoIndex = random.Next(0, videos.Count);
+                            var clickVideoResult = await vkActionService.ClickVideo(WebDriverId, videos[randomVideoIndex].HTMLElement).ConfigureAwait(false);
+                            if ((!clickVideoResult.hasError) && (clickVideoResult.ActionResultMessage == EnumActionResult.Success))
+                                result = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+        /*
+        public async Task<bool> StopVideo(Guid WebDriverId)
+        {
+        }
+        */
+        public async Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime)
+        {
+            var result = false;
+            try
+            {
+                var endTime = DateTime.Now.AddMilliseconds(WaitingTime);
+                var startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
+                while (DateTime.Now < endTime)
+                {
+                    settingsService.WaitTime(10000);
+                    var currentDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
+                    if (startDialogCount < currentDialogCount)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
 
         private List<T> RemoveRandom<T>(List<T> List, int SavePercent, int MinSave, int MaxSave)
         {

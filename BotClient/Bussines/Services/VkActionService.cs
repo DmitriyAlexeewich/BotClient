@@ -867,16 +867,7 @@ namespace BotClient.Bussines.Services
                         var textBlock = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false);
                         var printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText);
                         if ((printMessageResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_send", EnumClickType.ElementClick).ConfigureAwait(false)))
-                        {/*
-                            if ((isSecond.Value) || (await hasCaptcha(WebDriverId, true).ConfigureAwait(false) == false))
-                            {
-                                result = new AlgoritmResult()
-                                {
-                                    ActionResultMessage = EnumActionResult.Success,
-                                    hasError = false
-                                };
-                            }
-                            */
+                        {
                             result = new AlgoritmResult()
                             {
                                 ActionResultMessage = EnumActionResult.Success,
@@ -935,12 +926,15 @@ namespace BotClient.Bussines.Services
                         if ((await webDriverService.isUrlContains(WebDriverId, "im").ConfigureAwait(false)) || (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false)))
                         {
                             await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+
                             var dialogContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "im_dialogs").ConfigureAwait(false);
                             var dialogsLink = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
                             for (int i = 0; i < dialogsLink.Count; i++)
                             {
-                                var senderElement = webElementService.GetChildElements(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--who");
-                                if (senderElement.Count < 1)
+                                var senderElement = webElementService.GetElementInElement(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
+                                var messageCountContainer = webElementService.GetElementINNERText(senderElement, true);
+                                int messageCount = 0;
+                                if ((int.TryParse(messageCountContainer, out messageCount)) && (messageCount > 0))
                                 {
                                     var vkId = webElementService.GetAttributeValue(dialogsLink[i], "data-peer");
                                     if (vkId != null)
