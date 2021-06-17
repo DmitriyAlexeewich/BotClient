@@ -250,10 +250,13 @@ namespace BotClient.Bussines.Services
                             int roleActionCount = random.Next(settings.MinRoleActionCountPerDay, settings.MaxRoleActionCountPerDay);
                             var missions = missionCompositeService.GetRoleMissionConnections(RoleId, true);
 
+                            settingsService.WaitTime(random.Next(5000, 10000));
+
                             while ((DateTime.Now > startTime) && (DateTime.Now < endTime))
                             {
                                 botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
-                                while (true)
+                                bot = botCompositeService.GetBotById(botId);
+                                while (!bot.isPrintBlock)
                                 {
                                     var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.Id, missions[random.Next(0, missions.Count)].MissionId);
                                     if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
@@ -840,7 +843,6 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-
                 var dialogsCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                 while (true)
                 {
@@ -985,7 +987,8 @@ namespace BotClient.Bussines.Services
                         for (int i = 0; i < newMessages.Count; i++)
                             newMessageText += newMessages[i].Text + " ";
                         newMessageText = newMessageText.Remove(newMessageText.Length - 1);
-                        if (true)//newMessages.FirstOrDefault(item => item.hasAudio) == null)
+                        var lastMessages = clientCompositeService.GetMessagesByConnectionId(botClientRoleConnector.BotId);
+                        if (lastMessages[lastMessages.Count - 1].Text != newMessageText)//newMessages.FirstOrDefault(item => item.hasAudio) == null)
                         {
                             var mission = missionCompositeService.GetMissionById(botClientRoleConnector.MissionId);
                             if (!mission.isQuiz)

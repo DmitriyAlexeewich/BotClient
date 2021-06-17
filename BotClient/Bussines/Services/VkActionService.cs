@@ -931,10 +931,8 @@ namespace BotClient.Bussines.Services
                             var dialogsLink = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
                             for (int i = 0; i < dialogsLink.Count; i++)
                             {
-                                var senderElement = webElementService.GetElementInElement(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
-                                var messageCountContainer = webElementService.GetElementINNERText(senderElement, true);
-                                int messageCount = 0;
-                                if ((int.TryParse(messageCountContainer, out messageCount)) && (messageCount > 0))
+                                var senderElement = webElementService.GetElementInElement(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--who");
+                                if (senderElement == null)
                                 {
                                     var vkId = webElementService.GetAttributeValue(dialogsLink[i], "data-peer");
                                     if (vkId != null)
