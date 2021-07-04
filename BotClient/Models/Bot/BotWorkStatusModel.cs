@@ -16,5 +16,6 @@ namespace BotClient.Models.Bot
         public List<BotWorkMissionStatus> BotWorkMissionsStatus { get; set; } = new List<BotWorkMissionStatus>();
         public int SubscribeCount { get; set; }
         public int CompletedMissionInitializations { get; set; }
+        public DateTime NextDayOnline { get; set; }
     }
 }
