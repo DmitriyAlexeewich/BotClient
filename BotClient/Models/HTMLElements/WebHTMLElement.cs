@@ -218,6 +218,25 @@ namespace BotClient.Models.HTMLElements
             }
         }
 
+        public bool ScrollTo()
+        {
+            try
+            {
+                Actions actions = new Actions(webDriver);
+                if (element != null)
+                {
+                    actions.MoveToElement(element);
+                    actions.Perform();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public bool WaitWebHTMLElement(bool isParentElementIsDriver, EnumWebHTMLElementSelector SelectorType, string Link, bool isRequired, WebConnectionSettings ConnectionSettings)
         {
             try

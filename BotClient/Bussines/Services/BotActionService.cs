@@ -232,7 +232,8 @@ namespace BotClient.Bussines.Services
                                 break;
                         }
                     }
-                    await vkActionService.Customize(WebDriverId, BotCustomize).ConfigureAwait(false);
+                    if(!BotCustomize.isComplete)
+                        await vkActionService.Customize(WebDriverId, BotCustomize).ConfigureAwait(false);
                     result = true;
                 }
             }
@@ -243,25 +244,41 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<bool> WatchVideo(Guid WebDriverId, string SearchWord)
+        public int GetSearchVideoWordId(List<BotVideoModel> BotVideos, int MaxSearchVideoWordId)
         {
-            var result = false;
+            var result = -1;
+            var botWords = BotVideos;
+            var maxWordId = MaxSearchVideoWordId;
+            for (int i = 0; i < 100; i++)
+            {
+                result = random.Next(0, maxWordId);
+                if (botWords.FirstOrDefault(item => item.WordId == result) == null)
+                    break;
+            }
+            return result;
+        }
+
+        public async Task<BotVkVideo> StartVideo(Guid WebDriverId, List<VideoDictionaryModel> SearchWords)
+        {
+            BotVkVideo result = null;
             try
             {
-                var newDialogsCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
-                var goToCatalogResult = await vkActionService.GoToVideoCatalog(WebDriverId).ConfigureAwait(false);
-                if ((!goToCatalogResult.hasError) && (goToCatalogResult.ActionResultMessage == EnumActionResult.Success))
+                if (SearchWords.Count > 0)
                 {
-                    var findVideoResult = await vkActionService.FindVideo(WebDriverId, SearchWord).ConfigureAwait(false);
-                    if ((!findVideoResult.hasError) && (findVideoResult.ActionResultMessage == EnumActionResult.Success))
+                    var goToCatalogResult = await vkActionService.GoToVideoCatalog(WebDriverId).ConfigureAwait(false);
+                    if ((!goToCatalogResult.hasError) && (goToCatalogResult.ActionResultMessage == EnumActionResult.Success))
                     {
-                        var videos = await vkActionService.GetVideos(WebDriverId).ConfigureAwait(false);
-                        if (videos.Count > 0)
+                        var findVideoResult = await vkActionService.FindVideo(WebDriverId, SearchWords[0].Word).ConfigureAwait(false);
+                        if ((!findVideoResult.hasError) && (findVideoResult.ActionResultMessage == EnumActionResult.Success))
                         {
-                            var randomVideoIndex = random.Next(0, videos.Count);
-                            var clickVideoResult = await vkActionService.ClickVideo(WebDriverId, videos[randomVideoIndex].HTMLElement).ConfigureAwait(false);
-                            if ((!clickVideoResult.hasError) && (clickVideoResult.ActionResultMessage == EnumActionResult.Success))
-                                result = true;
+                            var videos = await vkActionService.GetVideos(WebDriverId).ConfigureAwait(false);
+                            if (videos.Count > 0)
+                            {
+                                result = videos[random.Next(0, videos.Count)];
+                                var clickVideoResult = await vkActionService.ClickVideo(WebDriverId, result.HTMLElement).ConfigureAwait(false);
+                                if (!((!clickVideoResult.hasError) && (clickVideoResult.ActionResultMessage == EnumActionResult.Success)))
+                                    result = null;
+                            }
                         }
                     }
                 }
@@ -272,23 +289,128 @@ namespace BotClient.Bussines.Services
             }
             return result;
         }
-        /*
-        public async Task<bool> StopVideo(Guid WebDriverId)
+        
+        public async Task<bool> StopVideo(Guid WebDriverId, int StartDialogCount)
         {
+            var result = false;
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                var waitingTime = settings.VideoWaitingTime + random.Next(-settings.VideoWaitingDeltaTime, settings.VideoWaitingDeltaTime);
+                result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
+                await vkActionService.CloseVideo(WebDriverId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
         }
-        */
-        public async Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime)
+
+        public async Task<BotMusicModel> StartMusic(Guid WebDriverId, List<BotMusicModel> BotMusic)
+        {
+            BotMusicModel result = null;
+            try
+            {
+                var goToPageResult = await vkActionService.GoToMusicPage(WebDriverId).ConfigureAwait(false);
+                if ((!goToPageResult.hasError) && (goToPageResult.ActionResultMessage == EnumActionResult.Success))
+                {
+                    if (random.Next(0, 2) != 1)
+                    {
+                        result = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
+                        var randListenAttept = random.Next(10, 20);
+                        for (int i = 0; i < randListenAttept; i++)
+                        {
+                            if (BotMusic.FirstOrDefault(item => (item.Artist.IndexOf(result.Artist) != -1) && (item.SongName.IndexOf(result.SongName) != -1)) != null)
+                                result = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
+                            else
+                                break;
+                        }
+
+                    }
+                    else
+                        await vkActionService.PlayAddedMusic(WebDriverId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<bool> StopMusic(Guid WebDriverId, int StartDialogCount)
+        {
+            var result = false;
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                var waitingTime = settings.MusicWaitingTime + random.Next(-settings.MusicWaitingDeltaTime, settings.MusicWaitingDeltaTime);
+                result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
+                await vkActionService.StopMusic(WebDriverId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotVkNews> BotNews)
+        {
+            BotVkNews result = null;
+            try
+            {
+                var goToPageResult = await vkActionService.GoToNewsPage(WebDriverId).ConfigureAwait(false);
+                if ((!goToPageResult.hasError) && (goToPageResult.ActionResultMessage == EnumActionResult.Success))
+                {
+                    var botNews = await vkActionService.GetNews(WebDriverId).ConfigureAwait(false);
+                    for (int i = 0; i < BotNews.Count; i++)
+                        botNews.RemoveAll(item => item.BotNews.NewsId == BotNews[i].BotNews.NewsId);
+                    if (botNews.Count > 0)
+                        result = botNews[random.Next(0, botNews.Count)];
+                }
+
+            }
+            catch(Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<bool> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount)
+        {
+            var result = false;
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                BotNews.NewsElement.ScrollTo();
+                if (BotNews.BotNews.isLiked)
+                    await vkActionService.LikePost(WebDriverId, BotNews.NewsElement).ConfigureAwait(false);
+                if (BotNews.BotNews.isReposted)
+                    await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.NewsElement).ConfigureAwait(false);
+                var waitingTime = settings.NewsWaitingTime + random.Next(-settings.NewsWaitingDeltaTime, settings.NewsWaitingDeltaTime);
+                result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount)
         {
             var result = false;
             try
             {
                 var endTime = DateTime.Now.AddMilliseconds(WaitingTime);
-                var startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                 while (DateTime.Now < endTime)
                 {
                     settingsService.WaitTime(10000);
                     var currentDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
-                    if (startDialogCount < currentDialogCount)
+                    if (StartDialogCount < currentDialogCount)
                     {
                         result = true;
                         break;

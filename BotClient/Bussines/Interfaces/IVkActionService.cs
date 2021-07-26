@@ -30,7 +30,8 @@ namespace BotClient.Bussines.Interfaces
         Task<List<BotVkVideo>> GetVideos(Guid WebDriverId);
         Task<AlgoritmResult> ClickVideo(Guid WebDriverId, WebHTMLElement Element);
         Task<AlgoritmResult> CloseVideo(Guid WebDriverId);
-        Task<AlgoritmResult> News(Guid WebDriverId);
+        Task<AlgoritmResult> GoToNewsPage(Guid WebDriverId);
+        Task<List<BotVkNews>> GetNews(Guid WebDriverId);
         Task<AlgoritmResult> AvatarLike(Guid WebDriverId);
         Task<AlgoritmResult> NewsLike(Guid WebDriverId, EnumNewsLikeType NewsLikeType);
         Task<AlgoritmResult> Subscribe(Guid WebDriverId);
@@ -45,7 +46,9 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> WatchPost(Guid WebDriverId, PlatformPostModel PlatformPost, bool isRepost);
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
         Task<AlgoritmResult> RepostPostToSelfPage(Guid WebDriverId, WebHTMLElement Post);
-        Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false);
+        Task<AlgoritmResult> LikePost(Guid WebDriverId, WebHTMLElement Post);
+        Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, int RoleId, int DialogId, bool? isSecond = false);
+        Task<AlgoritmResult> CheckIsSended(Guid WebDriverId, string ClientVkId, int RoleId, int DialogId, bool isMarked);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
         Task<List<DialogWithNewMessagesModel>> GetDialogsWithNewMessages(Guid WebDriverId);
         Task CloseDialog(Guid WebDriverId);

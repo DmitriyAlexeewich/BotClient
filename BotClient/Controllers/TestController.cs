@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
 using BotDataModels.Bot.Enumerators;
+using BotFile.Bussines.Interfaces;
 using BotMySQL.Bussines.Interfaces.Composite;
 using BotMySQL.Bussines.Interfaces.MySQL;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +30,7 @@ namespace BotClient.Controllers
         private readonly IBotWorkService botWorkService;
         private readonly IPhraseService phraseService;
         private readonly ITextService textService;
+        private readonly IFileService fileService;
 
         public TestController(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -37,7 +40,8 @@ namespace BotClient.Controllers
                               IVkActionService VkActionService,
                               IBotWorkService BotWorkService,
                               IPhraseService PhraseService,
-                              ITextService TextService)
+                              ITextService TextService,
+                              IFileService FileService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -48,16 +52,13 @@ namespace BotClient.Controllers
             botWorkService = BotWorkService;
             phraseService = PhraseService;
             textService = TextService;
+            fileService = FileService;
         }
 
-        [HttpPost("Test")]
+        [HttpGet("Test")]
         public async Task<IActionResult> Test()
         {
-            var nowTime = new DateTime(2021, 1, 31, 23, 59, 59, 0);
-            var nextTime = nowTime.AddMilliseconds(6000);
-            var timer = DateTime.Now.AddMilliseconds(6000);
-            while (DateTime.Now < timer) { }
-            return Ok();
+            return Ok("hello");
         }
 
     }

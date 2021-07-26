@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.Client;
 using BotClient.Models.WebReports;
+using BotFile.Bussines.Interfaces;
 using BotMySQL.Bussines.Interfaces.Composite;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -22,16 +23,19 @@ namespace BotClient.Controllers
         private readonly IBotCompositeService botCompositeService;
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IFileService fileService;
 
         public BotController(IBotWorkService BotWorkService, 
                              IBotCompositeService BotCompositeService,
                              IWebHostEnvironment WebHostEnvironment,
-                             IHttpContextAccessor HttpContextAccessor)
+                             IHttpContextAccessor HttpContextAccessor,
+                              IFileService FileService)
         {
             botWorkService = BotWorkService;
             botCompositeService = BotCompositeService;
             webHostEnvironment = WebHostEnvironment;
             httpContextAccessor = HttpContextAccessor;
+            fileService = FileService;
         }
 
         [HttpGet("GetBot")]
@@ -52,14 +56,16 @@ namespace BotClient.Controllers
             return Ok(links);
         }
 
-        [HttpGet("DownloadScreenshot/{Id}")]
-        public async Task<IActionResult> DownloadScreenshot(int Id)
+        [HttpGet("DownloadScreenshot")]
+        public async Task<IActionResult> DownloadScreenshot([FromQuery] int RoleId, [FromQuery] int BotClientRoleConnectionId)
         {
-            var screenshotDirectory = new DirectoryInfo("C:\\Screenshot\\" + Id);
-            var screenshotFile = (from item in screenshotDirectory.GetFiles()
-                                  orderby item.LastWriteTime descending
-                                  select item).First();
-            return PhysicalFile(screenshotFile.FullName, "image/png", screenshotFile.Name);
+            var filePath = fileService.ArchiveFile(fileService.GetScreenshotDirectoryPath(RoleId.ToString(), BotClientRoleConnectionId.ToString()), BotClientRoleConnectionId.ToString());
+            if (filePath.Length > 0)
+            {
+                var fileDirectory = new DirectoryInfo(filePath);
+                return PhysicalFile(fileDirectory.FullName, "application/zip", fileDirectory.Name);
+            }
+            return BadRequest();
         }
     }
 }

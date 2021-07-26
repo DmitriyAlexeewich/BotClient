@@ -564,26 +564,54 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> News(Guid WebDriverId)
+        public async Task<AlgoritmResult> GoToNewsPage(Guid WebDriverId)
         {
             var result = new AlgoritmResult()
             {
                 ActionResultMessage = EnumActionResult.ElementError,
                 hasError = true,
             };
+
             try
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_nwsf", EnumClickType.URLClick).ConfigureAwait(false))
                 {
                     await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                    var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
-                    webElementService.ScrollElement(body);
-                    await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                    result.ActionResultMessage = EnumActionResult.Success;
-                    result.hasError = false;
-                    return result;
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false,
+                    };
                 }
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+
+            return result;
+        }
+
+        public async Task<List<BotVkNews>> GetNews(Guid WebDriverId)
+        {
+            var result = new List<BotVkNews>();
+            try
+            {
+                for(int i=0; i<3; i++)
+                    await webElementService.ScrollElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                var newsContainers = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "feed_rows", EnumWebHTMLElementSelector.CSSSelector, ".feed_row ").ConfigureAwait(false);
+                for (int i = 0; i < newsContainers.Count; i++)
+                {
+                    var dataElement = webElementService.GetElementInElement(newsContainers[i], EnumWebHTMLElementSelector.TagName, "div");
+                    var newsId = webElementService.GetAttributeValue(dataElement, "data-post-id");
+                    if (newsId != null)
+                        result.Add(new BotVkNews()
+                                   {
+                                       BotNews = new BotNewsModel() { NewsId = newsId },
+                                       NewsElement = newsContainers[i]
+                                   });
+                }
             }
             catch (Exception ex)
             {
@@ -851,7 +879,33 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false)
+        public async Task<AlgoritmResult> LikePost(Guid WebDriverId, WebHTMLElement Post)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                var likeBtn = webElementService.GetElementInElement(Post, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.like._like");
+                if (webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick))
+                {
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, int RoleId, int DialogId, bool? isSecond = false)
         {
             var result = new AlgoritmResult()
             {
@@ -866,6 +920,7 @@ namespace BotClient.Bussines.Services
                     {
                         var textBlock = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false);
                         var printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText);
+                        await webDriverService.GetScreenshot(WebDriverId, RoleId, DialogId, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                         if ((printMessageResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_send", EnumClickType.ElementClick).ConfigureAwait(false)))
                         {
                             result = new AlgoritmResult()
@@ -875,6 +930,45 @@ namespace BotClient.Bussines.Services
                             };
                         }
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<AlgoritmResult> CheckIsSended(Guid WebDriverId, string ClientVkId, int RoleId, int DialogId, bool isMarked)
+        {
+            var result = new AlgoritmResult()
+            {
+                ActionResultMessage = EnumActionResult.ElementError,
+                hasError = true
+            };
+            try
+            {
+                var goToDialogResult = await GoToDialog(WebDriverId, ClientVkId).ConfigureAwait(false);
+                if ((!goToDialogResult.hasError) && (goToDialogResult.ActionResultMessage == EnumActionResult.Success))
+                {
+                    if (isMarked)
+                    {
+                        var jsText = "" +
+                        "var elements = document.querySelectorAll('.im-mess._im_mess.im-mess_unread._im_mess_unread.im-mess_out');" +
+                        "for (var i = 0; i < elements.length; i++)" +
+                        "{ " +
+                        "   elements[i].setAttribute('class', 'im-mess _im_mess im-mess_out'); " +
+                        "}";
+                        await webDriverService.ExecuteJS(WebDriverId, jsText).ConfigureAwait(false);
+                    }
+
+                    await webDriverService.GetScreenshot(WebDriverId, RoleId, DialogId, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                    await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false);
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false
+                    };
                 }
             }
             catch (Exception ex)
@@ -928,18 +1022,40 @@ namespace BotClient.Bussines.Services
                             await CloseModalWindow(WebDriverId).ConfigureAwait(false);
 
                             var dialogContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "im_dialogs").ConfigureAwait(false);
-                            var dialogsLink = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
-                            for (int i = 0; i < dialogsLink.Count; i++)
+                            var dialogsLinks = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
+                            for (int i = 0; i < dialogsLinks.Count; i++)
                             {
-                                var senderElement = webElementService.GetElementInElement(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
-                                var messageCountContainer = webElementService.GetElementINNERText(senderElement, true);
-                                int messageCount = 0;
-                                if ((int.TryParse(messageCountContainer, out messageCount)) && (messageCount > 0))
+                                /*
+                                if(webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--who") == null)
                                 {
-                                    var vkId = webElementService.GetAttributeValue(dialogsLink[i], "data-peer");
-                                    if (vkId != null)
+                                    var vkId = webElementService.GetAttributeValue(dialogsLinks[i], "data-peer");
+                                    var platformLastMessageDateElement = webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--date._im_dialog_date");
+                                    var platformLastMessageDate = webElementService.GetElementINNERText(platformLastMessageDateElement, true);
+                                    if ((vkId != null) && (platformLastMessageDate != null))
                                     {
-                                        result.Add(new DialogWithNewMessagesModel(){ClientVkId = vkId});
+                                        result.Add(new DialogWithNewMessagesModel()
+                                        {
+                                            ClientVkId = vkId,
+                                            PlatformLastMessageDate = platformLastMessageDate
+                                        });
+                                    }
+                                }
+                                */
+                                var unreadMarker = webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
+                                if (unreadMarker != null)
+                                {
+                                    var innerText = webElementService.GetElementINNERText(unreadMarker, true);
+                                    int unreadCount = 0;
+                                    if ((innerText != null) && (int.TryParse(innerText, out unreadCount)) && (unreadCount > 0))
+                                    {
+                                        var vkId = webElementService.GetAttributeValue(dialogsLinks[i], "data-peer");
+                                        var platformLastMessageDateElement = webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--date._im_dialog_date");
+                                        var platformLastMessageDate = webElementService.GetElementINNERText(platformLastMessageDateElement, true);
+                                        result.Add(new DialogWithNewMessagesModel()
+                                        {
+                                            ClientVkId = vkId,
+                                            PlatformLastMessageDate = platformLastMessageDate
+                                        });
                                     }
                                 }
                             }

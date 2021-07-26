@@ -1,5 +1,7 @@
 ﻿using BotClient.Bussines.Interfaces;
 using BotClient.Bussines.Services;
+using BotFile.Bussines.Interfaces;
+using BotFile.Bussines.Services;
 using BotMySQL.Bussines.Interfaces;
 using BotMySQL.Bussines.Interfaces.Composite;
 using BotMySQL.Bussines.Interfaces.MySQL;
@@ -26,6 +28,7 @@ namespace BotClient.Settings
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITextService, TextService>();
             services.AddSingleton<IBotActionService, BotActionService>();
+            services.AddSingleton<IFileService, FileService>();
             //data services
             //composite
             services.AddSingleton<IBotCompositeService, BotCompositeService>();

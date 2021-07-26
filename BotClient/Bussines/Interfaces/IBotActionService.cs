@@ -19,5 +19,13 @@ namespace BotClient.Bussines.Interfaces
         Task<List<ParsedVideoModel>> GetVideosByLink(Guid WebDriverId, string Link);
         Task<bool> AddVideoToSelfPage(Guid WebDriverId, List<ParsedVideoModel> Videos);
         Task<bool> CustomizeBot(Guid WebDriverId, BotModel Bot, List<BotCustomizeSettingsModel> BotCustomizeSettings, BotCustomizeModel BotCustomize);
+        int GetSearchVideoWordId(List<BotVideoModel> BotVideos, int MaxSearchVideoWordId);
+        Task<BotVkVideo> StartVideo(Guid WebDriverId, List<VideoDictionaryModel> SearchWords);
+        Task<bool> StopVideo(Guid WebDriverId, int StartDialogCount);
+        Task<BotMusicModel> StartMusic(Guid WebDriverId, List<BotMusicModel> BotMusic);
+        Task<bool> StopMusic(Guid WebDriverId, int StartDialogCount);
+        Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotVkNews> BotNews);
+        Task<bool> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount);
+        Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount);
     }
 }
