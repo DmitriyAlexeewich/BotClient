@@ -87,4 +87,15 @@ C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient
 C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.pdb
 C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\BotClient.genruntimeconfig.cache
 C:\Users\User\source\repos\BotClient\BotClient\obj\Debug\netcoreapp3.1\scopedcss\bundle\BotClient.styles.css
-D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Telegram.Bot.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\DocumentFormat.OpenXml.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Http.Features.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Drawing.Common.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.IO.Packaging.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.IO.Pipelines.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\System.Runtime.CompilerServices.Unsafe.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotFile.dll
+D:\Users\stalk\source\repos\BotClient\BotClient\bin\Debug\netcoreapp3.1\BotFile.pdb

@@ -2009,6 +2009,32 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<bool> GoToNewsByLink(Guid WebDriverId, string VkLink)
+        {
+            var result = false;
+            try
+            {
+                if (await webDriverService.GoToURL(WebDriverId, "feed" + VkLink).ConfigureAwait(false))
+                {
+                    var newsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_content").ConfigureAwait(false);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (webElementService.GetElementInElement(newsContainer, EnumWebHTMLElementSelector.CSSSelector, ".wall_post_text") != null)
+                        {
+                            result = true;
+                            break;
+                        }
+                        settingsService.WaitTime(60000);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
         private async Task<int> GetRating(WebHTMLElement Element)
         {
             var result = 0;

@@ -78,5 +78,6 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> GoToVideoPageByLink(Guid WebDriverId, string Link);
         Task<List<ParsedVideoModel>> ParseVideos(Guid WebDriverId);
         Task<bool> AddVideoToSelfPage(WebHTMLElement Video);
+        Task<bool> GoToNewsByLink(Guid WebDriverId, string VkLink);
     }
 }
