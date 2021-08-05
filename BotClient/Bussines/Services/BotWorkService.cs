@@ -191,6 +191,7 @@ namespace BotClient.Bussines.Services
                     var isLoginSuccess = await vkActionService.isLoginSuccess(WebDriverId).ConfigureAwait(false);
                     if ((!loginflag.hasError) && (isLoginSuccess))
                     {
+                        //await CheckMessage(WebDriverId, botId).ConfigureAwait(false);
                         botCompositeService.UpdateOnlineDate(botId, DateTime.Now);
                         await UpdateLoginPassword(WebDriverId, botId).ConfigureAwait(false);
                         if (bot.VkId.Length < 1)
@@ -203,7 +204,7 @@ namespace BotClient.Bussines.Services
                             }
                         }
                         if (bot.FullName.Length < 1)
-                            await GetFullName(WebDriverId, botId).ConfigureAwait(false);
+                            await GetFullName(WebDriverId, botId).ConfigureAwait(false);/*
                         if (bot.isUpdatedCustomizeInfo)
                         {
                             var cusomizeData = botCompositeService.GetBotCustomizeByBotId(botId);
@@ -217,7 +218,7 @@ namespace BotClient.Bussines.Services
                                 for (int i = 0; i < botCustomizeSttings.Count; i++)
                                     botCompositeService.SetBotCustomizeSettingsIsComplete(botCustomizeSttings[i].Id, true);
                             }
-                        }
+                        }*/
                         var currentDay = DateTime.Now;
                         var startTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 8, 0, 0);
                         var endTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 23, 0, 0);
@@ -227,7 +228,7 @@ namespace BotClient.Bussines.Services
                         complitedRoleActions.RemoveAll(item => item.UpdateDate < currentDay);
                         roleActionCount -= complitedRoleActions.Count(item => item.isSuccess);
                         var missions = missionCompositeService.GetRoleMissionConnections(RoleId, true);
-                        
+
                         if (botStatus.NextDayOnline > DateTime.Now)
                             roleActionCount = 0;
                         else
@@ -235,27 +236,9 @@ namespace BotClient.Bussines.Services
                             botStatus.NextDayOnline = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 8, 0, 0);
                             botStatus.NextDayOnline.AddDays(1);
                         }
-                        while ((DateTime.Now > startTime) && (DateTime.Now < endTime) &&(roleActionCount > 0))
+                        while ((DateTime.Now > startTime) && (DateTime.Now < endTime) && (roleActionCount > 0))
                         {
                             botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
-
-                            var botNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, botId);
-                            var BotNewsInWaiting = botNews.FirstOrDefault(item => item.isWaiting);
-                            if (BotNewsInWaiting == null)
-                            {
-                                var freeNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, -1);
-                                for (int i = 0; i < freeNews.Count; i++)
-                                {
-                                    if (botNews.FirstOrDefault(item => item.MissionId == freeNews[i].MissionId) == null)
-                                    {
-                                        await ExecuteNewsMission(WebDriverId, freeNews[i], botId).ConfigureAwait(false);
-                                        break;
-                                    }
-                                }
-                            }
-                            else
-                                await ExecuteNewsMission(WebDriverId, BotNewsInWaiting, botId).ConfigureAwait(false);
-
                             var roleAttept = random.Next(settings.MinRoleAtteptCount, settings.MaxRoleAtteptCount);
                             while (roleAttept > 0)
                             {
@@ -286,28 +269,28 @@ namespace BotClient.Bussines.Services
                                 }
                             }
                             var nextTime = DateTime.Now.AddMinutes(random.Next(settings.MinQuizRoleWaitingTimeInMinutes, settings.MaxQuizRoleWaitingTimeInMinutes));
-                            while ((roleActionCount > 0))
+                            while ((DateTime.Now < nextTime) && (roleActionCount > 0))
                             {
-                            /*
-                                var waitAction = (EnumBotActionType)random.Next(1, 5);
-                                switch (waitAction)
-                                {
-                                    case EnumBotActionType.WatchVideo:
-                                        var searchWordId = botActionService.GetSearchVideoWordId(botCompositeService.GetBotVideos(botId), videoDictionaryService.GetMaxId());
-                                        var searchWords = videoDictionaryService.GetAll(searchWordId, 1);
-                                        var botVkVideo = await botActionService.StartVideo(WebDriverId, searchWords).ConfigureAwait(false);
-                                        if (botVkVideo != null)
-                                        {
-                                            botCompositeService.CreateBotVideos(botId, searchWords[0].Id, botVkVideo.URL);
+                                /*
+                                    var waitAction = (EnumBotActionType)random.Next(1, 5);
+                                    switch (waitAction)
+                                    {
+                                        case EnumBotActionType.WatchVideo:
+                                            var searchWordId = botActionService.GetSearchVideoWordId(botCompositeService.GetBotVideos(botId), videoDictionaryService.GetMaxId());
+                                            var searchWords = videoDictionaryService.GetAll(searchWordId, 1);
+                                            var botVkVideo = await botActionService.StartVideo(WebDriverId, searchWords).ConfigureAwait(false);
+                                            if (botVkVideo != null)
+                                            {
+                                                botCompositeService.CreateBotVideos(botId, searchWords[0].Id, botVkVideo.URL);
 
-                                        }
-                                        break;
-                                    case EnumBotActionType.ListenMusic:
-                                        break;
-                                    case EnumBotActionType.News:
-                                        break;
-                                }
-                            */
+                                            }
+                                            break;
+                                        case EnumBotActionType.ListenMusic:
+                                            break;
+                                        case EnumBotActionType.News:
+                                            break;
+                                    }
+                                */
                                 await CheckMessage(WebDriverId, botId).ConfigureAwait(false);
                             }
                         }
@@ -719,7 +702,7 @@ namespace BotClient.Bussines.Services
                                                 botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
                                                                     $"Успешный переход на страницу контактёра {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 clientCompositeService.UpdateClientData(client);
-                                                //await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                                                await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                                             }
                                             break;
                                         case EnumMissionActionType.GoToGroup:
@@ -1573,59 +1556,6 @@ namespace BotClient.Bussines.Services
         }
         */
 
-        public async Task ExecuteNewsMission(Guid WebDriverId, BotNewsMissionConnectorModel BotNewsMissionConnection, int BotId)
-        {
-            try
-            {
-                var vkNews = await botActionService.GetVkNewPost(WebDriverId, BotNewsMissionConnection.VkLink).ConfigureAwait(false);
-                if (BotNewsMissionConnection.BotId == -1)
-                    missionCompositeService.SetBotNewsMissionConnectionBotId(BotNewsMissionConnection.Id, BotId);
-                BotNewsMissionConnection = missionCompositeService.GetBotNewsMissionConnectionsById(BotNewsMissionConnection.Id);
-                if (BotNewsMissionConnection.BotId == BotId)
-                {
-                    var missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NodeId);
-                    for (int i = 0; i < missionNodes.Count; i++)
-                    {
-                        if (missionNodes[i].Type == EnumMissionActionType.SendMessageToPost)
-                        {
-                            var sendResult = await vkActionService.SendMessageToPostNews(missionNodes[i].Text, vkNews.CommentInput, vkNews.SendBtn);
-                            if (sendResult)
-                            {
-                                missionCompositeService.SetBotNewsMissionConnectionIsComplete(BotNewsMissionConnection.Id, true);
-                                missionCompositeService.SetBotNewsMissionConnectionIsWaiting(BotNewsMissionConnection.Id, false);
-                                var missionPath = missionNodes[i].Path;
-                                if (missionPath.Length > 0)
-                                    missionPath += ";";
-                                missionPath += missionNodes[i].NodeId;
-                                var nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath);
-                                if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SetNextNewsStep))
-                                {
-                                    var nextRoleType = -1;
-                                    if (int.TryParse(nextNodes[0].Text, out nextRoleType))
-                                    {
-                                        var usedBotId = -1;
-                                        var usedRoleTypesInNews = missionCompositeService.GetBotNewsMissionConnectionsByBotRoleType(nextRoleType, nextNodes[0].MissionId, BotNewsMissionConnection.NewsId);
-                                        if (usedRoleTypesInNews.Count > 0)
-                                            usedBotId = usedRoleTypesInNews[0].BotId;
-                                        nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath + ";" + nextNodes[0].NodeId);
-                                        if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SendMessageToPost))
-                                        {
-                                            missionCompositeService.CreateBotNewsMissionConnection(BotNewsMissionConnection.RoleId, BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NewsId,
-                                                                                               usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, nextNodes[0].NodeId, true, false);
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-            
-            }
-        }
 
         public async Task<List<string>> Test(string Text)
         {

@@ -78,10 +78,5 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> GoToVideoPageByLink(Guid WebDriverId, string Link);
         Task<List<ParsedVideoModel>> ParseVideos(Guid WebDriverId);
         Task<bool> AddVideoToSelfPage(WebHTMLElement Video);
-        Task<string> GoToNewsByLink(Guid WebDriverId, string VkLink);
-        Task<WebHTMLElement> GetNewsPostInput(Guid WebDriverId, string NewsPostVkId);
-        Task<WebHTMLElement> GetNewsPostSendButton(Guid WebDriverId, string NewsPostVkId);
-        Task<List<string>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId);
-        Task<bool> SendMessageToPostNews(string Text, WebHTMLElement Input, WebHTMLElement SendButton);
     }
 }

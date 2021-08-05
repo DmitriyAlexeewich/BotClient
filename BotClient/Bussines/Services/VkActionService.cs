@@ -77,11 +77,6 @@ namespace BotClient.Bussines.Services
                 {
                     checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_reg_button").ConfigureAwait(false);
                     result = !webElementService.isElementAvailable(checkElement);
-                    if (result)
-                    {
-                        checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".FlatButton.FlatButton--positive.FlatButton--size-l.FlatButton--flexWide").ConfigureAwait(false);
-                        result = !webElementService.isElementAvailable(checkElement);
-                    }
                 }
             }
             catch (Exception ex)
@@ -435,8 +430,8 @@ namespace BotClient.Bussines.Services
             var result = await webDriverService.GoToURL(WebDriverId, Link).ConfigureAwait(false);
             if (result)
             {
-                //await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                //await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
             }
             return result;
         }
@@ -1243,8 +1238,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                //await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                //await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 return await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".page_name", true).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -2006,98 +2001,6 @@ namespace BotClient.Bussines.Services
             {
                 var addButton = webElementService.GetElementInElement(Video, EnumWebHTMLElementSelector.CSSSelector, ".video_thumb_action_add");
                 result = webElementService.ClickToElement(addButton, EnumClickType.ElementClick);
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("VkActionService", ex);
-            }
-            return result;
-        }
-
-        public async Task<string> GoToNewsByLink(Guid WebDriverId, string VkLink)
-        {
-            var result = "";
-            try
-            {
-                if (await webDriverService.GoToURL(WebDriverId, VkLink).ConfigureAwait(false))
-                {
-                    var newsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_content").ConfigureAwait(false);
-                    for (int i = 0; i < 5; i++)
-                    {
-                        if (webElementService.GetElementInElement(newsContainer, EnumWebHTMLElementSelector.CSSSelector, ".wall_post_text") != null)
-                        {
-                            var newsElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wl_post").ConfigureAwait(false);
-                            result = webElementService.GetAttributeValue(newsElement, "data-post-id");
-                            break;
-                        }
-                        settingsService.WaitTime(60000);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("VkActionService", ex);
-            }
-            return result;
-        }
-
-        public async Task<WebHTMLElement> GetNewsPostInput(Guid WebDriverId, string NewsPostVkId)
-        {
-            WebHTMLElement result = null;
-            try
-            {
-                result = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "reply_field" + NewsPostVkId).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("VkActionService", ex);
-            }
-            return result;
-        }
-
-        public async Task<WebHTMLElement> GetNewsPostSendButton(Guid WebDriverId, string NewsPostVkId)
-        {
-            WebHTMLElement result = null;
-            try
-            {
-                result = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "reply_button" + NewsPostVkId).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("VkActionService", ex);
-            }
-            return result;
-        }
-
-        public async Task<List<string>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId)
-        {
-            var result = new List<string>();
-            try
-            {
-                var comments = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "replies" + NewsPostVkId, 
-                                                                                 EnumWebHTMLElementSelector.CSSSelector, ".reply_text").ConfigureAwait(false);
-                for (int i = 0; i < comments.Count; i++)
-                {
-                    var text = webElementService.GetElementINNERText(comments[i], true);
-                    if (text.Length > 0)
-                        result.Add(text);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("VkActionService", ex);
-            }
-            return result;
-        }
-
-        public async Task<bool> SendMessageToPostNews(string Text, WebHTMLElement Input, WebHTMLElement SendButton)
-        {
-            var result = false;
-            try
-            {
-                if (webElementService.PrintTextToElement(Input, Text))
-                    result = webElementService.ClickToElement(SendButton, EnumClickType.ElementClick);
             }
             catch (Exception ex)
             {

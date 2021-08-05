@@ -27,6 +27,5 @@ namespace BotClient.Bussines.Interfaces
         Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotVkNews> BotNews);
         Task<bool> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount);
         Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount);
-        Task<BotVkNewsPostModel> GetVkNewPost(Guid WebDriverId, string VkLink);
     }
 }
