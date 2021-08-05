@@ -424,6 +424,29 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<BotVkNewsPostModel> GetVkNewPost(Guid WebDriverId, string VkLink)
+        {
+            BotVkNewsPostModel result = null;
+            try
+            {
+                var vkNewsPostVkId = await vkActionService.GoToNewsByLink(WebDriverId, VkLink).ConfigureAwait(false);
+                if (vkNewsPostVkId.Length > 0)
+                {
+                    result = new BotVkNewsPostModel();
+                    result.NewsVkId = vkNewsPostVkId;
+                    result.CommentInput = await vkActionService.GetNewsPostInput(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                    result.SendBtn = await vkActionService.GetNewsPostSendButton(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                    result.Comments = await vkActionService.GetNewsPostComments(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                result = null;
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
         private List<T> RemoveRandom<T>(List<T> List, int SavePercent, int MinSave, int MaxSave)
         {
             if ((MinSave > 0) && (MaxSave > 0))
