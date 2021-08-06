@@ -240,8 +240,9 @@ namespace BotClient.Bussines.Services
                             botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
 
                             var botNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, botId);
-                            var BotNewsInWaiting = botNews.FirstOrDefault(item => item.isWaiting);
-                            if (BotNewsInWaiting == null)
+                            var botNewsInWaiting = botNews.FirstOrDefault(item => (item.isWaiting) && (!item.isComplete) &&
+                                                                                  (item.UpdateDate.AddHours(random.Next(item.MinWaitingTimeInHours, item.MaxWaitingTimeInHours)) < DateTime.Now));
+                            if (botNewsInWaiting == null)
                             {
                                 var freeNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, -1);
                                 for (int i = 0; i < freeNews.Count; i++)
@@ -254,7 +255,7 @@ namespace BotClient.Bussines.Services
                                 }
                             }
                             else
-                                await ExecuteNewsMission(WebDriverId, BotNewsInWaiting, botId).ConfigureAwait(false);
+                                await ExecuteNewsMission(WebDriverId, botNewsInWaiting, botId).ConfigureAwait(false);
 
                             var roleAttept = random.Next(settings.MinRoleAtteptCount, settings.MaxRoleAtteptCount);
                             while (roleAttept > 0)
@@ -719,7 +720,7 @@ namespace BotClient.Bussines.Services
                                                 botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
                                                                     $"Успешный переход на страницу контактёра {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 clientCompositeService.UpdateClientData(client);
-                                                //await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                                                await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                                             }
                                             break;
                                         case EnumMissionActionType.GoToGroup:
@@ -1588,9 +1589,11 @@ namespace BotClient.Bussines.Services
                     {
                         if (missionNodes[i].Type == EnumMissionActionType.SendMessageToPost)
                         {
+                            missionNodes[i].Text = await textService.RandMessage(missionNodes[i].Text).ConfigureAwait(false);
                             var sendResult = await vkActionService.SendMessageToPostNews(missionNodes[i].Text, vkNews.CommentInput, vkNews.SendBtn);
                             if (sendResult)
                             {
+                                missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, missionNodes[i].Text);
                                 missionCompositeService.SetBotNewsMissionConnectionIsComplete(BotNewsMissionConnection.Id, true);
                                 missionCompositeService.SetBotNewsMissionConnectionIsWaiting(BotNewsMissionConnection.Id, false);
                                 var missionPath = missionNodes[i].Path;
@@ -1611,7 +1614,8 @@ namespace BotClient.Bussines.Services
                                         if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SendMessageToPost))
                                         {
                                             missionCompositeService.CreateBotNewsMissionConnection(BotNewsMissionConnection.RoleId, BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NewsId,
-                                                                                               usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, nextNodes[0].NodeId, true, false);
+                                                                                               usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, nextNodes[0].NodeId, 
+                                                                                               BotNewsMissionConnection.MinWaitingTimeInHours, BotNewsMissionConnection.MaxWaitingTimeInHours, true, false);
                                         }
                                     }
                                 }

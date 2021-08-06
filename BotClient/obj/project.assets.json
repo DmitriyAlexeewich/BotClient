@@ -216,7 +216,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/92.0.4515.4300": {
+      "Selenium.WebDriver.ChromeDriver/92.0.4515.10700": {
         "type": "package",
         "build": {
           "build/Selenium.WebDriver.ChromeDriver.targets": {}
@@ -842,10 +842,10 @@
         "selenium.webdriver.nuspec"
       ]
     },
-    "Selenium.WebDriver.ChromeDriver/92.0.4515.4300": {
-      "sha512": "pQz29fVN4LvfhhMj97/sUOqlSGexbReaMb9HvfV2KPz1PeFR2wUvokM0rVsHGq5Jx/0yDnx0eVKac3Fl2t1iig==",
+    "Selenium.WebDriver.ChromeDriver/92.0.4515.10700": {
+      "sha512": "1izYN4xibfIy9MgQvMpSzoNPU5TugR18aOcXptSVpVrbrgEl6pah3kgNm7WPwSknG0UX4E2u//oq0oEbqzsoqg==",
       "type": "package",
-      "path": "selenium.webdriver.chromedriver/92.0.4515.4300",
+      "path": "selenium.webdriver.chromedriver/92.0.4515.10700",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -856,7 +856,7 @@
         "driver/mac64/chromedriver",
         "driver/win32/chromedriver.exe",
         "nupkg-icon.png",
-        "selenium.webdriver.chromedriver.92.0.4515.4300.nupkg.sha512",
+        "selenium.webdriver.chromedriver.92.0.4515.10700.nupkg.sha512",
         "selenium.webdriver.chromedriver.nuspec"
       ]
     },
@@ -1324,7 +1324,7 @@
       "MySql.Data >= 8.0.26",
       "Newtonsoft.Json >= 13.0.1",
       "Selenium.WebDriver >= 3.141.0",
-      "Selenium.WebDriver.ChromeDriver >= 92.0.4515.4300"
+      "Selenium.WebDriver.ChromeDriver >= 92.0.4515.10700"
     ]
   },
   "packageFolders": {
@@ -1334,11 +1334,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "projectName": "BotClient",
-      "projectPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\BotClient.csproj",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\BotClient.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\User\\source\\repos\\BotClient\\BotClient\\obj\\",
+      "outputPath": "C:\\Users\\User\\Source\\Repos\\BotClient\\BotClient\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
@@ -1359,14 +1359,14 @@
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "projectReferences": {
-            "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
-              "projectPath": "C:\\Users\\User\\source\\repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
+            "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotDataModels\\BotDataModels\\BotDataModels.csproj"
             },
-            "C:\\Users\\User\\source\\repos\\BotFile\\BotFile\\BotFile.csproj": {
-              "projectPath": "C:\\Users\\User\\source\\repos\\BotFile\\BotFile\\BotFile.csproj"
+            "C:\\Users\\User\\Source\\Repos\\BotFile\\BotFile\\BotFile.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotFile\\BotFile\\BotFile.csproj"
             },
-            "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
-              "projectPath": "C:\\Users\\User\\source\\repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
+            "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\BotMySQL\\BotMySQL\\BotMySQL.csproj"
             }
           }
         }
@@ -1407,7 +1407,7 @@
           },
           "Selenium.WebDriver.ChromeDriver": {
             "target": "Package",
-            "version": "[92.0.4515.4300, )"
+            "version": "[92.0.4515.10700, )"
           }
         },
         "imports": [
