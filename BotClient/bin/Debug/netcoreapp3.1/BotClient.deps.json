@@ -40,7 +40,7 @@
           "MySql.Data": "8.0.26",
           "Newtonsoft.Json": "13.0.1",
           "Selenium.WebDriver": "3.141.0",
-          "Selenium.WebDriver.ChromeDriver": "92.0.4515.4300",
+          "Selenium.WebDriver.ChromeDriver": "92.0.4515.10700",
           "Microsoft.AspNetCore.Antiforgery": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Abstractions": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Cookies": "3.1.0.0",
@@ -567,7 +567,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/92.0.4515.4300": {},
+      "Selenium.WebDriver.ChromeDriver/92.0.4515.10700": {},
       "System.Buffers/4.5.1": {},
       "System.Configuration.ConfigurationManager/4.4.1": {
         "dependencies": {
@@ -2495,12 +2495,12 @@
       "path": "selenium.webdriver/3.141.0",
       "hashPath": "selenium.webdriver.3.141.0.nupkg.sha512"
     },
-    "Selenium.WebDriver.ChromeDriver/92.0.4515.4300": {
+    "Selenium.WebDriver.ChromeDriver/92.0.4515.10700": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-pQz29fVN4LvfhhMj97/sUOqlSGexbReaMb9HvfV2KPz1PeFR2wUvokM0rVsHGq5Jx/0yDnx0eVKac3Fl2t1iig==",
-      "path": "selenium.webdriver.chromedriver/92.0.4515.4300",
-      "hashPath": "selenium.webdriver.chromedriver.92.0.4515.4300.nupkg.sha512"
+      "sha512": "sha512-1izYN4xibfIy9MgQvMpSzoNPU5TugR18aOcXptSVpVrbrgEl6pah3kgNm7WPwSknG0UX4E2u//oq0oEbqzsoqg==",
+      "path": "selenium.webdriver.chromedriver/92.0.4515.10700",
+      "hashPath": "selenium.webdriver.chromedriver.92.0.4515.10700.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",

@@ -152,9 +152,9 @@ namespace BotClient.Models.HTMLElements
         {
             try
             {
+                var sendedText = "";
                 if (isCanPrintText())
                 {
-                    string printedText = "";
                     for (int i = 0; i < Text.Length; i++)
                     {
                         string letter = Text[i].ToString();
@@ -162,26 +162,19 @@ namespace BotClient.Models.HTMLElements
                             element.SendKeys(Keys.Control + Keys.Enter);
                         else
                             element.SendKeys(letter);
-                        printedText += letter;
                     }
-                    if (printedText == Text)
+                    sendedText = GetINNERText(true);
+                    sendedText += GetAttributeValue("value");
+                    if (sendedText.IndexOf(Text) != -1)
                         return true;
                     element.Clear();
                 }
-                else
-                {
-                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
-                    string printedText = "";
-                    for (int i = 0; i < Text.Length; i++)
-                    {
-                        string letter = Text[i].ToString();
-                        executor.ExecuteScript("arguments[0].click();", letter);
-                        printedText += letter;
-                        WaitTime(1000);
-                    }
-                    if (printedText == Text)
-                        return true;
-                }
+                IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                executor.ExecuteScript($"arguments[0].value='{Text}';" +
+                                        $"arguments[0].innerHTML='{Text}';", element);
+                sendedText = GetINNERText(true);
+                if (sendedText == Text)
+                    return true;
             }
             catch (Exception ex)
             { }
@@ -227,6 +220,24 @@ namespace BotClient.Models.HTMLElements
                 {
                     actions.MoveToElement(element);
                     actions.Perform();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool ScrollElementJS()
+        {
+            try
+            {
+                if (element != null)
+                {
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].scroll(0,1000000000);", element);
                     return true;
                 }
                 return false;

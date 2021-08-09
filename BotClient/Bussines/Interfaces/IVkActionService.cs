@@ -83,5 +83,6 @@ namespace BotClient.Bussines.Interfaces
         Task<WebHTMLElement> GetNewsPostSendButton(Guid WebDriverId, string NewsPostVkId);
         Task<List<string>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId);
         Task<bool> SendMessageToPostNews(string Text, WebHTMLElement Input, WebHTMLElement SendButton);
+        Task<bool> LikePostNews(Guid WebDriverId, string VkId);
     }
 }

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BotClient.Bussines.Services
@@ -290,8 +291,11 @@ namespace BotClient.Bussines.Services
 
         public bool WaitTime(int Milliseconds)
         {
+            /*
             var waitingTime = DateTime.Now.AddMilliseconds(Milliseconds / 10);
-            while (DateTime.Now < waitingTime) { }
+            while (DateTime.Now < waitingTime) { 
+            */
+            Thread.Sleep(Milliseconds);
             return true;
         }
 

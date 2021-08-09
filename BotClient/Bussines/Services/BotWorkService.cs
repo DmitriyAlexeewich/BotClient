@@ -240,22 +240,28 @@ namespace BotClient.Bussines.Services
                             botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
 
                             var botNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, botId);
-                            var botNewsInWaiting = botNews.FirstOrDefault(item => (item.isWaiting) && (!item.isComplete) &&
-                                                                                  (item.UpdateDate.AddHours(random.Next(item.MinWaitingTimeInHours, item.MaxWaitingTimeInHours)) < DateTime.Now));
-                            if (botNewsInWaiting == null)
+                            var botNewsCount = random.Next(settings.MinNewRoleActions, settings.MaxNewRoleActions);
+                            botNewsCount -= botNews.Count(item => item.UpdateDate > currentDay);
+                            if (botNewsCount > 0)
                             {
-                                var freeNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, -1);
-                                for (int i = 0; i < freeNews.Count; i++)
+                                var botNewsInWaiting = botNews.FirstOrDefault(item => (item.isWaiting) && (!item.isComplete));
+                                if (botNewsInWaiting == null)
                                 {
-                                    if (botNews.FirstOrDefault(item => item.MissionId == freeNews[i].MissionId) == null)
+                                    var freeNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, -1, null, true);
+                                    freeNews.RemoveAll(item => item.isDelayed && (endTime < item.CreateDate.AddDays(item.NextDateCommentInDays)));
+                                    for (int i = 0; i < freeNews.Count; i++)
                                     {
-                                        await ExecuteNewsMission(WebDriverId, freeNews[i], botId).ConfigureAwait(false);
-                                        break;
+                                        if (botNews.FirstOrDefault(item => item.MissionId == freeNews[i].MissionId) == null)
+                                        {
+                                            await ExecuteNewsMission(WebDriverId, freeNews[i], botId).ConfigureAwait(false);
+                                            break;
+                                        }
                                     }
                                 }
+                                else
+                                    await ExecuteNewsMission(WebDriverId, botNewsInWaiting, botId).ConfigureAwait(false);
+
                             }
-                            else
-                                await ExecuteNewsMission(WebDriverId, botNewsInWaiting, botId).ConfigureAwait(false);
 
                             var roleAttept = random.Next(settings.MinRoleAtteptCount, settings.MaxRoleAtteptCount);
                             while (roleAttept > 0)
@@ -287,7 +293,7 @@ namespace BotClient.Bussines.Services
                                 }
                             }
                             var nextTime = DateTime.Now.AddMinutes(random.Next(settings.MinQuizRoleWaitingTimeInMinutes, settings.MaxQuizRoleWaitingTimeInMinutes));
-                            while ((roleActionCount > 0))
+                            while ((DateTime.Now < nextTime) && (roleActionCount > 0) && (!bot.isSkipSecondAction))
                             {
                             /*
                                 var waitAction = (EnumBotActionType)random.Next(1, 5);
@@ -841,7 +847,7 @@ namespace BotClient.Bussines.Services
                                                         }
                                                         botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
                                                                                $"Успешная отправка сообщения {newMessage.Text} контактёру {BotClientRoleConnector.ClientId} ({client.FullName})");
-                                                        await vkActionService.CheckIsSended(WebDriverId, client.VkId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, 50 < random.Next(0, 100)).ConfigureAwait(false);
+                                                        //await vkActionService.CheckIsSended(WebDriverId, client.VkId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, 50 < random.Next(0, 100)).ConfigureAwait(false);
                                                     }                                                   
                                                 }
                                                 else
@@ -1589,6 +1595,8 @@ namespace BotClient.Bussines.Services
                     {
                         if (missionNodes[i].Type == EnumMissionActionType.SendMessageToPost)
                         {
+                            if (missionNodes[i].Text.Length < 1)
+                                missionNodes[i].Text = BotNewsMissionConnection.SendedText;
                             missionNodes[i].Text = await textService.RandMessage(missionNodes[i].Text).ConfigureAwait(false);
                             var sendResult = await vkActionService.SendMessageToPostNews(missionNodes[i].Text, vkNews.CommentInput, vkNews.SendBtn);
                             if (sendResult)
@@ -1601,22 +1609,38 @@ namespace BotClient.Bussines.Services
                                     missionPath += ";";
                                 missionPath += missionNodes[i].NodeId;
                                 var nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath);
-                                if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SetNextNewsStep))
+
+                                while (nextNodes.Count > 0)
                                 {
-                                    var nextRoleType = -1;
-                                    if (int.TryParse(nextNodes[0].Text, out nextRoleType))
+                                    switch (nextNodes[0].Type)
                                     {
-                                        var usedBotId = -1;
-                                        var usedRoleTypesInNews = missionCompositeService.GetBotNewsMissionConnectionsByBotRoleType(nextRoleType, nextNodes[0].MissionId, BotNewsMissionConnection.NewsId);
-                                        if (usedRoleTypesInNews.Count > 0)
-                                            usedBotId = usedRoleTypesInNews[0].BotId;
-                                        nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath + ";" + nextNodes[0].NodeId);
-                                        if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SendMessageToPost))
+                                        case EnumMissionActionType.LikeNewsPost:
+                                            await vkActionService.LikePostNews(WebDriverId, vkNews.NewsVkId).ConfigureAwait(false);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    missionPath += ";" + nextNodes[0].NodeId;
+                                    nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath);
+
+                                    if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SetNextNewsStep))
+                                    {
+                                        var nextRoleType = -1;
+                                        if (int.TryParse(nextNodes[0].Text, out nextRoleType))
                                         {
-                                            missionCompositeService.CreateBotNewsMissionConnection(BotNewsMissionConnection.RoleId, BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NewsId,
-                                                                                               usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, nextNodes[0].NodeId, 
-                                                                                               BotNewsMissionConnection.MinWaitingTimeInHours, BotNewsMissionConnection.MaxWaitingTimeInHours, true, false);
+                                            var usedBotId = -1;
+                                            var usedRoleTypesInNews = missionCompositeService.GetBotNewsMissionConnectionsByBotRoleType(nextRoleType, nextNodes[0].MissionId, BotNewsMissionConnection.NewsId);
+                                            if (usedRoleTypesInNews.Count > 0)
+                                                usedBotId = usedRoleTypesInNews[0].BotId;
+                                            nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath + ";" + nextNodes[0].NodeId);
+                                            if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SendMessageToPost))
+                                            {
+                                                missionCompositeService.CreateBotNewsMissionConnection(BotNewsMissionConnection.RoleId, BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NewsId,
+                                                                                                   usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, nextNodes[0].NodeId,
+                                                                                                   BotNewsMissionConnection.NextDateCommentInDays, true, false, BotNewsMissionConnection.isDelayed);
+                                            }
                                         }
+                                        break;
                                     }
                                 }
                             }

@@ -2028,6 +2028,7 @@ namespace BotClient.Bussines.Services
                         {
                             var newsElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wl_post").ConfigureAwait(false);
                             result = webElementService.GetAttributeValue(newsElement, "data-post-id");
+                            await webElementService.ScrollElementJs(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_layer_wrap");
                             break;
                         }
                         settingsService.WaitTime(60000);
@@ -2098,6 +2099,25 @@ namespace BotClient.Bussines.Services
             {
                 if (webElementService.PrintTextToElement(Input, Text))
                     result = webElementService.ClickToElement(SendButton, EnumClickType.ElementClick);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> LikePostNews(Guid WebDriverId, string VkId)
+        {
+            var result = false;
+            try
+            {
+                var likeContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
+                var likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.PostButtonReactions.PostButtonReactions--post");
+                if (likeBtn == null)
+                    likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.like");
+                if (likeBtn != null)
+                    result = webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick);
             }
             catch (Exception ex)
             {
