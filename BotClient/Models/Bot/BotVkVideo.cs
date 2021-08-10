@@ -1,4 +1,5 @@
 ﻿using BotClient.Models.HTMLElements;
+using BotDataModels.Bot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace BotClient.Models.Bot
 {
     public class BotVkVideo
     {
-        public string URL { get; set; }
+        public BotVideoModel BotVideo { get; set; }
         public WebHTMLElement HTMLElement { get; set; }
     }
 }

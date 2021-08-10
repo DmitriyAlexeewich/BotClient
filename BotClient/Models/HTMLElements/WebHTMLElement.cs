@@ -215,11 +215,10 @@ namespace BotClient.Models.HTMLElements
         {
             try
             {
-                Actions actions = new Actions(webDriver);
                 if (element != null)
                 {
-                    actions.MoveToElement(element);
-                    actions.Perform();
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].scrollIntoView();", element);
                     return true;
                 }
                 return false;

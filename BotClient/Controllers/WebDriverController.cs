@@ -35,37 +35,6 @@ namespace BotClient.Controllers
             botWorkService = BotWorkService;
         }
 
-        [HttpGet("Start")]
-        public async Task<IActionResult> Start([FromQuery] int BrowserCount, [FromQuery] int SocialPlatform)
-        {
-            var message = "";
-            if (BrowserCount > 0)
-            {
-                if ((EnumSocialPlatform)SocialPlatform != 0)
-                {
-                    var settings = settingsService.GetServerSettings();
-                    settingsService.ClearChromeDriverFolder();
-                    var server = serverCompositeService.GetServerById(settings.ServerId);
-                    await webDriverService.Start(BrowserCount, (EnumSocialPlatform)SocialPlatform).ConfigureAwait(false);
-                    await botWorkService.StartBot(server.Id).ConfigureAwait(false);
-                    return Ok(new DriverStartReport()
-                    {
-                        IsSuccess = true,
-                        BrowserCount = BrowserCount,
-                        SocialPlatform = (EnumSocialPlatform)SocialPlatform
-                    });
-                }
-                else
-                {
-                    message = $"Invalid SocialPlatform, SocialPlatform must be greater than 0 and " +
-                        $"be less than {Enum.GetValues(typeof(EnumSocialPlatform)).Cast<EnumSocialPlatform>().Last()}";
-                }
-            }
-            else
-                message = "Invalid BrowserCount, BrowserCount must be greater than 0";
-            return BadRequest(message);
-        }
-
 
         [HttpGet("StartQuiz")]
         public async Task<IActionResult> StartQuiz([FromQuery] int BrowserCount, [FromQuery] int SocialPlatform, [FromQuery] int RoleId)

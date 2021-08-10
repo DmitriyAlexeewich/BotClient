@@ -21,12 +21,14 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> CustomizeBot(Guid WebDriverId, BotModel Bot, List<BotCustomizeSettingsModel> BotCustomizeSettings, BotCustomizeModel BotCustomize);
         int GetSearchVideoWordId(List<BotVideoModel> BotVideos, int MaxSearchVideoWordId);
         Task<BotVkVideo> StartVideo(Guid WebDriverId, List<VideoDictionaryModel> SearchWords);
-        Task<bool> StopVideo(Guid WebDriverId, int StartDialogCount);
+        Task<bool> StopVideo(Guid WebDriverId, BotVkVideo BotVideo, int StartDialogCount);
         Task<BotMusicModel> StartMusic(Guid WebDriverId, List<BotMusicModel> BotMusic);
         Task<bool> StopMusic(Guid WebDriverId, int StartDialogCount);
-        Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotVkNews> BotNews);
+        Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotNewsModel> BotNews);
         Task<bool> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount);
         Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount);
         Task<BotVkNewsPostModel> GetVkNewPost(Guid WebDriverId, string VkLink);
+        Task<string> GetBotFullName(Guid WebDriverId);
+        Task<string> GenerateAndUpdatePassword(Guid WebDriverId, string OriginalPassword);
     }
 }

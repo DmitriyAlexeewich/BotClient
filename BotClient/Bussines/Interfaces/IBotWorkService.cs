@@ -9,8 +9,6 @@ namespace BotClient.Bussines.Interfaces
 {
     public interface IBotWorkService
     {
-        Task<List<BotWorkStatusModel>> StartBot(int ServerId);
-        Task StopBot();
         Task StartQuizBot(int ServerId, int RoleId);
         Task<List<string>> Test(string Text);
     }

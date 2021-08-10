@@ -27,6 +27,48 @@ namespace BotClient.Bussines.Services
             random = new Random();
         }
 
+        //Customize
+
+        public async Task<string> GetBotFullName(Guid WebDriverId)
+        {
+            var result = "";
+            try
+            {
+                var goToSlefPageResult = await vkActionService.GoToSelfPage(WebDriverId).ConfigureAwait(false);
+                if ((!goToSlefPageResult.hasError) && (goToSlefPageResult.ActionResultMessage == EnumActionResult.Success))
+                    result = await vkActionService.GetPageName(WebDriverId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
+        public async Task<string> GenerateAndUpdatePassword(Guid WebDriverId, string OriginalPassword)
+        {
+            var result = OriginalPassword;
+            try
+            {
+                var newPassword = await settingsService.GeneratePassword(random.Next(10, 16)).ConfigureAwait(false);
+                if (newPassword.Length > 0)
+                {
+                    var goToSettingsResult = await vkActionService.GoToSettings(WebDriverId).ConfigureAwait(false);
+                    if ((!goToSettingsResult.hasError) && (goToSettingsResult.ActionResultMessage == EnumActionResult.Success))
+                    {
+                        var changePasswordResult = await vkActionService.ChangePassword(WebDriverId, OriginalPassword, newPassword).ConfigureAwait(false);
+                        if ((!changePasswordResult.hasError) && (changePasswordResult.ActionResultMessage == EnumActionResult.Success))
+                            result = newPassword;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+            }
+            return result;
+        }
+
         public async Task<List<ParsedGroupModel>> SearchGroups(Guid WebDriverId, string KeyWord = "", bool FilteredBySubscribersCount = true, EnumSearchGroupType SearchGroupType = EnumSearchGroupType.AllTypes, string Country = "", string City = "", bool isSaftySearch = true)
         {
             var result = new List<ParsedGroupModel>();
@@ -244,6 +286,8 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        //Video
+
         public int GetSearchVideoWordId(List<BotVideoModel> BotVideos, int MaxSearchVideoWordId)
         {
             var result = -1;
@@ -290,13 +334,18 @@ namespace BotClient.Bussines.Services
             return result;
         }
         
-        public async Task<bool> StopVideo(Guid WebDriverId, int StartDialogCount)
+        public async Task<bool> StopVideo(Guid WebDriverId, BotVkVideo BotVideo, int StartDialogCount)
         {
             var result = false;
             try
             {
                 var settings = settingsService.GetServerSettings();
+
                 var waitingTime = settings.VideoWaitingTime + random.Next(-settings.VideoWaitingDeltaTime, settings.VideoWaitingDeltaTime);
+                if (BotVideo.BotVideo.isAdded)
+                    await vkActionService.AddVideo(WebDriverId).ConfigureAwait(false);
+                if (BotVideo.BotVideo.isSubscribed)
+                    await vkActionService.SubscribeByVideo(WebDriverId).ConfigureAwait(false);
                 result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
                 await vkActionService.CloseVideo(WebDriverId).ConfigureAwait(false);
             }
@@ -307,6 +356,8 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        //Music
+
         public async Task<BotMusicModel> StartMusic(Guid WebDriverId, List<BotMusicModel> BotMusic)
         {
             BotMusicModel result = null;
@@ -315,21 +366,15 @@ namespace BotClient.Bussines.Services
                 var goToPageResult = await vkActionService.GoToMusicPage(WebDriverId).ConfigureAwait(false);
                 if ((!goToPageResult.hasError) && (goToPageResult.ActionResultMessage == EnumActionResult.Success))
                 {
-                    if (random.Next(0, 2) != 1)
+                    result = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
+                    var randListenAttept = random.Next(10, 20);
+                    for (int i = 0; i < randListenAttept; i++)
                     {
-                        result = await vkActionService.GetFirstMusic(WebDriverId).ConfigureAwait(false);
-                        var randListenAttept = random.Next(10, 20);
-                        for (int i = 0; i < randListenAttept; i++)
-                        {
-                            if (BotMusic.FirstOrDefault(item => (item.Artist.IndexOf(result.Artist) != -1) && (item.SongName.IndexOf(result.SongName) != -1)) != null)
-                                result = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
-                            else
-                                break;
-                        }
-
+                        if (BotMusic.FirstOrDefault(item => (item.Artist.IndexOf(result.Artist) != -1) && (item.SongName.IndexOf(result.SongName) != -1)) != null)
+                            result = await vkActionService.GetNextMusic(WebDriverId).ConfigureAwait(false);
+                        else
+                            break;
                     }
-                    else
-                        await vkActionService.PlayAddedMusic(WebDriverId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -356,7 +401,9 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotVkNews> BotNews)
+        //News
+
+        public async Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotNewsModel> BotNews)
         {
             BotVkNews result = null;
             try
@@ -366,7 +413,7 @@ namespace BotClient.Bussines.Services
                 {
                     var botNews = await vkActionService.GetNews(WebDriverId).ConfigureAwait(false);
                     for (int i = 0; i < BotNews.Count; i++)
-                        botNews.RemoveAll(item => item.BotNews.NewsId == BotNews[i].BotNews.NewsId);
+                        botNews.RemoveAll(item => item.BotNews.NewsId == BotNews[i].NewsId);
                     if (botNews.Count > 0)
                         result = botNews[random.Next(0, botNews.Count)];
                 }
@@ -387,9 +434,9 @@ namespace BotClient.Bussines.Services
                 var settings = settingsService.GetServerSettings();
                 BotNews.NewsElement.ScrollTo();
                 if (BotNews.BotNews.isLiked)
-                    await vkActionService.LikePost(WebDriverId, BotNews.NewsElement).ConfigureAwait(false);
+                    await vkActionService.LikePostNews(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
                 if (BotNews.BotNews.isReposted)
-                    await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.NewsElement).ConfigureAwait(false);
+                    await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
                 var waitingTime = settings.NewsWaitingTime + random.Next(-settings.NewsWaitingDeltaTime, settings.NewsWaitingDeltaTime);
                 result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
             }
@@ -399,6 +446,8 @@ namespace BotClient.Bussines.Services
             }
             return result;
         }
+
+
 
         public async Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount)
         {
@@ -446,6 +495,7 @@ namespace BotClient.Bussines.Services
             }
             return result;
         }
+
 
         private List<T> RemoveRandom<T>(List<T> List, int SavePercent, int MinSave, int MaxSave)
         {
