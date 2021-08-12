@@ -77,6 +77,11 @@ namespace BotClient.Bussines.Services
                 {
                     checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "login_reg_button").ConfigureAwait(false);
                     result = !webElementService.isElementAvailable(checkElement);
+                    if (result)
+                    {
+                        checkElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".FlatButton.FlatButton--positive.FlatButton--size-l.FlatButton--flexWide").ConfigureAwait(false);
+                        result = !webElementService.isElementAvailable(checkElement);
+                    }
                 }
             }
             catch (Exception ex)
@@ -204,6 +209,15 @@ namespace BotClient.Bussines.Services
                     await CloseModalWindow(WebDriverId).ConfigureAwait(false);
                     result.ActionResultMessage = EnumActionResult.Success;
                     result.hasError = false;
+                }
+                if ((result.hasError) && (await webDriverService.isUrlContains(WebDriverId, "audio").ConfigureAwait(false)))
+                {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false,
+                    };
                 }
             }
             catch
@@ -417,6 +431,16 @@ namespace BotClient.Bussines.Services
                         hasError = false,
                     };
                 }
+                if ((result.hasError) && (await webDriverService.isUrlContains(WebDriverId, "video").ConfigureAwait(false)))
+                {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false,
+                    };
+                }
+
             }
             catch (Exception ex)
             {
@@ -430,8 +454,8 @@ namespace BotClient.Bussines.Services
             var result = await webDriverService.GoToURL(WebDriverId, Link).ConfigureAwait(false);
             if (result)
             {
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                //await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                //await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
             }
             return result;
         }
@@ -489,7 +513,10 @@ namespace BotClient.Bussines.Services
                                 {
                                     var botVKVideo = new BotVkVideo()
                                     {
-                                        URL = attribute,
+                                        BotVideo = new BotVideoModel()
+                                        {
+                                            URL = attribute
+                                        },
                                         HTMLElement = videos[i]
                                     };
                                     if (result.IndexOf(botVKVideo) == -1)
@@ -533,6 +560,36 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<bool> SubscribeByVideo(Guid WebDriver)
+        {
+            var result = false;
+            try
+            {
+                if (await webElementService.ClickToElement(WebDriver, EnumWebHTMLElementSelector.Id, "mv_subscribe_btn", EnumClickType.ElementClick).ConfigureAwait(false))
+                    result = true;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> AddVideo(Guid WebDriver)
+        {
+            var result = false;
+            try
+            {
+                if (await webElementService.ClickToElement(WebDriver, EnumWebHTMLElementSelector.Id, "mv_add_button", EnumClickType.ElementClick).ConfigureAwait(false))
+                    result = true;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
         public async Task<AlgoritmResult> CloseVideo(Guid WebDriverId)
         {
             var result = new AlgoritmResult()
@@ -564,26 +621,63 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> News(Guid WebDriverId)
+        public async Task<AlgoritmResult> GoToNewsPage(Guid WebDriverId)
         {
             var result = new AlgoritmResult()
             {
                 ActionResultMessage = EnumActionResult.ElementError,
                 hasError = true,
             };
+
             try
             {
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_nwsf", EnumClickType.URLClick).ConfigureAwait(false))
                 {
                     await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                    var body = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
-                    webElementService.ScrollElement(body);
-                    await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                    result.ActionResultMessage = EnumActionResult.Success;
-                    result.hasError = false;
-                    return result;
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false,
+                    };
+                }
+                if ((result.hasError) && (await webDriverService.isUrlContains(WebDriverId, "feed").ConfigureAwait(false)))
+                {
+                    await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false,
+                    };
                 }
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+
+            return result;
+        }
+
+        public async Task<List<BotVkNews>> GetNews(Guid WebDriverId)
+        {
+            var result = new List<BotVkNews>();
+            try
+            {
+                for(int i=0; i<3; i++)
+                    await webElementService.ScrollElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                var newsContainers = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "feed_rows", EnumWebHTMLElementSelector.CSSSelector, ".feed_row ").ConfigureAwait(false);
+                for (int i = 0; i < newsContainers.Count; i++)
+                {
+                    var dataElement = webElementService.GetElementInElement(newsContainers[i], EnumWebHTMLElementSelector.TagName, "div");
+                    var newsId = webElementService.GetAttributeValue(dataElement, "data-post-id");
+                    if (newsId != null)
+                        result.Add(new BotVkNews()
+                                   {
+                                       BotNews = new BotNewsModel() { NewsId = newsId },
+                                       NewsElement = newsContainers[i]
+                                   });
+                }
             }
             catch (Exception ex)
             {
@@ -814,7 +908,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> RepostPostToSelfPage(Guid WebDriverId, WebHTMLElement Post)
+        public async Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, int RoleId, int DialogId, bool? isSecond = false)
         {
             var result = new AlgoritmResult()
             {
@@ -823,17 +917,14 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                var ratingContainer = webElementService.GetElementInElement(Post, EnumWebHTMLElementSelector.CSSSelector, ".like_btns");
-                var repostBtn = webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.share._share");
-                if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left", EnumClickType.ElementClick).ConfigureAwait(false))
                 {
-                    var repostContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer");
-                    repostContainer = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container");
-                    repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".radiobtn");
-                    if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                    if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false))
                     {
-                        repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.Id, "like_share_send");
-                        if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                        var textBlock = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false);
+                        var printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText);
+                        await webDriverService.GetScreenshot(WebDriverId, RoleId, DialogId, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                        if ((printMessageResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_send", EnumClickType.ElementClick).ConfigureAwait(false)))
                         {
                             result = new AlgoritmResult()
                             {
@@ -851,7 +942,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, bool? isSecond = false)
+        public async Task<AlgoritmResult> CheckIsSended(Guid WebDriverId, string ClientVkId, int RoleId, int DialogId, bool isMarked)
         {
             var result = new AlgoritmResult()
             {
@@ -860,21 +951,27 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left", EnumClickType.ElementClick).ConfigureAwait(false))
+                var goToDialogResult = await GoToDialog(WebDriverId, ClientVkId).ConfigureAwait(false);
+                if ((!goToDialogResult.hasError) && (goToDialogResult.ActionResultMessage == EnumActionResult.Success))
                 {
-                    if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false))
+                    if (isMarked)
                     {
-                        var textBlock = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false);
-                        var printMessageResult = webElementService.PrintTextToElement(textBlock, MessageText);
-                        if ((printMessageResult) && (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_send", EnumClickType.ElementClick).ConfigureAwait(false)))
-                        {
-                            result = new AlgoritmResult()
-                            {
-                                ActionResultMessage = EnumActionResult.Success,
-                                hasError = false
-                            };
-                        }
+                        var jsText = "" +
+                        "var elements = document.querySelectorAll('.im-mess._im_mess.im-mess_unread._im_mess_unread.im-mess_out');" +
+                        "for (var i = 0; i < elements.length; i++)" +
+                        "{ " +
+                        "   elements[i].setAttribute('class', 'im-mess _im_mess im-mess_out'); " +
+                        "}";
+                        await webDriverService.ExecuteJS(WebDriverId, jsText).ConfigureAwait(false);
                     }
+
+                    await webDriverService.GetScreenshot(WebDriverId, RoleId, DialogId, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                    await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg", EnumClickType.URLClick).ConfigureAwait(false);
+                    result = new AlgoritmResult()
+                    {
+                        ActionResultMessage = EnumActionResult.Success,
+                        hasError = false
+                    };
                 }
             }
             catch (Exception ex)
@@ -928,16 +1025,40 @@ namespace BotClient.Bussines.Services
                             await CloseModalWindow(WebDriverId).ConfigureAwait(false);
 
                             var dialogContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "im_dialogs").ConfigureAwait(false);
-                            var dialogsLink = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
-                            for (int i = 0; i < dialogsLink.Count; i++)
+                            var dialogsLinks = webElementService.GetChildElements(dialogContainer, EnumWebHTMLElementSelector.TagName, "li");
+                            for (int i = 0; i < dialogsLinks.Count; i++)
                             {
-                                var senderElement = webElementService.GetElementInElement(dialogsLink[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--who");
-                                if (senderElement == null)
+                                /*
+                                if(webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--who") == null)
                                 {
-                                    var vkId = webElementService.GetAttributeValue(dialogsLink[i], "data-peer");
-                                    if (vkId != null)
+                                    var vkId = webElementService.GetAttributeValue(dialogsLinks[i], "data-peer");
+                                    var platformLastMessageDateElement = webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--date._im_dialog_date");
+                                    var platformLastMessageDate = webElementService.GetElementINNERText(platformLastMessageDateElement, true);
+                                    if ((vkId != null) && (platformLastMessageDate != null))
                                     {
-                                        result.Add(new DialogWithNewMessagesModel(){ClientVkId = vkId});
+                                        result.Add(new DialogWithNewMessagesModel()
+                                        {
+                                            ClientVkId = vkId,
+                                            PlatformLastMessageDate = platformLastMessageDate
+                                        });
+                                    }
+                                }
+                                */
+                                var unreadMarker = webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--unread._im_dialog_unread_ct");
+                                if (unreadMarker != null)
+                                {
+                                    var innerText = webElementService.GetElementINNERText(unreadMarker, true);
+                                    int unreadCount = 0;
+                                    if ((innerText != null) && (int.TryParse(innerText, out unreadCount)) && (unreadCount > 0))
+                                    {
+                                        var vkId = webElementService.GetAttributeValue(dialogsLinks[i], "data-peer");
+                                        var platformLastMessageDateElement = webElementService.GetElementInElement(dialogsLinks[i], EnumWebHTMLElementSelector.CSSSelector, ".nim-dialog--date._im_dialog_date");
+                                        var platformLastMessageDate = webElementService.GetElementINNERText(platformLastMessageDateElement, true);
+                                        result.Add(new DialogWithNewMessagesModel()
+                                        {
+                                            ClientVkId = vkId,
+                                            PlatformLastMessageDate = platformLastMessageDate
+                                        });
                                     }
                                 }
                             }
@@ -1120,8 +1241,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
-                await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
+                //await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                //await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
                 return await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".page_name", true).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -1260,7 +1381,12 @@ namespace BotClient.Bussines.Services
             };
             try
             {
+                var goToGroupResult = false;
                 if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_gr", EnumClickType.URLClick).ConfigureAwait(false))
+                    goToGroupResult = true;
+                if (await webDriverService.isUrlContains(WebDriverId, "groups").ConfigureAwait(false))
+                    goToGroupResult = true;
+                if (goToGroupResult)
                 {
                     var groupsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "groups_list_groups").ConfigureAwait(false);
                     var groups = webElementService.GetChildElements(groupsContainer, EnumWebHTMLElementSelector.CSSSelector, ".group_list_row.clear_fix._gl_row");
@@ -1297,11 +1423,14 @@ namespace BotClient.Bussines.Services
             try
             {
                 var goToGroupResult = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_gr", EnumClickType.URLClick).ConfigureAwait(false);
+                if ((!goToGroupResult) && (await webDriverService.isUrlContains(WebDriverId, "groups").ConfigureAwait(false)))
+                    goToGroupResult = true;
                 if (goToGroupResult)
                 {
                     result.hasError = false;
                     result.ActionResultMessage = EnumActionResult.Success;
                 }
+
             }
             catch (Exception ex)
             {
@@ -1472,33 +1601,6 @@ namespace BotClient.Bussines.Services
                             rating += await GetRating(ratingComponents[j]).ConfigureAwait(false) * 10;
                     }
                     result.Add(new PlatformPostModel(postId, posts[i], rating));
-                }
-            }
-            catch (Exception ex)
-            {
-                await settingsService.AddLog("VkActionService", ex);
-            }
-            return result;
-        }
-
-        public async Task<AlgoritmResult> WatchPost(Guid WebDriverId, PlatformPostModel PlatformPost, bool isRepost)
-        {
-            var result = new AlgoritmResult()
-            {
-                ActionResultMessage = EnumActionResult.ElementError,
-                hasError = true
-            };
-            try
-            {
-                if (isRepost)
-                {
-                    await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.Escape).ConfigureAwait(false);
-                    var repostResult = await RepostPostToSelfPage(WebDriverId, PlatformPost.Element).ConfigureAwait(false);
-                    if ((repostResult.hasError) || (repostResult.ActionResultMessage != EnumActionResult.Success))
-                    {
-                        result.hasError = true;
-                        result.ActionResultMessage = EnumActionResult.ElementError;
-                    }
                 }
             }
             catch (Exception ex)
@@ -1883,6 +1985,145 @@ namespace BotClient.Bussines.Services
             {
                 var addButton = webElementService.GetElementInElement(Video, EnumWebHTMLElementSelector.CSSSelector, ".video_thumb_action_add");
                 result = webElementService.ClickToElement(addButton, EnumClickType.ElementClick);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<string> GoToNewsByLink(Guid WebDriverId, string VkLink)
+        {
+            var result = "";
+            try
+            {
+                if (await webDriverService.GoToURL(WebDriverId, VkLink).ConfigureAwait(false))
+                {
+                    var newsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_content").ConfigureAwait(false);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        if (webElementService.GetElementInElement(newsContainer, EnumWebHTMLElementSelector.CSSSelector, ".wall_post_text") != null)
+                        {
+                            var newsElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wl_post").ConfigureAwait(false);
+                            result = webElementService.GetAttributeValue(newsElement, "data-post-id");
+                            await webElementService.ScrollElementJs(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_layer_wrap");
+                            break;
+                        }
+                        settingsService.WaitTime(60000);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<WebHTMLElement> GetNewsPostInput(Guid WebDriverId, string NewsPostVkId)
+        {
+            WebHTMLElement result = null;
+            try
+            {
+                result = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "reply_field" + NewsPostVkId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<WebHTMLElement> GetNewsPostSendButton(Guid WebDriverId, string NewsPostVkId)
+        {
+            WebHTMLElement result = null;
+            try
+            {
+                result = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "reply_button" + NewsPostVkId).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<List<string>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId)
+        {
+            var result = new List<string>();
+            try
+            {
+                var comments = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "replies" + NewsPostVkId, 
+                                                                                 EnumWebHTMLElementSelector.CSSSelector, ".reply_text").ConfigureAwait(false);
+                for (int i = 0; i < comments.Count; i++)
+                {
+                    var text = webElementService.GetElementINNERText(comments[i], true);
+                    if (text.Length > 0)
+                        result.Add(text);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> SendMessageToPostNews(string Text, WebHTMLElement Input, WebHTMLElement SendButton)
+        {
+            var result = false;
+            try
+            {
+                if (webElementService.PrintTextToElement(Input, Text))
+                    result = webElementService.ClickToElement(SendButton, EnumClickType.ElementClick);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> LikePostNews(Guid WebDriverId, string VkId)
+        {
+            var result = false;
+            try
+            {
+                var likeContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
+                var likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.PostButtonReactions.PostButtonReactions--post");
+                if (likeBtn == null)
+                    likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.like");
+                if (likeBtn != null)
+                    result = webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick);
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> RepostPostToSelfPage(Guid WebDriverId, string VkId)
+        {
+            var result = false;
+            try
+            {
+                var ratingContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
+                var repostBtn = webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.share._share");
+                if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                {
+                    var repostContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer");
+                    repostContainer = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container");
+                    repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".radiobtn");
+                    if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                    {
+                        repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.Id, "like_share_send");
+                        if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                            result = true;
+                    }
+                }
             }
             catch (Exception ex)
             {

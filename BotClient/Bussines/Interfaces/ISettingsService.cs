@@ -30,9 +30,7 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GetScreenshotFolderPath(string RoleId, string BotClientRoleConnectionId);
 
         IList<T> Shuffle<T>(IList<T> list);
-        
-        List<EnumBotActionType> ShuffleSchedule(List<EnumBotActionType> ScheduleList);
-        
+                
         IList<T> Split<T>(IList<T> list, int Index);
 
         Task UpdateWebConnectionFile();

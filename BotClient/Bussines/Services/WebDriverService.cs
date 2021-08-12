@@ -633,6 +633,27 @@ namespace BotClient.Bussines.Services
             return "";
         }
 
+        public async Task<bool> ExecuteJS(Guid WebDriverId, string JSText)
+        {
+            var result = false;
+            try
+            {
+                var webDriver = await GetWebDriverById(WebDriverId).ConfigureAwait(false);
+                if ((webDriver != null) && (webDriver.Status != EnumWebDriverStatus.Closed) && (webDriver.Status != EnumWebDriverStatus.Error)
+                    && (webDriver.Status != EnumWebDriverStatus.Loading))
+                {
+                    var js = (IJavaScriptExecutor)webDriver.WebDriver;
+                    js.ExecuteScript(JSText);
+                    result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("WebDriverService", ex);
+            }
+            return result;
+        }
+
         private EnumWebHTMLPageStatus WaitPageLoading(HTMLWebDriver WebDriver, string OldURL)
         {
             bool urlNotChanged = false;

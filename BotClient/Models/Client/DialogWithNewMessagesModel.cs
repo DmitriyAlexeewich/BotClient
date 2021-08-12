@@ -8,6 +8,6 @@ namespace BotClient.Models.Client
     public class DialogWithNewMessagesModel
     {
         public string ClientVkId { get; set; }
-        public string ReceiptMessageDatePlatformFormat { get; set; }
+        public string PlatformLastMessageDate { get; set; }
     }
 }

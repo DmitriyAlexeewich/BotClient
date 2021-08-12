@@ -13,8 +13,5 @@ namespace BotClient.Models.Bot
     {
         public BotModel BotData { get; set; }
         public Guid WebDriverId { get; set; }
-        public List<BotWorkMissionStatus> BotWorkMissionsStatus { get; set; } = new List<BotWorkMissionStatus>();
-        public int SubscribeCount { get; set; }
-        public int CompletedMissionInitializations { get; set; }
     }
 }

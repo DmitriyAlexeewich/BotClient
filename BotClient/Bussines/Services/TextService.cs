@@ -281,7 +281,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        private async Task<string> RandMessage(string message)
+        public async Task<string> RandMessage(string message)
         {
             try
             {

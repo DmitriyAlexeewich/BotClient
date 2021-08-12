@@ -1,6 +1,7 @@
 ﻿using BotClient.Bussines.Interfaces;
 using BotClient.Models.HTMLElements;
 using BotClient.Models.HTMLElements.Enumerators;
+using OpenQA.Selenium.Interactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,6 +86,32 @@ namespace BotClient.Bussines.Services
         {
             var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
             return ScrollElement(element);
+        }
+
+        public bool ScrollToElement(WebHTMLElement Element)
+        {
+            if (Element != null)
+                return Element.ScrollTo();
+            return false;
+        }
+
+        public async Task<bool> ScrollToElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true)
+        {
+            var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
+            return ScrollToElement(element);
+        }
+
+        public bool ScrollElementJs(WebHTMLElement Element)
+        {
+            if (Element != null)
+                return Element.ScrollElementJS();
+            return false;
+        }
+
+        public async Task<bool> ScrollElementJs(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true)
+        {
+            var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
+            return ScrollElementJs(element);
         }
 
         public bool CompareElementAttribute(WebHTMLElement Element, string AttributeName, string AttributeValue)

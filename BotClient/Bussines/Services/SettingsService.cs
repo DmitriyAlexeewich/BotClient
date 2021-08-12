@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BotClient.Bussines.Services
@@ -204,41 +205,6 @@ namespace BotClient.Bussines.Services
             return list;
         }
 
-        public List<EnumBotActionType> ShuffleSchedule(List<EnumBotActionType> ScheduleList)
-        {
-            try
-            {
-                var settings = GetServerSettings();
-                ScheduleList = Shuffle(ScheduleList).ToList();
-
-                for (int i = 0; i < ScheduleList.Count; i++)
-                {
-                    if (ScheduleList[i] == EnumBotActionType.RoleMission)
-                    {
-                        if (isSimilarPreviousAction(i, ScheduleList))
-                        {
-                            var chillActionsCount = random.Next(settings.MinChillActionsCount, settings.MaxChillActionsCount);
-                            var prevSecondAction = (EnumBotActionType)random.Next(1, 5);
-                            for (int j = 0; j < chillActionsCount; j++)
-                            {
-                                var currentSecondAction = (EnumBotActionType)random.Next(1, 5);
-                                while(currentSecondAction == prevSecondAction)
-                                    currentSecondAction = (EnumBotActionType)random.Next(1, 5);
-                                ScheduleList.Insert(i, currentSecondAction);
-                                prevSecondAction = currentSecondAction;
-                            }
-                            i = -1;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-            return ScheduleList;
-        }
-
         public IList<T> Split<T>(IList<T> list, int Index)
         {
             try
@@ -290,8 +256,11 @@ namespace BotClient.Bussines.Services
 
         public bool WaitTime(int Milliseconds)
         {
+            /*
             var waitingTime = DateTime.Now.AddMilliseconds(Milliseconds / 10);
-            while (DateTime.Now < waitingTime) { }
+            while (DateTime.Now < waitingTime) { 
+            */
+            Thread.Sleep(Milliseconds);
             return true;
         }
 

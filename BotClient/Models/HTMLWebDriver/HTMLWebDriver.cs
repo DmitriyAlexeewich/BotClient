@@ -33,7 +33,6 @@ namespace BotClient.Models.HTMLWebDriver
                 var options = new ChromeOptions();
                 for (int i = 0; i < ConnectionSettings.Options.Count; i++)
                     options.AddArgument(ConnectionSettings.Options[i]);
-                options.AddArgument($"--proxy-server={ConnectionSettings.IpMask}");
                 WebDriver = new ChromeDriver(DriverPath, options, TimeSpan.FromMinutes(10));
                 WebDriver.Manage().Timeouts().PageLoad.Add(TimeSpan.FromMinutes(10));
                 Thread.Sleep(WaitingTime);
