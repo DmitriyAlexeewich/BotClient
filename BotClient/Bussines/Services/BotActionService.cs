@@ -412,8 +412,16 @@ namespace BotClient.Bussines.Services
                 if ((!goToPageResult.hasError) && (goToPageResult.ActionResultMessage == EnumActionResult.Success))
                 {
                     var botNews = await vkActionService.GetNews(WebDriverId).ConfigureAwait(false);
-                    for (int i = 0; i < BotNews.Count; i++)
-                        botNews.RemoveAll(item => item.BotNews.NewsId == BotNews[i].NewsId);
+                    for (int i = 0; i < botNews.Count; i++)
+                    {
+                        var groupId = botNews[i].BotNews.NewsId.Split("_");
+                        if (groupId.Length > 0)
+                        {
+                            if (BotNews.FirstOrDefault(item => item.NewsId.IndexOf(groupId[0]) != -1) != null)
+                                botNews[i] = null;
+                        }
+                    }
+                    botNews.RemoveAll(item => item == null);
                     if (botNews.Count > 0)
                         result = botNews[random.Next(0, botNews.Count)];
                 }
@@ -426,7 +434,7 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<bool> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount)
+        public async Task<BotVkNews> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount)
         {
             var result = false;
             try
@@ -434,9 +442,9 @@ namespace BotClient.Bussines.Services
                 var settings = settingsService.GetServerSettings();
                 BotNews.NewsElement.ScrollTo();
                 if (BotNews.BotNews.isLiked)
-                    await vkActionService.LikePostNews(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
+                    BotNews.BotNews.isLiked = await vkActionService.LikePostNews(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
                 if (BotNews.BotNews.isReposted)
-                    await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
+                    BotNews.BotNews.isReposted = await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
                 var waitingTime = settings.NewsWaitingTime + random.Next(-settings.NewsWaitingDeltaTime, settings.NewsWaitingDeltaTime);
                 result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
             }
@@ -444,7 +452,7 @@ namespace BotClient.Bussines.Services
             {
                 await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
             }
-            return result;
+            return BotNews;
         }
 
 

@@ -25,7 +25,7 @@ namespace BotClient.Bussines.Interfaces
         Task<BotMusicModel> StartMusic(Guid WebDriverId, List<BotMusicModel> BotMusic);
         Task<bool> StopMusic(Guid WebDriverId, int StartDialogCount);
         Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotNewsModel> BotNews);
-        Task<bool> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount);
+        Task<BotVkNews> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount);
         Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount);
         Task<BotVkNewsPostModel> GetVkNewPost(Guid WebDriverId, string VkLink);
         Task<string> GetBotFullName(Guid WebDriverId);

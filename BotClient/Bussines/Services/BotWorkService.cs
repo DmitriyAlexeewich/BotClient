@@ -162,10 +162,6 @@ namespace BotClient.Bussines.Services
                             }
                         }
 
-
-                        await Chill(WebDriverId, botId, false).ConfigureAwait(false);
-
-
                         var currentDay = DateTime.Now;
                         var startTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 8, 0, 0);
                         var endTime = new DateTime(currentDay.Year, currentDay.Month, currentDay.Day, 23, 0, 0);
@@ -175,6 +171,7 @@ namespace BotClient.Bussines.Services
                         complitedRoleActions.RemoveAll(item => item.UpdateDate < currentDay);
                         roleActionCount -= complitedRoleActions.Count(item => item.isSuccess);
                         var missions = missionCompositeService.GetRoleMissionConnections(RoleId, true);
+                        missions.RemoveAll(item => item.isNewsMission);
                         
                         while ((DateTime.Now > startTime) && (DateTime.Now < endTime) && (roleActionCount > 0))
                         {
@@ -500,73 +497,84 @@ namespace BotClient.Bussines.Services
             try
             {
                 var vkNews = await botActionService.GetVkNewPost(WebDriverId, BotNewsMissionConnection.VkLink).ConfigureAwait(false);
-                if (BotNewsMissionConnection.BotId == -1)
-                    missionCompositeService.SetBotNewsMissionConnectionBotId(BotNewsMissionConnection.Id, BotId);
-                BotNewsMissionConnection = missionCompositeService.GetBotNewsMissionConnectionsById(BotNewsMissionConnection.Id);
-                if (BotNewsMissionConnection.BotId == BotId)
+                if (vkNews != null)
                 {
-                    var missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NodeId);
-                    for (int i = 0; i < missionNodes.Count; i++)
+                    if (BotNewsMissionConnection.BotId == -1)
+                        missionCompositeService.SetBotNewsMissionConnectionBotId(BotNewsMissionConnection.Id, BotId);
+                    BotNewsMissionConnection = missionCompositeService.GetBotNewsMissionConnectionsById(BotNewsMissionConnection.Id);
+                    if (BotNewsMissionConnection.BotId == BotId)
                     {
-                        if (missionNodes[i].Type == EnumMissionActionType.SendMessageToPost)
+                        var missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NodeId);
+                        while (missionNodes.Count > 0)
                         {
-                            if (missionNodes[i].Text.Length < 1)
-                                missionNodes[i].Text = BotNewsMissionConnection.SendedText;
-                            missionNodes[i].Text = await textService.RandMessage(missionNodes[i].Text).ConfigureAwait(false);
-                            var sendResult = await vkActionService.SendMessageToPostNews(missionNodes[i].Text, vkNews.CommentInput, vkNews.SendBtn);
-                            if (sendResult)
+                            var isSuccess = false;
+                            switch (missionNodes[0].Type)
                             {
-                                missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, missionNodes[i].Text);
+                                case EnumMissionActionType.SendMessageToPost:
+                                    if (missionNodes[0].Text.Length < 1)
+                                        missionNodes[0].Text = BotNewsMissionConnection.SendedText;
+                                    missionNodes[0].Text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
+                                    isSuccess = await vkActionService.SendMessageToPostNews(missionNodes[0].Text, vkNews.CommentInput, vkNews.SendBtn);
+                                    missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, missionNodes[0].Text);
+                                    break;
+                                case EnumMissionActionType.LikeNewsPost:
+                                    isSuccess = await vkActionService.LikePostNews(WebDriverId, vkNews.NewsVkId).ConfigureAwait(false);
+                                    break;
+                                case EnumMissionActionType.RepostNewsPost:
+                                    isSuccess = await vkActionService.RepostPostToSelfPage(WebDriverId, vkNews.NewsVkId).ConfigureAwait(false);
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            if (isSuccess)
+                            {
                                 missionCompositeService.SetBotNewsMissionConnectionIsComplete(BotNewsMissionConnection.Id, true);
                                 missionCompositeService.SetBotNewsMissionConnectionIsWaiting(BotNewsMissionConnection.Id, false);
-                                var missionPath = missionNodes[i].Path;
+                                var missionPath = missionNodes[0].Path;
                                 if (missionPath.Length > 0)
                                     missionPath += ";";
-                                missionPath += missionNodes[i].NodeId;
-                                var nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath);
-
-                                while (nextNodes.Count > 0)
+                                missionPath += missionNodes[0].NodeId;
+                                missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath);
+                                if ((missionNodes.Count > 0) && (missionNodes[0].Type == EnumMissionActionType.SetNextNewsStep))
                                 {
-                                    switch (nextNodes[0].Type)
+                                    var nextRoleType = -1;
+                                    if (int.TryParse(missionNodes[0].Text, out nextRoleType))
                                     {
-                                        case EnumMissionActionType.LikeNewsPost:
-                                            await vkActionService.LikePostNews(WebDriverId, vkNews.NewsVkId).ConfigureAwait(false);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    missionPath += ";" + nextNodes[0].NodeId;
-                                    nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath);
-
-                                    if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SetNextNewsStep))
-                                    {
-                                        var nextRoleType = -1;
-                                        if (int.TryParse(nextNodes[0].Text, out nextRoleType))
+                                        var usedBotId = -1;
+                                        var usedRoleTypesInNews = missionCompositeService.GetBotNewsMissionConnectionsByBotRoleType(nextRoleType, missionNodes[0].MissionId, BotNewsMissionConnection.NewsId);
+                                        if (usedRoleTypesInNews.Count > 0)
+                                            usedBotId = usedRoleTypesInNews[0].BotId;
+                                        missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath + ";" + missionNodes[0].NodeId);
+                                        if ((missionNodes.Count > 0) && (missionNodes[0].Type == EnumMissionActionType.SendMessageToPost))
                                         {
-                                            var usedBotId = -1;
-                                            var usedRoleTypesInNews = missionCompositeService.GetBotNewsMissionConnectionsByBotRoleType(nextRoleType, nextNodes[0].MissionId, BotNewsMissionConnection.NewsId);
-                                            if (usedRoleTypesInNews.Count > 0)
-                                                usedBotId = usedRoleTypesInNews[0].BotId;
-                                            nextNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, null, missionPath + ";" + nextNodes[0].NodeId);
-                                            if ((nextNodes.Count > 0) && (nextNodes[0].Type == EnumMissionActionType.SendMessageToPost))
-                                            {
-                                                missionCompositeService.CreateBotNewsMissionConnection(BotNewsMissionConnection.RoleId, BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NewsId,
-                                                                                                   usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, nextNodes[0].NodeId,
-                                                                                                   BotNewsMissionConnection.NextDateCommentInDays, true, false, BotNewsMissionConnection.isDelayed);
-                                            }
+                                            missionCompositeService.CreateBotNewsMissionConnection(BotNewsMissionConnection.RoleId, BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NewsId,
+                                                                                               usedBotId, nextRoleType, BotNewsMissionConnection.VkLink, missionNodes[0].NodeId,
+                                                                                               BotNewsMissionConnection.NextDateCommentInDays, true, false, BotNewsMissionConnection.isDelayed);
                                         }
-                                        break;
                                     }
+                                    break;
                                 }
                             }
-                            break;
+                        }
+                    }
+                    var botsByNews = botCompositeService.GetBotsByNewsId(BotNewsMissionConnection.NewsId);
+                    var t = 0;
+                    for (int i = 0; i < botsByNews.Count; i++)
+                    {
+                        var commentLink = vkNews.Comments.FirstOrDefault(item => item.CommentatorVkId == botsByNews[i].VkId);
+                        if (commentLink != null)
+                        {
+                            await vkActionService.LikePostNewsComment(WebDriverId, commentLink.CommentVkId).ConfigureAwait(false);
+                            if (random.Next(0, 100) < 31)
+                                break;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-
+                await settingsService.AddLog("BotWorkService", ex);
             }
         }
 
@@ -921,7 +929,7 @@ namespace BotClient.Bussines.Services
                     {
                         if (!IsSkipSecondAction)
                         {
-                            var waitAction = EnumBotActionType.News;//(EnumBotActionType)random.Next(1, 4);
+                            var waitAction = (EnumBotActionType)random.Next(1, 4);
                             int startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                             switch (waitAction)
                             {
@@ -953,17 +961,18 @@ namespace BotClient.Bussines.Services
                                 case EnumBotActionType.News:
                                     botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.WatchVideo, $"Просмотр новостей");
                                     var botNews = botCompositeService.GetBotNews(BotId);
-                                    var botVkNews = await botActionService.StartReadNews(WebDriverId, botNews).ConfigureAwait(false);
                                     botNews.RemoveAll(item => item.UpdateDate < currentDay);
+                                    var botVkNews = await botActionService.StartReadNews(WebDriverId, botNews).ConfigureAwait(false);
                                     if (botVkNews != null)
                                     {
-                                        if (random.Next(0, 100) < settings.LikeChancePerDay)
+                                        if (random.Next(0, 100) < settings.LikeChance)
                                             botVkNews.BotNews.isLiked = true;
-                                        if (random.Next(0, 100) < settings.RepostChancePerDay)
+                                        if ((random.Next(0, 100) < settings.RepostChancePerDay) && (botNews.Count(item => item.isReposted) <= settings.RepostMaxCountPerDay))
                                             botVkNews.BotNews.isReposted = true;
                                         if (random.Next(0, 100) < settings.SubscribeChancePerDay)
                                             botVkNews.BotNews.isSubscribe = true;
-                                        await botActionService.StopReadNews(WebDriverId, botVkNews, startDialogCount).ConfigureAwait(false);
+                                        botVkNews = await botActionService.StopReadNews(WebDriverId, botVkNews, startDialogCount).ConfigureAwait(false);
+                                        botCompositeService.CreateBotNews(BotId, botVkNews.BotNews.NewsId, botVkNews.BotNews.isLiked, botVkNews.BotNews.isReposted, botVkNews.BotNews.isSubscribe);
                                     }
                                     break;
                             }

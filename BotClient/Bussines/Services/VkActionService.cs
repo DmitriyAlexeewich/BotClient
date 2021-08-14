@@ -2049,20 +2049,29 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<List<string>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId)
+        public async Task<List<BotVkNewsPostCommentModel>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId)
         {
-            var result = new List<string>();
+            var result = new List<BotVkNewsPostCommentModel>();
             try
             {
                 var comments = await webElementService.GetChildElements(WebDriverId, EnumWebHTMLElementSelector.Id, "replies" + NewsPostVkId, 
-                                                                                 EnumWebHTMLElementSelector.CSSSelector, ".reply_text").ConfigureAwait(false);
+                                                                                 EnumWebHTMLElementSelector.CSSSelector, ".reply").ConfigureAwait(false);
                 for (int i = 0; i < comments.Count; i++)
                 {
-                    var text = webElementService.GetElementINNERText(comments[i], true);
-                    if (text.Length > 0)
-                        result.Add(text);
+                    var commentatorId = webElementService.GetAttributeValue(comments[i], "data-answering-id");
+                    if ((commentatorId != null) && (commentatorId.Length > 0))
+                    {
+                        var commentId = webElementService.GetAttributeValue(comments[i], "id");
+                        if ((commentId != null) && (commentId.Length > 0))
+                        {
+                            result.Add(new BotVkNewsPostCommentModel()
+                            {
+                                CommentatorVkId = commentatorId,
+                                CommentVkId = commentId
+                            });
+                        }
+                    }
                 }
-
             }
             catch (Exception ex)
             {
@@ -2114,16 +2123,34 @@ namespace BotClient.Bussines.Services
                 var repostBtn = webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.share._share");
                 if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
                 {
+                    settingsService.WaitTime(10000);
                     var repostContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer");
                     repostContainer = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container");
                     repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".radiobtn");
+                    settingsService.WaitTime(10000);
                     if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
                     {
                         repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.Id, "like_share_send");
+                        settingsService.WaitTime(10000);
                         if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
                             result = true;
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> LikePostNewsComment(Guid WebDriver, string CommentId)
+        {
+            var result = false;
+            try
+            {
+                var likeBtn = await webElementService.GetElementInElement(WebDriver, EnumWebHTMLElementSelector.Id, CommentId, EnumWebHTMLElementSelector.CSSSelector, ".like_btn").ConfigureAwait(false);
+                result = webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick);
             }
             catch (Exception ex)
             {

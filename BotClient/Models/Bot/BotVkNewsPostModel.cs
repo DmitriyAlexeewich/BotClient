@@ -11,6 +11,6 @@ namespace BotClient.Models.Bot
         public string NewsVkId { get; set; }
         public WebHTMLElement CommentInput { get; set; }
         public WebHTMLElement SendBtn { get; set; }
-        public List<string> Comments { get; set; }
+        public List<BotVkNewsPostCommentModel> Comments { get; set; }
     }
 }

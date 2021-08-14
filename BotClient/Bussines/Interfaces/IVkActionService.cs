@@ -47,6 +47,7 @@ namespace BotClient.Bussines.Interfaces
         Task<List<PlatformPostModel>> GetPosts(Guid WebDriverId);
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
         Task<bool> RepostPostToSelfPage(Guid WebDriverId, string VkId);
+        Task<bool> LikePostNewsComment(Guid WebDriver, string CommentId);
         Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, int RoleId, int DialogId, bool? isSecond = false);
         Task<AlgoritmResult> CheckIsSended(Guid WebDriverId, string ClientVkId, int RoleId, int DialogId, bool isMarked);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
@@ -81,7 +82,7 @@ namespace BotClient.Bussines.Interfaces
         Task<string> GoToNewsByLink(Guid WebDriverId, string VkLink);
         Task<WebHTMLElement> GetNewsPostInput(Guid WebDriverId, string NewsPostVkId);
         Task<WebHTMLElement> GetNewsPostSendButton(Guid WebDriverId, string NewsPostVkId);
-        Task<List<string>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId);
+        Task<List<BotVkNewsPostCommentModel>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId);
         Task<bool> SendMessageToPostNews(string Text, WebHTMLElement Input, WebHTMLElement SendButton);
         Task<bool> LikePostNews(Guid WebDriverId, string VkId);
     }
