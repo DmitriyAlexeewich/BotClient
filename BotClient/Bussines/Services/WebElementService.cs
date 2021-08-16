@@ -101,17 +101,22 @@ namespace BotClient.Bussines.Services
             return ScrollToElement(element);
         }
 
-        public bool ScrollElementJs(WebHTMLElement Element)
+        public bool ScrollElementJs(WebHTMLElement Element, bool isUp = false)
         {
             if (Element != null)
-                return Element.ScrollElementJS();
+            {
+                if (isUp)
+                    return Element.ScrollElementJSUp();
+                else
+                    return Element.ScrollElementJS();
+            }
             return false;
         }
 
-        public async Task<bool> ScrollElementJs(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true)
+        public async Task<bool> ScrollElementJs(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool isUp = false, bool? isElementRequired = true)
         {
             var element = await webDriverService.GetElement(WebDriverId, Selector, Link, isElementRequired).ConfigureAwait(false);
-            return ScrollElementJs(element);
+            return ScrollElementJs(element, isUp);
         }
 
         public bool CompareElementAttribute(WebHTMLElement Element, string AttributeName, string AttributeValue)

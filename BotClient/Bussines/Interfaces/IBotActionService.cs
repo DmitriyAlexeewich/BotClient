@@ -24,10 +24,10 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> StopVideo(Guid WebDriverId, BotVkVideo BotVideo, int StartDialogCount);
         Task<BotMusicModel> StartMusic(Guid WebDriverId, List<BotMusicModel> BotMusic);
         Task<bool> StopMusic(Guid WebDriverId, int StartDialogCount);
+        Task<bool> AddMusic(Guid WebDriverId);
         Task<BotVkNews> StartReadNews(Guid WebDriverId, List<BotNewsModel> BotNews);
         Task<BotVkNews> StopReadNews(Guid WebDriverId, BotVkNews BotNews, int StartDialogCount);
         Task<bool> hasNewMessagesByTime(Guid WebDriverId, int WaitingTime, int StartDialogCount);
-        Task<BotVkNewsPostModel> GetVkNewPost(Guid WebDriverId, string VkLink);
         Task<string> GetBotFullName(Guid WebDriverId);
         Task<string> GenerateAndUpdatePassword(Guid WebDriverId, string OriginalPassword);
     }

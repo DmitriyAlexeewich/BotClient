@@ -218,7 +218,7 @@ namespace BotClient.Models.HTMLElements
                 if (element != null)
                 {
                     IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
-                    executor.ExecuteScript("arguments[0].scrollIntoView();", element);
+                    executor.ExecuteScript("arguments[0].scrollIntoView({block: 'center'});", element);
                     return true;
                 }
                 return false;
@@ -237,6 +237,24 @@ namespace BotClient.Models.HTMLElements
                 {
                     IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
                     executor.ExecuteScript("arguments[0].scroll(0,1000000000);", element);
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool ScrollElementJSUp()
+        {
+            try
+            {
+                if (element != null)
+                {
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].scroll(0,-1000000000);", element);
                     return true;
                 }
                 return false;

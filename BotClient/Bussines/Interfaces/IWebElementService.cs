@@ -21,8 +21,8 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> ScrollElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true);
         bool ScrollToElement(WebHTMLElement Element);
         Task<bool> ScrollToElement(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true);
-        bool ScrollElementJs(WebHTMLElement Element);
-        Task<bool> ScrollElementJs(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool? isElementRequired = true);
+        bool ScrollElementJs(WebHTMLElement Element, bool isUp = false);
+        Task<bool> ScrollElementJs(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, bool isUp = false, bool? isElementRequired = true);
         bool CompareElementAttribute(WebHTMLElement Element, string AttributeName, string AttributeValue);
         Task<bool> CompareElementAttribute(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string AttributeName, string AttributeValue, bool? isElementRequired = true);
         string GetElementINNERText(WebHTMLElement Element, bool? removeHTMLTags = false);

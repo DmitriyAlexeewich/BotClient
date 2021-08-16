@@ -172,7 +172,9 @@ namespace BotClient.Bussines.Services
                         roleActionCount -= complitedRoleActions.Count(item => item.isSuccess);
                         var missions = missionCompositeService.GetRoleMissionConnections(RoleId, true);
                         missions.RemoveAll(item => item.isNewsMission);
-                        
+
+                        await Chill(WebDriverId, botId, bot.isSkipSecondAction).ConfigureAwait(false);
+
                         while ((DateTime.Now > startTime) && (DateTime.Now < endTime) && (roleActionCount > 0))
                         {
                             botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
@@ -496,8 +498,8 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                var vkNews = await botActionService.GetVkNewPost(WebDriverId, BotNewsMissionConnection.VkLink).ConfigureAwait(false);
-                if (vkNews != null)
+                var vkNewsPostVkId = await vkActionService.GoToNewsByLink(WebDriverId, BotNewsMissionConnection.VkLink).ConfigureAwait(false);
+                if (vkNewsPostVkId.Length > 0)
                 {
                     if (BotNewsMissionConnection.BotId == -1)
                         missionCompositeService.SetBotNewsMissionConnectionBotId(BotNewsMissionConnection.Id, BotId);
@@ -514,14 +516,14 @@ namespace BotClient.Bussines.Services
                                     if (missionNodes[0].Text.Length < 1)
                                         missionNodes[0].Text = BotNewsMissionConnection.SendedText;
                                     missionNodes[0].Text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
-                                    isSuccess = await vkActionService.SendMessageToPostNews(missionNodes[0].Text, vkNews.CommentInput, vkNews.SendBtn);
+                                    isSuccess = await vkActionService.SendMessageToPostNews(WebDriverId, vkNewsPostVkId, missionNodes[0].Text);
                                     missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, missionNodes[0].Text);
                                     break;
                                 case EnumMissionActionType.LikeNewsPost:
-                                    isSuccess = await vkActionService.LikePostNews(WebDriverId, vkNews.NewsVkId).ConfigureAwait(false);
+                                    isSuccess = await vkActionService.LikePostNews(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
                                     break;
                                 case EnumMissionActionType.RepostNewsPost:
-                                    isSuccess = await vkActionService.RepostPostToSelfPage(WebDriverId, vkNews.NewsVkId).ConfigureAwait(false);
+                                    isSuccess = await vkActionService.RepostPostToSelfPage(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
                                     break;
                                 default:
                                     break;
@@ -556,13 +558,21 @@ namespace BotClient.Bussines.Services
                                     break;
                                 }
                             }
+                            else
+                            {
+                                missionCompositeService.SetBotNewsMissionConnectionBotId(BotNewsMissionConnection.Id, -1);
+                                missionCompositeService.SetBotNewsMissionConnectionIsComplete(BotNewsMissionConnection.Id, false);
+                                missionCompositeService.SetBotNewsMissionConnectionIsWaiting(BotNewsMissionConnection.Id, true);
+                                missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, "");
+                                break;
+                            }
                         }
                     }
                     var botsByNews = botCompositeService.GetBotsByNewsId(BotNewsMissionConnection.NewsId);
-                    var t = 0;
+                    var comments = await vkActionService.GetNewsPostComments(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
                     for (int i = 0; i < botsByNews.Count; i++)
                     {
-                        var commentLink = vkNews.Comments.FirstOrDefault(item => item.CommentatorVkId == botsByNews[i].VkId);
+                        var commentLink = comments.FirstOrDefault(item => item.CommentatorVkId == botsByNews[i].VkId);
                         if (commentLink != null)
                         {
                             await vkActionService.LikePostNewsComment(WebDriverId, commentLink.CommentVkId).ConfigureAwait(false);
@@ -923,13 +933,34 @@ namespace BotClient.Bussines.Services
                 if ((DateTime.Now.Hour < 8) && (DateTime.Now.Hour > 23))
                     chillActionCount = random.Next(settings.MinNightSecondActionCount, settings.MaxNightSecondActionCount);
 
+                await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                
+                var waitActions = new List<EnumBotActionType>();
+                waitActions.Add(EnumBotActionType.News);
+
+                settings.MaxNewsCountInChillQuery = random.Next(1, settings.MaxNewsCountInChillQuery+1);
+                for (int i = 0; i < settings.MaxNewsCountInChillQuery; i++)
+                    waitActions.Add(EnumBotActionType.News);
+
+                settings.MaxVideoCountInChillQuery = random.Next(1, settings.MaxVideoCountInChillQuery + 1);
+                for (int i = 0; i < settings.MaxNewsCountInChillQuery; i++)
+                    waitActions.Add(EnumBotActionType.WatchVideo);
+
+                settings.MaxMusicCountInChillQuery = random.Next(1, settings.MaxMusicCountInChillQuery + 1);
+                for (int i = 0; i < settings.MaxMusicCountInChillQuery; i++)
+                    waitActions.Add(EnumBotActionType.ListenMusic);
+
+                waitActions = settingsService.Shuffle(waitActions).ToList();
+                waitActions[0] = EnumBotActionType.News;
+
                 for (int i = 0; i < chillActionCount; i++)
                 {
+                    int currentWaitAction = 0;
                     while (DateTime.Now < nextTime)
                     {
                         if (!IsSkipSecondAction)
                         {
-                            var waitAction = (EnumBotActionType)random.Next(1, 4);
+                            var waitAction = waitActions[currentWaitAction];
                             int startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                             switch (waitAction)
                             {
@@ -939,7 +970,11 @@ namespace BotClient.Bussines.Services
                                     var botVkMusic = await botActionService.StartMusic(WebDriverId, botMusic).ConfigureAwait(false);
                                     if (botVkMusic != null)
                                     {
-                                        botCompositeService.CreateBotMusic(BotId, botVkMusic.Artist, botVkMusic.SongName);
+                                        if (botMusic.Count(item => item.CreateDate > currentDay) > settings.MusicAddPerDay)
+                                        {
+                                            botCompositeService.CreateBotMusic(BotId, botVkMusic.Artist, botVkMusic.SongName);
+                                            await botActionService.AddMusic(WebDriverId).ConfigureAwait(false);
+                                        }
                                         await botActionService.StopMusic(WebDriverId, startDialogCount).ConfigureAwait(false);
                                     }
                                     break;
@@ -977,8 +1012,11 @@ namespace BotClient.Bussines.Services
                                     break;
                             }
                         }
+                        await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                        currentWaitAction++;
+                        if (currentWaitAction >= waitActions.Count)
+                            currentWaitAction = 0;
                     }
-                    await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

@@ -438,6 +438,8 @@ namespace BotClient.Bussines.Services
                         var element = new WebHTMLElement(webDriver.WebDriver, Selector, Link, isRequired.Value, settings);
                         if (element.isAvailable)
                             return element;
+                        else
+                            await settingsService.AddWebElementLog(Selector.ToString("g"), Link).ConfigureAwait(false);
                     }
                 }
             }

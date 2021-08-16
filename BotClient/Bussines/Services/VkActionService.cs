@@ -2000,14 +2000,13 @@ namespace BotClient.Bussines.Services
             {
                 if (await webDriverService.GoToURL(WebDriverId, VkLink).ConfigureAwait(false))
                 {
-                    var newsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_content").ConfigureAwait(false);
+                    var newsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._post").ConfigureAwait(false);
                     for (int i = 0; i < 5; i++)
                     {
-                        if (webElementService.GetElementInElement(newsContainer, EnumWebHTMLElementSelector.CSSSelector, ".wall_post_text") != null)
+                        var sendBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".reply_send_button").ConfigureAwait(false);
+                        if (sendBtn != null)
                         {
-                            var newsElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "wl_post").ConfigureAwait(false);
-                            result = webElementService.GetAttributeValue(newsElement, "data-post-id");
-                            await webElementService.ScrollElementJs(WebDriverId, EnumWebHTMLElementSelector.Id, "wk_layer_wrap");
+                            result = webElementService.GetAttributeValue(newsContainer, "data-post-id");
                             break;
                         }
                         settingsService.WaitTime(60000);
@@ -2080,13 +2079,34 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<bool> SendMessageToPostNews(string Text, WebHTMLElement Input, WebHTMLElement SendButton)
+        public async Task<bool> SendMessageToPostNews(Guid WebDriverId, string VkId, string Text)
         {
             var result = false;
             try
             {
-                if (webElementService.PrintTextToElement(Input, Text))
-                    result = webElementService.ClickToElement(SendButton, EnumClickType.ElementClick);
+                var likeContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
+                if (likeContainer != null)
+                {
+                    webElementService.ScrollToElement(likeContainer);
+                    var commentBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.comment._comment._reply_wrap");
+                    if (commentBtn != null)
+                    {
+                        webElementService.ScrollToElement(commentBtn);
+                        if (webElementService.ClickToElement(commentBtn, EnumClickType.ElementClick))
+                        {
+                            var input = await GetNewsPostInput(WebDriverId, VkId).ConfigureAwait(false);
+                            if (input != null)
+                            {
+                                webElementService.ScrollToElement(input);
+                                if (webElementService.PrintTextToElement(input, Text))
+                                {
+                                    var sendBtn = await GetNewsPostSendButton(WebDriverId, VkId).ConfigureAwait(false);
+                                    result = webElementService.ClickToElement(sendBtn, EnumClickType.ElementClick);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -2101,11 +2121,15 @@ namespace BotClient.Bussines.Services
             try
             {
                 var likeContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
-                var likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.PostButtonReactions.PostButtonReactions--post");
-                if (likeBtn == null)
-                    likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.like");
-                if (likeBtn != null)
-                    result = webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick);
+                if (likeContainer != null)
+                {
+                    webElementService.ScrollToElement(likeContainer);
+                    var likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.PostButtonReactions.PostButtonReactions--post");
+                    if (likeBtn == null)
+                        likeBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.like");
+                    if (likeBtn != null)
+                        result = webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick);
+                }
             }
             catch (Exception ex)
             {
@@ -2119,21 +2143,25 @@ namespace BotClient.Bussines.Services
             var result = false;
             try
             {
-                var ratingContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
-                var repostBtn = webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.share._share");
-                if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                var likeContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_wrap._like_wall" + VkId).ConfigureAwait(false);
+                if (likeContainer != null)
                 {
-                    settingsService.WaitTime(10000);
-                    var repostContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer");
-                    repostContainer = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container");
-                    repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".radiobtn");
-                    settingsService.WaitTime(10000);
+                    webElementService.ScrollToElement(likeContainer);
+                    var repostBtn = webElementService.GetElementInElement(likeContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.share._share");
                     if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
                     {
-                        repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.Id, "like_share_send");
+                        settingsService.WaitTime(10000);
+                        var repostContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "box_layer");
+                        repostContainer = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container");
+                        repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.CSSSelector, ".radiobtn");
                         settingsService.WaitTime(10000);
                         if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
-                            result = true;
+                        {
+                            repostBtn = webElementService.GetElementInElement(repostContainer, EnumWebHTMLElementSelector.Id, "like_share_send");
+                            settingsService.WaitTime(10000);
+                            if (webElementService.ClickToElement(repostBtn, EnumClickType.ElementClick))
+                                result = true;
+                        }
                     }
                 }
             }
