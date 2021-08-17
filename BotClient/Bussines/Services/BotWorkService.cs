@@ -178,6 +178,7 @@ namespace BotClient.Bussines.Services
                         while ((DateTime.Now > startTime) && (DateTime.Now < endTime) && (roleActionCount > 0))
                         {
                             botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнение роли");
+                            var isUsedNewsMission = false;
 
                             var botRoleNews = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, botId);
                             var botNewsCount = random.Next(settings.MinNewsRoleActions, settings.MaxNewsRoleActions);
@@ -191,20 +192,22 @@ namespace BotClient.Bussines.Services
                                     freeNews.RemoveAll(item => item.isDelayed && (endTime < item.CreateDate.AddDays(item.NextDateCommentInDays)));
                                     for (int i = 0; i < freeNews.Count; i++)
                                     {
+                                        var botNewsRoleId = -1;
+
                                         if (botRoleNews.FirstOrDefault(item => item.MissionId == freeNews[i].MissionId) == null)
                                         {
-                                            await ExecuteNewsMission(WebDriverId, freeNews[i], botId).ConfigureAwait(false);
+                                            isUsedNewsMission = await ExecuteNewsMission(WebDriverId, freeNews[i], botId).ConfigureAwait(false);
                                             break;
                                         }
                                     }
                                 }
                                 else
-                                    await ExecuteNewsMission(WebDriverId, botNewsInWaiting, botId).ConfigureAwait(false);
+                                    isUsedNewsMission = await ExecuteNewsMission(WebDriverId, botNewsInWaiting, botId).ConfigureAwait(false);
 
                             }
 
                             var roleAttept = random.Next(settings.MinRoleAtteptCount, settings.MaxRoleAtteptCount);
-                            while (roleAttept > 0)
+                            while ((roleAttept > 0) && (!isUsedNewsMission))
                             {
                                 var setBotClientsRoleConnection = clientCompositeService.SetClientToBot(bot.Id, missions[random.Next(0, missions.Count)].MissionId);
                                 if ((!setBotClientsRoleConnection.HasError) && (setBotClientsRoleConnection.Result != null))
@@ -494,8 +497,9 @@ namespace BotClient.Bussines.Services
             return false;
         }
 
-        public async Task ExecuteNewsMission(Guid WebDriverId, BotNewsMissionConnectorModel BotNewsMissionConnection, int BotId)
+        public async Task<bool> ExecuteNewsMission(Guid WebDriverId, BotNewsMissionConnectorModel BotNewsMissionConnection, int BotId)
         {
+            var result = false;
             try
             {
                 var vkNewsPostVkId = await vkActionService.GoToNewsByLink(WebDriverId, BotNewsMissionConnection.VkLink).ConfigureAwait(false);
@@ -509,27 +513,27 @@ namespace BotClient.Bussines.Services
                         var missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NodeId);
                         while (missionNodes.Count > 0)
                         {
-                            var isSuccess = false;
+                            result = false;
                             switch (missionNodes[0].Type)
                             {
                                 case EnumMissionActionType.SendMessageToPost:
                                     if (missionNodes[0].Text.Length < 1)
                                         missionNodes[0].Text = BotNewsMissionConnection.SendedText;
                                     missionNodes[0].Text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
-                                    isSuccess = await vkActionService.SendMessageToPostNews(WebDriverId, vkNewsPostVkId, missionNodes[0].Text);
+                                    result = await vkActionService.SendMessageToPostNews(WebDriverId, vkNewsPostVkId, missionNodes[0].Text);
                                     missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, missionNodes[0].Text);
                                     break;
                                 case EnumMissionActionType.LikeNewsPost:
-                                    isSuccess = await vkActionService.LikePostNews(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                                    result = await vkActionService.LikePostNews(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
                                     break;
                                 case EnumMissionActionType.RepostNewsPost:
-                                    isSuccess = await vkActionService.RepostPostToSelfPage(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                                    result = await vkActionService.RepostPostToSelfPage(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
                                     break;
                                 default:
                                     break;
                             }
 
-                            if (isSuccess)
+                            if (result)
                             {
                                 missionCompositeService.SetBotNewsMissionConnectionIsComplete(BotNewsMissionConnection.Id, true);
                                 missionCompositeService.SetBotNewsMissionConnectionIsWaiting(BotNewsMissionConnection.Id, false);
@@ -586,6 +590,7 @@ namespace BotClient.Bussines.Services
             {
                 await settingsService.AddLog("BotWorkService", ex);
             }
+            return result;
         }
 
         private async Task<bool> CheckMessage(Guid WebDriverId, int BotId)
