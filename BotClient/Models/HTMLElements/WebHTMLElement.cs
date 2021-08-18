@@ -106,21 +106,14 @@ namespace BotClient.Models.HTMLElements
                 var oldURL = webDriver.Url;
                 try
                 {
-                    element.Click();
+                    //element.Click();
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].click();", element);
                 }
                 catch
                 {
-                    try
-                    {
-                        Actions actions = new Actions(webDriver);
-                        actions.MoveToElement(element).Click().Perform();
-                    }
-                    catch
-                    {
-                        IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
-                        executor.ExecuteScript("arguments[0].click();", element);
-
-                    }
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].click();", element);
                 }
                 if (ClickType == EnumClickType.URLClick)
                 {
