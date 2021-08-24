@@ -61,6 +61,7 @@ namespace BotClient.Settings
             services.AddSingleton<IParsedClientService, ParsedClientService>();
             services.AddSingleton<IBotCustomizeSettingsService, BotCustomizeSettingsService>();
             services.AddSingleton<IBotNewsMissionConnectorService, BotNewsMissionConnectorService>();
+            services.AddSingleton<IBotGroupMissionConnectorService, BotGroupMissionConnectorService>();
 
             return services;
         }

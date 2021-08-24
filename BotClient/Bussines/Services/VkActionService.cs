@@ -2172,17 +2172,31 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
-        public async Task<bool> LikePostNewsComment(Guid WebDriver, string CommentId)
+        public async Task<bool> LikePostNewsComment(Guid WebDriverId, string CommentId)
         {
             var result = false;
             try
             {
-                var likeBtn = await webElementService.GetElementInElement(WebDriver, EnumWebHTMLElementSelector.Id, CommentId, EnumWebHTMLElementSelector.CSSSelector, ".like_btn").ConfigureAwait(false);
+                var likeBtn = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, CommentId, EnumWebHTMLElementSelector.CSSSelector, ".like_btn").ConfigureAwait(false);
                 result = webElementService.ClickToElement(likeBtn, EnumClickType.ElementClick);
             }
             catch (Exception ex)
             {
                 await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
+        public async Task<bool> CreatePostNews(Guid WebDriverId, string Text)
+        {
+            var result = false;
+            try
+            {
+                if (await webElementService.PrintTextToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "post_field", Text).ConfigureAwait(false))
+                    result = await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "send_post", EnumClickType.ElementClick).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
             }
             return result;
         }

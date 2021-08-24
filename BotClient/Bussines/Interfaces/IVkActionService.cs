@@ -85,5 +85,6 @@ namespace BotClient.Bussines.Interfaces
         Task<List<BotVkNewsPostCommentModel>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId);
         Task<bool> SendMessageToPostNews(Guid WebDriverId, string VkId, string Text);
         Task<bool> LikePostNews(Guid WebDriverId, string VkId);
+        Task<bool> CreatePostNews(Guid WebDriverId, string Text);
     }
 }

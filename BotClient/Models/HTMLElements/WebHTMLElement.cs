@@ -106,9 +106,7 @@ namespace BotClient.Models.HTMLElements
                 var oldURL = webDriver.Url;
                 try
                 {
-                    //element.Click();
-                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
-                    executor.ExecuteScript("arguments[0].click();", element);
+                    element.Click();
                 }
                 catch
                 {

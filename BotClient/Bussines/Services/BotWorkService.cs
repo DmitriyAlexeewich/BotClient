@@ -177,12 +177,15 @@ namespace BotClient.Bussines.Services
                             switch (botWorkActionSchedule[0])
                             {
                                 case EnumBotWorkActionType.Client:
+                                    botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнения задания контактёр");
                                     await StartClientMission(WebDriverId, RoleId, botId).ConfigureAwait(false);
                                     bot = botCompositeService.GetBotById(botId);
                                     if (bot.isPrintBlock)
                                         botWorkActionSchedule = new List<EnumBotWorkActionType>();
                                     break;
                                 case EnumBotWorkActionType.Group:
+                                    botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнения задания группа");
+                                    await ExecuteGroupMission(WebDriverId, RoleId, botId).ConfigureAwait(false);
                                     break;
                                 case EnumBotWorkActionType.News:
                                     botCompositeService.CreateBotActionHistory(bot.Id, EnumBotActionType.RoleMission, $"Начало выполнения задания новости");
@@ -250,7 +253,7 @@ namespace BotClient.Bussines.Services
 
             var bot = botCompositeService.GetBotById(BotId);
             var missions = missionCompositeService.GetRoleMissionConnections(RoleId, true);
-            var clientMissions = missions.Select(item => item.MissionType == EnumMissionType.Client);
+            missions.RemoveAll(item => item.MissionType != EnumMissionType.Client);
             
             while (roleAttept > 0)
             {
@@ -539,23 +542,45 @@ namespace BotClient.Bussines.Services
                     if (BotNewsMissionConnection.BotId == BotId)
                     {
                         var missionNodes = missionCompositeService.GetNodes(BotNewsMissionConnection.MissionId, BotNewsMissionConnection.NodeId);
+                        var botActions = botCompositeService.GetBotActionHistory(null, BotId, null, vkNewsPostVkId);
                         while (missionNodes.Count > 0)
                         {
                             var stepResult = false;
                             switch (missionNodes[0].Type)
                             {
                                 case EnumMissionActionType.SendMessageToPost:
+                                    if (botActions.FirstOrDefault(item => item.BotActionType == EnumBotActionType.NewsComment) != null)
+                                    {
+                                        stepResult = true;
+                                        break;
+                                    }
                                     if (missionNodes[0].Text.Length < 1)
                                         missionNodes[0].Text = BotNewsMissionConnection.SendedText;
                                     missionNodes[0].Text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
                                     stepResult = await vkActionService.SendMessageToPostNews(WebDriverId, vkNewsPostVkId, missionNodes[0].Text).ConfigureAwait(false);
+                                    if (stepResult)
+                                        botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.NewsComment, vkNewsPostVkId);
                                     missionCompositeService.SetBotNewsMissionConnectionSendedText(BotNewsMissionConnection.Id, missionNodes[0].Text);
                                     break;
                                 case EnumMissionActionType.LikeNewsPost:
+                                    if (botActions.FirstOrDefault(item => item.BotActionType == EnumBotActionType.NewsLike) != null)
+                                    {
+                                        stepResult = true;
+                                        break;
+                                    }
                                     stepResult = await vkActionService.LikePostNews(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                                    if (stepResult)
+                                        botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.NewsLike, vkNewsPostVkId);
                                     break;
                                 case EnumMissionActionType.RepostNewsPost:
+                                    if (botActions.FirstOrDefault(item => item.BotActionType == EnumBotActionType.NewsRepost) != null)
+                                    {
+                                        stepResult = true;
+                                        break;
+                                    }
                                     stepResult = await vkActionService.RepostPostToSelfPage(WebDriverId, vkNewsPostVkId).ConfigureAwait(false);
+                                    if (stepResult)
+                                        botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.NewsRepost, vkNewsPostVkId);
                                     break;
                                 default:
                                     break;
@@ -619,6 +644,82 @@ namespace BotClient.Bussines.Services
                 }
                 if (stepsResult.IndexOf(false) == -1)
                     result = true;
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("BotWorkService", ex);
+            }
+            return result;
+        }
+
+        private async Task<bool> ExecuteGroupMission(Guid WebDriverId, int RoleId, int BotId)
+        {
+            var result = false;
+            try
+            {
+                var settings = settingsService.GetServerSettings();
+                var roleMissionConnections = missionCompositeService.GetRoleMissionConnections(RoleId, true);
+                roleMissionConnections.RemoveAll(item => item.MissionType != EnumMissionType.Group);
+                if (roleMissionConnections.Count > 0)
+                {
+                    var roleAttept = random.Next(settings.MinGroupRoleAtteptCount, settings.MaxGroupRoleAtteptCount);
+                    while (roleAttept > 0)
+                    {
+                        var randomMissionId = roleMissionConnections[random.Next(0, roleMissionConnections.Count)].MissionId;
+                        var missionNodes = missionCompositeService.GetNodes(randomMissionId);
+                        var stepsResult = new List<bool>();
+                        while (missionNodes.Count > 0)
+                        {
+                            switch (missionNodes[0].Type)
+                            {
+                                case EnumMissionActionType.SearchGroup:
+                                    var botSearchGroupVk = JsonConvert.DeserializeObject<BotSearchGroupVkModel>(missionNodes[0].Text);
+                                    var searchCity = botSearchGroupVk.City[0];
+                                    if (botSearchGroupVk.CityMixType == EnumCityMixType.Random)
+                                        searchCity = botSearchGroupVk.City[random.Next(0, botSearchGroupVk.City.Count)];
+                                    var searchedGroups = await botActionService.SearchGroups(WebDriverId, botSearchGroupVk.KeyWord, 
+                                                                                            botSearchGroupVk.FilteredBySubscribersCount, botSearchGroupVk.SearchGroupType, 
+                                                                                            botSearchGroupVk.Country, searchCity, botSearchGroupVk.isSaftySearch).ConfigureAwait(false);
+                                    var usedBotGroups = missionCompositeService.GetBotGroupMissionConnectionsByBotOrMissionId(BotId, randomMissionId);
+                                    searchedGroups = searchedGroups.Where(item => usedBotGroups.All(item2 => item2.GroupVkId != item.GroupVkId)).ToList();
+                                    searchedGroups = searchedGroups.OrderBy(item => item.SubscribersCount).ToList();
+                                    if (searchedGroups.Count > 0)
+                                    {
+                                        var randomSearchedGroupIndex = random.Next(0, searchedGroups.Count);
+                                        stepsResult.Add(await vkActionService.GoToGroupByVkId(WebDriverId, searchedGroups[randomSearchedGroupIndex].GroupVkId));
+                                        missionCompositeService.CreateBotGroupMissionConnection(RoleId, randomMissionId, BotId, searchedGroups[randomSearchedGroupIndex].GroupVkId, searchCity, "");
+                                    }
+                                    else
+                                        stepsResult.Add(false);
+                                    break;
+                                case EnumMissionActionType.PostNews:
+                                    var text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
+                                    stepsResult.Add(await vkActionService.CreatePostNews(WebDriverId, text).ConfigureAwait(false));
+                                    var missionGroups = missionCompositeService.GetAllBotGroupMissionConnections(RoleId, randomMissionId, BotId);
+                                    if (missionGroups.Count > 0)
+                                        missionCompositeService.SetBotGroupMissionConnectionText(missionGroups[0].Id, text);
+                                    break;
+                                default:
+                                    stepsResult.Add(true);
+                                    break;
+                            }
+                            if (stepsResult[stepsResult.Count - 1])
+                            {
+                                var missionPath = missionNodes[0].Path;
+                                if (missionPath.Length > 0)
+                                    missionPath += ";";
+                                missionPath += missionNodes[0].NodeId;
+                                missionNodes = missionCompositeService.GetNodes(randomMissionId, null, missionPath);
+                            }
+                            else
+                                break;
+                        }
+                        if (stepsResult.IndexOf(false) == -1)
+                            break;
+                        else
+                            roleAttept--;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -1074,7 +1175,7 @@ namespace BotClient.Bussines.Services
 
             var complitedClientRoleActions = clientCompositeService.GetBotClientRoleConnectionsByBotId(BotId).Count(item => item.UpdateDate > StartTime && item.isSuccess);
             var completedNewsRoleActions = missionCompositeService.GetBotNewsMissionConnectionsByBotId(RoleId, BotId).Count(item => item.UpdateDate > StartTime);
-            var completedGroupRoleActions = missionCompositeService.GetBotGroupMissionConnectionsByBotId(RoleId, BotId).Count(item => item.UpdateDate > StartTime);
+            var completedGroupRoleActions = missionCompositeService.GetBotGroupMissionConnectionsByBotId(BotId).Count(item => item.UpdateDate > StartTime);
 
             clientActionCount -= complitedClientRoleActions;
             newsActionCount -= completedNewsRoleActions;
