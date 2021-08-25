@@ -78,7 +78,7 @@ namespace BotClient.Bussines.Services
                 var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
                 var settings = settingsService.GetServerSettings();
                 var browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
-                bots.RemoveAll(item => item.isDead || item.isPrintBlock);
+                bots.RemoveAll(item => item.isDead || item.isPrintBlock || item.hasCaptcha);
                 if (bots.Count > 0)
                 {
                     for (int i = 0; i < browsers.Count; i++)
@@ -642,6 +642,8 @@ namespace BotClient.Bussines.Services
                         }
                     }
                 }
+                else
+                    missionCompositeService.SetBotNewsMissionConnectionNoSuchNews(BotNewsMissionConnection.Id, true);
                 if (stepsResult.IndexOf(false) == -1)
                     result = true;
             }
@@ -695,9 +697,12 @@ namespace BotClient.Bussines.Services
                                 case EnumMissionActionType.PostNews:
                                     var text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
                                     stepsResult.Add(await vkActionService.CreatePostNews(WebDriverId, text).ConfigureAwait(false));
-                                    var missionGroups = missionCompositeService.GetAllBotGroupMissionConnections(RoleId, randomMissionId, BotId);
-                                    if (missionGroups.Count > 0)
-                                        missionCompositeService.SetBotGroupMissionConnectionText(missionGroups[0].Id, text);
+                                    if (stepsResult.IndexOf(false) == -1)
+                                    {
+                                        var missionGroups = missionCompositeService.GetAllBotGroupMissionConnections(RoleId, randomMissionId, BotId);
+                                        if (missionGroups.Count > 0)
+                                            missionCompositeService.SetBotGroupMissionConnectionText(missionGroups[0].Id, text);
+                                    }
                                     break;
                                 default:
                                     stepsResult.Add(true);
@@ -1091,72 +1096,65 @@ namespace BotClient.Bussines.Services
                     waitActions.Add(EnumBotActionType.ListenMusic);
 
                 waitActions = settingsService.Shuffle(waitActions).ToList();
-                waitActions[0] = EnumBotActionType.News;
 
-                for (int i = 0; i < chillActionCount; i++)
+                while (DateTime.Now < nextTime)
                 {
-                    int currentWaitAction = 0;
-                    while (DateTime.Now < nextTime)
+                    if ((!IsSkipSecondAction) && (waitActions.Count > 0))
                     {
-                        if (!IsSkipSecondAction)
+                        int startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
+                        switch (waitActions[0])
                         {
-                            var waitAction = waitActions[currentWaitAction];
-                            int startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
-                            switch (waitAction)
-                            {
-                                case EnumBotActionType.ListenMusic:
-                                    botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic, $"Переход к музыкальному каталогу");
-                                    var botMusic = botCompositeService.GetBotMusic(BotId);
-                                    var botVkMusic = await botActionService.StartMusic(WebDriverId, botMusic).ConfigureAwait(false);
-                                    if (botVkMusic != null)
+                            case EnumBotActionType.ListenMusic:
+                                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.ListenMusic, $"Переход к музыкальному каталогу");
+                                var botMusic = botCompositeService.GetBotMusic(BotId);
+                                var botVkMusic = await botActionService.StartMusic(WebDriverId, botMusic).ConfigureAwait(false);
+                                if (botVkMusic != null)
+                                {
+                                    if (botMusic.Count(item => item.CreateDate > currentDay) > settings.MusicAddPerDay)
                                     {
-                                        if (botMusic.Count(item => item.CreateDate > currentDay) > settings.MusicAddPerDay)
-                                        {
-                                            botCompositeService.CreateBotMusic(BotId, botVkMusic.Artist, botVkMusic.SongName);
-                                            await botActionService.AddMusic(WebDriverId).ConfigureAwait(false);
-                                        }
-                                        await botActionService.StopMusic(WebDriverId, startDialogCount).ConfigureAwait(false);
+                                        botCompositeService.CreateBotMusic(BotId, botVkMusic.Artist, botVkMusic.SongName);
+                                        await botActionService.AddMusic(WebDriverId).ConfigureAwait(false);
                                     }
-                                    break;
-                                case EnumBotActionType.WatchVideo:
-                                    botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.WatchVideo, $"Переход к видеокаталогу");
-                                    var searchWordId = botActionService.GetSearchVideoWordId(botCompositeService.GetBotVideos(BotId), videoDictionaryService.GetMaxId());
-                                    var searchWords = videoDictionaryService.GetAll(searchWordId, 1);
-                                    var botVkVideo = await botActionService.StartVideo(WebDriverId, searchWords).ConfigureAwait(false);
-                                    if (botVkVideo != null)
-                                    {
-                                        if (random.Next(0, 100) < settings.VideoAddChancePerDay)
-                                            botVkVideo.BotVideo.isAdded = true;
-                                        if (random.Next(0, 100) < settings.VideoSubscribePerDay)
-                                            botVkVideo.BotVideo.isSubscribed = true;
-                                        botCompositeService.CreateBotVideos(BotId, searchWords[0].Id, botVkVideo.BotVideo.URL, botVkVideo.BotVideo.isAdded, botVkVideo.BotVideo.isSubscribed);
-                                        await botActionService.StopVideo(WebDriverId, botVkVideo, startDialogCount).ConfigureAwait(false);
-                                    }
-                                    break;
-                                case EnumBotActionType.News:
-                                    botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.WatchVideo, $"Просмотр новостей");
-                                    var botNews = botCompositeService.GetBotNews(BotId);
-                                    botNews.RemoveAll(item => item.UpdateDate < currentDay);
-                                    var botVkNews = await botActionService.StartReadNews(WebDriverId, botNews).ConfigureAwait(false);
-                                    if (botVkNews != null)
-                                    {
-                                        if (random.Next(0, 100) < settings.LikeChance)
-                                            botVkNews.BotNews.isLiked = true;
-                                        if ((random.Next(0, 100) < settings.RepostChancePerDay) && (botNews.Count(item => item.isReposted) <= settings.RepostMaxCountPerDay))
-                                            botVkNews.BotNews.isReposted = true;
-                                        if (random.Next(0, 100) < settings.SubscribeChancePerDay)
-                                            botVkNews.BotNews.isSubscribe = true;
-                                        botVkNews = await botActionService.StopReadNews(WebDriverId, botVkNews, startDialogCount).ConfigureAwait(false);
-                                        botCompositeService.CreateBotNews(BotId, botVkNews.BotNews.NewsId, botVkNews.BotNews.isLiked, botVkNews.BotNews.isReposted, botVkNews.BotNews.isSubscribe);
-                                    }
-                                    break;
-                            }
+                                    await botActionService.StopMusic(WebDriverId, startDialogCount).ConfigureAwait(false);
+                                }
+                                break;
+                            case EnumBotActionType.WatchVideo:
+                                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.WatchVideo, $"Переход к видеокаталогу");
+                                var searchWordId = botActionService.GetSearchVideoWordId(botCompositeService.GetBotVideos(BotId), videoDictionaryService.GetMaxId());
+                                var searchWords = videoDictionaryService.GetAll(searchWordId, 1);
+                                var botVkVideo = await botActionService.StartVideo(WebDriverId, searchWords).ConfigureAwait(false);
+                                if (botVkVideo != null)
+                                {
+                                    if (random.Next(0, 100) < settings.VideoAddChancePerDay)
+                                        botVkVideo.BotVideo.isAdded = true;
+                                    if (random.Next(0, 100) < settings.VideoSubscribePerDay)
+                                        botVkVideo.BotVideo.isSubscribed = true;
+                                    botCompositeService.CreateBotVideos(BotId, searchWords[0].Id, botVkVideo.BotVideo.URL, botVkVideo.BotVideo.isAdded, botVkVideo.BotVideo.isSubscribed);
+                                    await botActionService.StopVideo(WebDriverId, botVkVideo, startDialogCount).ConfigureAwait(false);
+                                }
+                                break;
+                            case EnumBotActionType.News:
+                                botCompositeService.CreateBotActionHistory(BotId, EnumBotActionType.WatchVideo, $"Просмотр новостей");
+                                var botNews = botCompositeService.GetBotNews(BotId);
+                                botNews.RemoveAll(item => item.UpdateDate < currentDay);
+                                var botVkNews = await botActionService.StartReadNews(WebDriverId, botNews).ConfigureAwait(false);
+                                if (botVkNews != null)
+                                {
+                                    if (random.Next(0, 100) < settings.LikeChance)
+                                        botVkNews.BotNews.isLiked = true;
+                                    if ((random.Next(0, 100) < settings.RepostChancePerDay) && (botNews.Count(item => item.isReposted) <= settings.RepostMaxCountPerDay))
+                                        botVkNews.BotNews.isReposted = true;
+                                    if (random.Next(0, 100) < settings.SubscribeChancePerDay)
+                                        botVkNews.BotNews.isSubscribe = true;
+                                    botVkNews = await botActionService.StopReadNews(WebDriverId, botVkNews, startDialogCount).ConfigureAwait(false);
+                                    botCompositeService.SetBotHasCapthca(BotId, botVkNews.hasCaptcha);
+                                    botCompositeService.CreateBotNews(BotId, botVkNews.BotNews.NewsId, botVkNews.BotNews.isLiked, botVkNews.BotNews.isReposted, botVkNews.BotNews.isSubscribe);
+                                }
+                                break;
                         }
-                        await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
-                        currentWaitAction++;
-                        if (currentWaitAction >= waitActions.Count)
-                            currentWaitAction = 0;
+                        waitActions.RemoveAt(0);
                     }
+                    await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

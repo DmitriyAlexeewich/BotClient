@@ -246,7 +246,7 @@ namespace BotClient.Bussines.Services
                                 ".audio_page_player_title_song_title", true).ConfigureAwait(false);
                             if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                             {
-                                var musicLoadingWaitingTime = settingsService.GetServerSettings().MusicLoadingWaitingTime;
+                                var musicLoadingWaitingTime = settingsService.GetServerSettings().MusicLoadingWaitingTimeInMinutes * 60000;
                                 var music = await GetMusic(WebDriverId, currentSongName).ConfigureAwait(false);
                                 for (int i = 0; i < 60; i++)
                                 {
@@ -497,7 +497,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var videosContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "video_search_global_videos_list").ConfigureAwait(false);
-                var waitingVideo = settingsService.GetServerSettings().VideoWaitingTime;
+                var waitingVideo = settingsService.GetServerSettings().VideoWaitingTimeInMinutes * 60000;
                 while (waitingVideo > 0)
                 {
                     var videos = webElementService.GetChildElements(videosContainer, EnumWebHTMLElementSelector.CSSSelector, ".video_item__thumb_link");
@@ -2012,6 +2012,10 @@ namespace BotClient.Bussines.Services
                         settingsService.WaitTime(60000);
                     }
                 }
+                var errorElement = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".message_page_body").ConfigureAwait(false);
+                var errorText = webElementService.GetElementINNERText(errorElement);
+                if ((errorText != null) && (errorText.IndexOf("найдена") != -1))
+                    result = "";
             }
             catch (Exception ex)
             {
@@ -2298,13 +2302,10 @@ namespace BotClient.Bussines.Services
             var result = false;
             try
             {
-                if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "validation_skip").ConfigureAwait(false))
+                for (int i = 0; i < 10; i++)
                 {
-                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "validation_skip", EnumClickType.ElementClick).ConfigureAwait(false))
-                    {
-                        await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".popup_box_container").ConfigureAwait(false);
-                        result = true;
-                    }
+                    settingsService.WaitTime(1000);
+                    result = await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "validation_phone").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

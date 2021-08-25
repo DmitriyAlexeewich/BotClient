@@ -341,7 +341,7 @@ namespace BotClient.Bussines.Services
             {
                 var settings = settingsService.GetServerSettings();
 
-                var waitingTime = settings.VideoWaitingTime + random.Next(-settings.VideoWaitingDeltaTime, settings.VideoWaitingDeltaTime);
+                var waitingTime = (settings.VideoWaitingTimeInMinutes + random.Next(-settings.VideoWaitingDeltaTimeInMinutes, settings.VideoWaitingDeltaTimeInMinutes)) * 60000;
                 if (BotVideo.BotVideo.isAdded)
                     await vkActionService.AddVideo(WebDriverId).ConfigureAwait(false);
                 if (BotVideo.BotVideo.isSubscribed)
@@ -390,7 +390,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var settings = settingsService.GetServerSettings();
-                var waitingTime = settings.MusicWaitingTime + random.Next(-settings.MusicWaitingDeltaTime, settings.MusicWaitingDeltaTime);
+                var waitingTime = (settings.MusicWaitingTimeInMinutes + random.Next(-settings.MusicWaitingDeltaTimeInMinutes, settings.MusicWaitingDeltaTimeInMinutes)) * 60000;
                 result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
                 await vkActionService.StopMusic(WebDriverId).ConfigureAwait(false);
             }
@@ -455,13 +455,21 @@ namespace BotClient.Bussines.Services
             var result = false;
             try
             {
+                BotNews.hasCaptcha = false;
                 var settings = settingsService.GetServerSettings();
                 BotNews.NewsElement.ScrollTo();
+                
                 if (BotNews.BotNews.isLiked)
                     BotNews.BotNews.isLiked = await vkActionService.LikePostNews(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
-                if (BotNews.BotNews.isReposted)
+                BotNews.hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
+                
+                if ((BotNews.BotNews.isReposted) && (!BotNews.hasCaptcha))
                     BotNews.BotNews.isReposted = await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
-                var waitingTime = settings.NewsWaitingTime + random.Next(-settings.NewsWaitingDeltaTime, settings.NewsWaitingDeltaTime);
+                
+                if(!BotNews.hasCaptcha)
+                    BotNews.hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
+
+                var waitingTime = (settings.NewsWaitingTimeInMinutes + random.Next(-settings.NewsWaitingDeltaTimeInMinutes, settings.NewsWaitingDeltaTimeInMinutes)) * 60000;
                 result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
             }
             catch (Exception ex)

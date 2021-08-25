@@ -523,7 +523,16 @@ namespace BotClient.Bussines.Services
                         if (loadResult == EnumWebHTMLPageStatus.Ready)
                         {
                             webDriver.Status = EnumWebDriverStatus.Blocked;
-                            return true;
+                            switch (webDriver.WebDriverPlatform)
+                            {
+                                case EnumSocialPlatform.Vk:
+                                    var body = await GetElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body").ConfigureAwait(false);
+                                    if ((body != null) && (body.GetAttributeValue("style").IndexOf("error404") == -1))
+                                        return true;
+                                    else
+                                        await GoToMainPage(WebDriverId).ConfigureAwait(false);
+                                    break;
+                            }
                         }
                     }
                 }
