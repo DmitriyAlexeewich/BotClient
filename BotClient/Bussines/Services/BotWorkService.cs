@@ -662,6 +662,7 @@ namespace BotClient.Bussines.Services
                 var settings = settingsService.GetServerSettings();
                 var roleMissionConnections = missionCompositeService.GetRoleMissionConnections(RoleId, true);
                 roleMissionConnections.RemoveAll(item => item.MissionType != EnumMissionType.Group);
+
                 if (roleMissionConnections.Count > 0)
                 {
                     var roleAttept = random.Next(settings.MinGroupRoleAtteptCount, settings.MaxGroupRoleAtteptCount);
@@ -703,6 +704,32 @@ namespace BotClient.Bussines.Services
                                         if (missionGroups.Count > 0)
                                             missionCompositeService.SetBotGroupMissionConnectionText(missionGroups[0].Id, text);
                                     }
+                                    break;
+                                case EnumMissionActionType.RandomNewsAction:
+                                    var botPosts = botCompositeService.GetBotNews(BotId);
+                                    var posts = await vkActionService.GetPosts(WebDriverId).ConfigureAwait(false);
+                                    for (int i = 0; i < posts.Count; i++)
+                                    {
+                                        var post = posts[random.Next(0, posts.Count)];
+                                        if (botPosts.FirstOrDefault(item => item.NewsId == post.PostId) == null)
+                                        {
+                                            switch (random.Next(0, 3))
+                                            {
+                                                case 0:
+                                                    await vkActionService.LikePostNews(WebDriverId, post.PostId).ConfigureAwait(false);
+                                                    break;
+                                                case 1:
+                                                    await vkActionService.RepostPostToSelfPage(WebDriverId, post.PostId).ConfigureAwait(false);
+                                                    break;
+                                                case 2:
+                                                    await vkActionService.LikePostNews(WebDriverId, post.PostId).ConfigureAwait(false);
+                                                    await vkActionService.RepostPostToSelfPage(WebDriverId, post.PostId).ConfigureAwait(false);
+                                                    break;
+                                            }
+                                            botCompositeService.CreateBotNews(BotId, post.PostId, )
+                                        }
+                                    }
+
                                     break;
                                 default:
                                     stepsResult.Add(true);
