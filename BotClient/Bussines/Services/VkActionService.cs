@@ -7,6 +7,7 @@ using BotClient.Models.Client;
 using BotClient.Models.HTMLElements;
 using BotClient.Models.HTMLElements.Enumerators;
 using BotDataModels.Bot;
+using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
 using OpenQA.Selenium;
 using System;
@@ -232,14 +233,14 @@ namespace BotClient.Bussines.Services
         {
             try
             {
-                var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._audio_section_tab__for_you._audio_section_tab__recoms",
+                var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._audio_section_tab._audio_section_tab__for_you._audio_section_tab__recoms",
                                                                             EnumWebHTMLElementSelector.CSSSelector, ".ui_tab");
                 if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                 {
                     if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you").ConfigureAwait(false))
                     {
                         element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you",
-                                                                  EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
+                                                                  EnumWebHTMLElementSelector.CSSSelector, ".audio_pl__cover").ConfigureAwait(false);
                         if (element != null)
                         {
                             var currentSongName = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
@@ -313,10 +314,9 @@ namespace BotClient.Bussines.Services
             {
                 if (random.Next(1, 10) > 5)
                 {
-                    var element = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".CatalogSection.CatalogSection--divided.CatalogSection__for_you",
-                                                                             EnumWebHTMLElementSelector.CSSSelector, ".flat_button.primary").ConfigureAwait(false);
-                    var addBtnAttribute = webElementService.GetAttributeValue(element, "class");
-                    if (addBtnAttribute.IndexOf("audio_row__added") == -1)
+                    var element = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add").ConfigureAwait(false);
+                    var addBtnAttribute = webElementService.GetAttributeValue(element, "style");
+                    if (addBtnAttribute.IndexOf("none") == -1)
                         await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "add", EnumClickType.ElementClick).ConfigureAwait(false);
                     result.hasError = false;
                     result.ActionResultMessage = EnumActionResult.Success;
@@ -742,7 +742,7 @@ namespace BotClient.Bussines.Services
                                                                             "page_wall_posts", EnumWebHTMLElementSelector.CSSSelector, "._post_content").ConfigureAwait(false);
                 if (element != null)
                 {
-                    element = webElementService.GetElementInElement(element, EnumWebHTMLElementSelector.CSSSelector, ".like_btn.like._like");
+                    element = webElementService.GetElementInElement(element, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.PostButtonReactions.PostButtonReactions--post");
                     if (webElementService.ClickToElement(element, EnumClickType.ElementClick))
                     {
                         result = new AlgoritmResult()
@@ -1190,7 +1190,7 @@ namespace BotClient.Bussines.Services
                     webElementService.ClearElement(inputElement);
                     webElementService.PrintTextToElement(inputElement, MessageText);
                     if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector,
-                        ".im-send-btn.im-chat-input--send._im_send.im-send-btn_send", EnumClickType.ElementClick).ConfigureAwait(false))
+                        ".im-send-btn.im-chat-input--send", EnumClickType.ElementClick).ConfigureAwait(false))
                         sendResult = true;
                     else if (webElementService.SendKeyToElement(inputElement, Keys.Return))
                         sendResult = true;
@@ -1589,17 +1589,11 @@ namespace BotClient.Bussines.Services
                     var postId = webElementService.GetAttributeValue(posts[i], "data-post-id");
                     int rating = 0;
                     var ratingContainer = webElementService.GetElementInElement(posts[i], EnumWebHTMLElementSelector.CSSSelector, ".like_btns");
-                    var t = webElementService.GetElementINNERText(ratingContainer, true);
-                    var ratingComponents = webElementService.GetChildElements(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".like_btn");
-                    for (int j = 0; j < ratingComponents.Count; j++)
-                    {
-                        if (webElementService.GetAttributeValue(ratingComponents[j], "class").IndexOf("_like") != -1)
-                            rating += await GetRating(ratingComponents[j]).ConfigureAwait(false);
-                        if (webElementService.GetAttributeValue(ratingComponents[j], "class").IndexOf("_comment") != -1)
-                            rating += await GetRating(ratingComponents[j]).ConfigureAwait(false) * 100;
-                        if (webElementService.GetAttributeValue(ratingComponents[j], "class").IndexOf("_share") != -1)
-                            rating += await GetRating(ratingComponents[j]).ConfigureAwait(false) * 10;
-                    }
+
+                    rating += await GetRating(webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomActionContainer.PostButtonReactionsContainer")).ConfigureAwait(false);
+                    rating += await GetRating(webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.comment._comment._reply_wrap.empty")).ConfigureAwait(false) * 100;
+                    rating += await GetRating(webElementService.GetElementInElement(ratingContainer, EnumWebHTMLElementSelector.CSSSelector, ".PostBottomAction.share._share.empty")).ConfigureAwait(false) * 10;
+
                     result.Add(new PlatformPostModel(postId, posts[i], rating));
                 }
             }
@@ -2003,7 +1997,7 @@ namespace BotClient.Bussines.Services
                     var newsContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, "._post").ConfigureAwait(false);
                     for (int i = 0; i < 5; i++)
                     {
-                        var sendBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".reply_send_button").ConfigureAwait(false);
+                        var sendBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".like_btns").ConfigureAwait(false);
                         if (sendBtn != null)
                         {
                             result = webElementService.GetAttributeValue(newsContainer, "data-post-id");
@@ -2205,16 +2199,86 @@ namespace BotClient.Bussines.Services
             return result;
         }
 
+        public async Task<bool> SwitchAccess(Guid WebDriverId, EnumAccessProfileType AccessProfileType)
+        {
+            var result = false;
+            try
+            {
+                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_profile_link", EnumClickType.ElementClick).ConfigureAwait(false))
+                {
+                    settingsService.WaitTime(60000);
+                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "top_settings_link", EnumClickType.URLClick).ConfigureAwait(false))
+                    {
+                        settingsService.WaitTime(60000);
+                        if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "ui_rmenu_privacy", EnumClickType.URLClick).ConfigureAwait(false))
+                        {
+                            if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "privacy_edit_profile_closed", EnumClickType.ElementClick).ConfigureAwait(false))
+                            {
+                                var switchAccessTypeBtn = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.Id, "privacy_edit_profile_closed").ConfigureAwait(false);
+                                var switchAccessTypeBtnInnerText = webElementService.GetElementINNERText(switchAccessTypeBtn, true);
+                                if ((AccessProfileType == EnumAccessProfileType.SetHide) && (switchAccessTypeBtnInnerText.IndexOf("акрыт") == -1))
+                                {
+                                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "privacy_item1", EnumClickType.ElementClick))
+                                    {
+                                        var saveBtnContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".box_controls").ConfigureAwait(false);
+                                        for (int i = 0; i < 60; i++)
+                                        {
+                                            saveBtnContainer = await webDriverService.GetElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".box_controls").ConfigureAwait(false);
+                                            if (saveBtnContainer != null)
+                                                break;
+                                            else
+                                                settingsService.WaitTime(1000);
+                                        }
+                                        if (saveBtnContainer != null)
+                                        {
+                                            var saveBtns = webElementService.GetChildElements(saveBtnContainer, EnumWebHTMLElementSelector.CSSSelector, ".flat_button");
+                                            for (int i = 0; i < saveBtns.Count; i++)
+                                            {
+                                                string btnText = webElementService.GetElementINNERText(saveBtns[i], true);
+                                                if (btnText.IndexOf("Отмена") == -1)
+                                                {
+                                                    if (webElementService.ClickToElement(saveBtns[i], EnumClickType.ElementClick))
+                                                    {
+                                                        result = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                else if ((AccessProfileType == EnumAccessProfileType.SetOpen) && (switchAccessTypeBtnInnerText.IndexOf("ткрыт") == -1))
+                                {
+                                    if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.Id, "privacy_item0", EnumClickType.ElementClick))
+                                        result = true;
+                                }
+                                else
+                                    result = true;                                
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await settingsService.AddLog("VkActionService", ex);
+            }
+            return result;
+        }
+
         private async Task<int> GetRating(WebHTMLElement Element)
         {
             var result = 0;
             try
             {
-                var innerText = webElementService.GetElementINNERText(Element, true);
-                if ((innerText != null) && (int.TryParse(Regex.Replace(innerText, "(?:[^0-9]|(?<=['\"])s)", ""), out result)))
+                if (Element != null)
                 {
-                    if (innerText.IndexOf("K") != -1)
-                        result *= 1000;
+                    var innerText = webElementService.GetElementINNERText(Element, true);
+                    if ((innerText != null) && (int.TryParse(Regex.Replace(innerText, "(?:[^0-9]|(?<=['\"])s)", ""), out result)))
+                    {
+                        if (innerText.IndexOf("K") != -1)
+                            result *= 1000;
+                    }
                 }
             }
             catch (Exception ex)

@@ -137,6 +137,18 @@ namespace BotClient.Bussines.Services
                             }
                         }
 
+                        if ((bot.AccessProfileType == EnumAccessProfileType.SetHide) || (bot.AccessProfileType == EnumAccessProfileType.SetOpen))
+                        {
+                            var switchAccessResult = await vkActionService.SwitchAccess(WebDriverId, bot.AccessProfileType).ConfigureAwait(false);
+                            if (switchAccessResult)
+                            {
+                                if (bot.AccessProfileType == EnumAccessProfileType.SetHide)
+                                    botCompositeService.SetBotAccessProfileType(botId, EnumAccessProfileType.Hided, true);
+                                else
+                                    botCompositeService.SetBotAccessProfileType(botId, EnumAccessProfileType.Opened, true);
+                            }
+                        }
+
                         if (bot.FullName.Length < 1)
                         {
                             bot.FullName = await botActionService.GetBotFullName(WebDriverId).ConfigureAwait(false);
@@ -726,7 +738,6 @@ namespace BotClient.Bussines.Services
                                                     await vkActionService.RepostPostToSelfPage(WebDriverId, post.PostId).ConfigureAwait(false);
                                                     break;
                                             }
-                                            botCompositeService.CreateBotNews(BotId, post.PostId, )
                                         }
                                     }
 

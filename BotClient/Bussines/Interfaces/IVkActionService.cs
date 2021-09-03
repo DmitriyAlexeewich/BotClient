@@ -5,6 +5,7 @@ using BotClient.Models.Bot.Work.Enumerators;
 using BotClient.Models.Client;
 using BotClient.Models.HTMLElements;
 using BotDataModels.Bot;
+using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
 using System;
 using System.Collections.Generic;
@@ -86,5 +87,6 @@ namespace BotClient.Bussines.Interfaces
         Task<bool> SendMessageToPostNews(Guid WebDriverId, string VkId, string Text);
         Task<bool> LikePostNews(Guid WebDriverId, string VkId);
         Task<bool> CreatePostNews(Guid WebDriverId, string Text);
+        Task<bool> SwitchAccess(Guid WebDriverId, EnumAccessProfileType AccessProfileType);
     }
 }
