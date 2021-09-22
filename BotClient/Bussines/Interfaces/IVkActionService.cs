@@ -49,8 +49,9 @@ namespace BotClient.Bussines.Interfaces
         Task<AlgoritmResult> Repost(Guid WebDriverId, EnumRepostType RepostType);
         Task<bool> RepostPostToSelfPage(Guid WebDriverId, string VkId);
         Task<bool> LikePostNewsComment(Guid WebDriver, string CommentId);
-        Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, int RoleId, int DialogId, bool? isSecond = false);
-        Task<AlgoritmResult> CheckIsSended(Guid WebDriverId, string ClientVkId, int RoleId, int DialogId, bool isMarked);
+        Task<bool> PlayPostNewsVideo(Guid WebDriverId);
+        Task<AlgoritmResult> SendFirstMessage(Guid WebDriverId, string MessageText, int RoleId, int MissionId, int DialogId, bool? isSecond = false);
+        Task<AlgoritmResult> CheckIsSended(Guid WebDriverId, string ClientVkId, int RoleId, int MissionId, int DialogId, bool isMarked);
         Task<AlgoritmResult> GoToDialog(Guid WebDriverId, string ClientVkId);
         Task<List<DialogWithNewMessagesModel>> GetDialogsWithNewMessages(Guid WebDriverId);
         Task CloseDialog(Guid WebDriverId);
@@ -86,7 +87,7 @@ namespace BotClient.Bussines.Interfaces
         Task<List<BotVkNewsPostCommentModel>> GetNewsPostComments(Guid WebDriverId, string NewsPostVkId);
         Task<bool> SendMessageToPostNews(Guid WebDriverId, string VkId, string Text);
         Task<bool> LikePostNews(Guid WebDriverId, string VkId);
-        Task<bool> CreatePostNews(Guid WebDriverId, string Text);
+        Task<bool> CreatePostNews(Guid WebDriverId, string Text, string FilePath = "");
         Task<bool> SwitchAccess(Guid WebDriverId, EnumAccessProfileType AccessProfileType);
     }
 }

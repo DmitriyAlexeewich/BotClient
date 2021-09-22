@@ -1,17 +1,12 @@
 ﻿using BotClient.Bussines.Interfaces;
-using BotClient.Models.Enumerators;
-using BotClient.Models.HTMLElements;
-using BotClient.Models.WebReports;
-using BotDataModels.Bot.Enumerators;
-using BotDataModels.Client;
+using BotClient.Models.FileSystem.Enumerators;
+using BotDataModels.Role.Enumerators;
 using BotDataModels.Settings;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,169 +16,165 @@ namespace BotClient.Bussines.Services
     public class SettingsService : ISettingsService
     {
         private readonly IConfiguration configuration;
+        private readonly IFileSystemService fileSystemService;
 
-        public SettingsService(IConfiguration Configuration)
+        public SettingsService(IConfiguration Configuration, IFileSystemService FileSystemService)
         {
             configuration = Configuration;
-            configurationFilePath = configuration.GetSection("ConfigurationFilePath").Value;
-            errorLogFilePath = configuration.GetSection("ErrorLogFilePath").Value;
-            algoritmFilePath = configuration.GetSection("AlgoritmFilePath").Value;
-            screenshotPath = configuration.GetSection("ScreenshotPath").Value;
-            errorWebElementLogFilePath = configuration.GetSection("ErrorWebElementLogFilePath").Value;
-            passwordConstructorString = configuration.GetSection("PasswordConstructorString").Value;
-            CreateConfigurationFile();
-            CreateErrorLogFile();
-            CreateScreenshotFolder();
+            fileSystemService = FileSystemService;
         }
 
         private Random random = new Random();
-        private WebConnectionSettings webConnectionSettings = new WebConnectionSettings();
-        private string configurationFilePath = string.Empty;
-        private string errorLogFilePath = string.Empty;
-        private string errorWebElementLogFilePath = string.Empty;
-        private string algoritmFilePath = string.Empty;
-        private string screenshotPath = string.Empty;
-        private string passwordConstructorString = string.Empty;
 
         public WebConnectionSettings GetServerSettings()
         {
-            CreateConfigurationFile();
+            var webConnectionSettingsFilePath = fileSystemService.GetBasicFilePath(EnumBasicDirectoryType.Configuration, "Configuration.json");
+            var webConnectionSettings = new WebConnectionSettings();
+            if (webConnectionSettingsFilePath.isFileExist)
+                webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(webConnectionSettingsFilePath.FilePath));
+            else
+            {
+                fileSystemService.CreateFile(webConnectionSettingsFilePath.FilePath, JsonConvert.SerializeObject(webConnectionSettings));
+                webConnectionSettingsFilePath = fileSystemService.GetBasicFilePath(EnumBasicDirectoryType.Configuration, "Configuration.json");
+                if(webConnectionSettingsFilePath.isFileExist)
+                    webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(webConnectionSettingsFilePath.FilePath));
+            }
             return webConnectionSettings;
         }
 
-        public async Task<bool> AddLog(string CodeFileName, Exception Ex)
+        public async void AddLog(string CodeFileName, Exception ExceptionText)
         {
             try
             {
-                CreateErrorLogFile();
-                if (File.Exists(errorLogFilePath))
+                var fileName = DateTime.Now.ToString("yyyy_MM_dd") + ".txt";
+                var debugLogFilePath = fileSystemService.GetBasicFilePath(EnumBasicDirectoryType.DebugLog, fileName);
+                fileSystemService.AddTextToFile(debugLogFilePath.FilePath, 
+                                                Environment.NewLine + DateTime.Now.ToString("HH:mm:ss") + " ---> " + CodeFileName + ".cs --- " +
+                                                Environment.NewLine + ExceptionText.ToString() +
+                                                Environment.NewLine + "--------------------" + Environment.NewLine + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                AddLog("SettingsService", ex);
+            }
+        }
+
+        public async void AddElementLog(string Selector, string Link)
+        {
+            try
+            {
+                var fileName = DateTime.Now.ToString("yyyy_MM_dd") + ".txt";
+                var elementLogDirectoryPath = fileSystemService.GetBasicDirectoriesPath(EnumBasicDirectoryType.ElementLog);
+                if (elementLogDirectoryPath.isDirectoryExist)
                 {
-                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.Now + " --- " + CodeFileName + ".cs --- " + Environment.NewLine + Ex.ToString());
-                    return true;
+                    var elementLogFiles = fileSystemService.GetFiles(elementLogDirectoryPath.DirectoryPath, "*.txt", null, DateTime.Now.AddDays(-7));
+                    for (int i = 0; i < elementLogFiles.Count; i++)
+                        fileSystemService.DeleteFile(elementLogFiles[i].FilePath);
+                    var elementLogFilePath = fileSystemService.GetFile(elementLogDirectoryPath + fileName);
+                    fileSystemService.AddTextToFile(elementLogFilePath.FilePath, 
+                                                    Environment.NewLine + DateTime.Now.ToString("HH:mm:ss") + " ---> " + Selector + " --- " +
+                                                    Environment.NewLine + Link +
+                                                    Environment.NewLine + "--------------------" + Environment.NewLine + Environment.NewLine);
                 }
             }
             catch (Exception ex)
             {
                 AddLog("SettingsService", ex);
             }
-            return false;
         }
 
-        public async Task<bool> AddLog(string CodeFileName, string Ex)
+        public async void AddMissionLog(EnumMissionActionType MissionActionType, string Text)
         {
             try
             {
-                CreateErrorLogFile();
-                if (File.Exists(errorLogFilePath))
+                var fileName = DateTime.Now.ToString("yyyy_MM_dd") + ".txt";
+                var elementLogDirectoryPath = fileSystemService.GetBasicDirectoriesPath(EnumBasicDirectoryType.MissionLog);
+                if (elementLogDirectoryPath.isDirectoryExist)
                 {
-                    File.AppendAllText(@errorLogFilePath, Environment.NewLine + DateTime.Now + " --- " + CodeFileName + ".cs --- " + Environment.NewLine + Ex);
-                    return true;
+                    var elementLogFiles = fileSystemService.GetFiles(elementLogDirectoryPath.DirectoryPath, "*.txt", null, DateTime.Now.AddDays(-7));
+                    for (int i = 0; i < elementLogFiles.Count; i++)
+                        fileSystemService.DeleteFile(elementLogFiles[i].FilePath);
+                    var elementLogFilePath = fileSystemService.GetFile(elementLogDirectoryPath + fileName);
+                    fileSystemService.AddTextToFile(elementLogFilePath.FilePath, 
+                                                    Environment.NewLine + DateTime.Now.ToString("HH:mm:ss") + " ---> " + MissionActionType.ToString("g") + " --- " +
+                                                    Environment.NewLine + Text +
+                                                    Environment.NewLine + "--------------------" + Environment.NewLine + Environment.NewLine);
                 }
             }
             catch (Exception ex)
             {
                 AddLog("SettingsService", ex);
             }
-            return false;
         }
 
-        public async Task<bool> AddWebElementLog(string Selector, string Link)
+        public string GetScreenshotFolderPath(int RoleId, int MissionId, int ConnectionId)
         {
+            var result = "";
             try
             {
-                CreateErrorWebElementLogFile();
-                if (File.Exists(errorWebElementLogFilePath))
+                var screenshotFolderPath = fileSystemService.GetBasicDirectoriesPath(EnumBasicDirectoryType.Screenshot);
+                if (screenshotFolderPath.isDirectoryExist)
                 {
-                    File.AppendAllText(errorWebElementLogFilePath, Environment.NewLine + DateTime.Now + " --- " + Selector + " ---- " + Link + " --- " + Environment.NewLine);
-                    return true;
+                    screenshotFolderPath = fileSystemService.GetDiretory(screenshotFolderPath.DirectoryPath + $"{RoleId}\\{MissionId}\\{ConnectionId}");
+                    if (screenshotFolderPath.isDirectoryExist)
+                        result = screenshotFolderPath.DirectoryPath;
                 }
             }
             catch (Exception ex)
             {
                 AddLog("SettingsService", ex);
             }
-            return false;
+            return result;
         }
 
-        //!--
-        public async Task<List<string>> GetLogLines()
+        public void ClearChromeDriverFolder()
         {
             try
             {
-                CreateErrorLogFile();
-                var result = new List<string>();
-                if (!File.Exists(errorLogFilePath))
+                var chromeDriverDirectories = fileSystemService.GetDirectories("C:\\Users\\Administrator\\AppData\\Local\\Temp");
+                for (int i = 0; i < chromeDriverDirectories.Count; i++)
                 {
-                    result = File.ReadAllLines(@errorLogFilePath).ToList();
-                    return result;
-                }
-                return result;
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-            return new List<string>();
-        }
-
-        public async Task<SettingsReport> AddUpdateAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform, List<WebHTMLElementModel> Algoritm)
-        {
-            try
-            {
-
-                var algoritmJSONFilePath = algoritmFilePath + Platform.ToString() + "\\" + AlgoritmName.ToString() + ".json";
-                if (!File.Exists(algoritmJSONFilePath))
-                    Directory.CreateDirectory(Path.GetDirectoryName(algoritmJSONFilePath));
-                File.WriteAllText(@algoritmJSONFilePath, JsonConvert.SerializeObject(Algoritm));
-                return new SettingsReport();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-                return new SettingsReport()
-                {
-                    HasError = true,
-                    ExceptionMessage = ex.Message
-                };
-            }
-        }
-
-        public async Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform)
-        {
-            try
-            {
-                var algoritmJSONFilePath = algoritmFilePath + Platform.ToString() + "\\" + AlgoritmName.ToString() + ".json";
-                if (File.Exists(algoritmJSONFilePath))
-                {
-                    return JsonConvert.DeserializeObject<List<WebHTMLElementModel>>(File.ReadAllText(algoritmJSONFilePath));
+                    var directoryName = Path.GetDirectoryName(chromeDriverDirectories[i].DirectoryPath);
+                    fileSystemService.DeleteDirectory(chromeDriverDirectories[i].DirectoryPath);
+                    fileSystemService.CreateDirectory(chromeDriverDirectories[i].DirectoryPath);
                 }
             }
             catch (Exception ex)
             {
                 AddLog("SettingsService", ex);
             }
-            return new List<WebHTMLElementModel>();
         }
 
-        public async Task<string> GetScreenshotFolderPath(string RoleId, string BotClientRoleConnectionId)
+        public async Task<string> GeneratePassword(int Length)
         {
+            var result = "";
             try
             {
-                var screenshotFolderPath = $"{screenshotPath}{RoleId}";
-                if (!Directory.Exists(screenshotFolderPath))
-                    Directory.CreateDirectory(@screenshotFolderPath);
-                screenshotFolderPath = $"{screenshotPath}{RoleId}\\{BotClientRoleConnectionId}";
-                if (!Directory.Exists(screenshotFolderPath))
-                    Directory.CreateDirectory(@screenshotFolderPath);
-                return screenshotFolderPath;
+                StringBuilder generationResult = new StringBuilder();
+                var passwordConstructorString = configuration.GetSection("PasswordConstructorString").Value;
+                while (0 < Length--)
+                {
+                    generationResult.Append(passwordConstructorString[random.Next(passwordConstructorString.Length)]);
+                }
+                result = generationResult.ToString();
             }
             catch (Exception ex)
             {
                 AddLog("SettingsService", ex);
             }
-            return null;
+            return result;
         }
-        
+
+        public bool WaitTime(int Milliseconds)
+        {
+            /*
+            var waitingTime = DateTime.Now.AddMilliseconds(Milliseconds / 10);
+            while (DateTime.Now < waitingTime) { 
+            */
+            Thread.Sleep(Milliseconds);
+            return true;
+        }
+
         public IList<T> Shuffle<T>(IList<T> list)
         {
             try
@@ -225,143 +216,5 @@ namespace BotClient.Bussines.Services
             }
             return list;
         }
-
-        //!--
-        public async Task UpdateWebConnectionFile()
-        {
-            if (File.Exists(configurationFilePath))
-                webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
-        }
-        //--!
-
-        public async Task<string> GeneratePassword(int Length)
-        {
-            var result = "";
-            try
-            {
-                StringBuilder res = new StringBuilder();
-                Random rnd = new Random();
-                while (0 < Length--)
-                {
-                    res.Append(passwordConstructorString[rnd.Next(passwordConstructorString.Length)]);
-                }
-                result = res.ToString();
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-            return result;
-        }
-
-        public bool WaitTime(int Milliseconds)
-        {
-            /*
-            var waitingTime = DateTime.Now.AddMilliseconds(Milliseconds / 10);
-            while (DateTime.Now < waitingTime) { 
-            */
-            Thread.Sleep(Milliseconds);
-            return true;
-        }
-
-        public void ClearChromeDriverFolder()
-        {
-            try
-            {
-                if (Directory.Exists("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2"))
-                {
-                    var directory = new DirectoryInfo("C:\\Users\\Administrator\\AppData\\Local\\Temp\\2");
-                    foreach (FileInfo file in directory.GetFiles())
-                        file.Delete();
-                    foreach (DirectoryInfo subDirectory in directory.GetDirectories())
-                        subDirectory.Delete();
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-        }
-
-        private bool isSimilarPreviousAction(int OriginalIndex, List<EnumBotActionType> ScheduleList)
-        {
-            try
-            {
-                if (OriginalIndex > 0)
-                    return ScheduleList[OriginalIndex - 1] == ScheduleList[OriginalIndex];
-
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-            return false;
-        }
-
-        //!--
-        private void CreateErrorLogFile()
-        {
-            try
-            {
-                if (!File.Exists(errorLogFilePath))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(@errorLogFilePath));
-                    File.Create(@errorLogFilePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-        }
-
-        private void CreateErrorWebElementLogFile()
-        {
-            try
-            {
-                if (!File.Exists(errorWebElementLogFilePath))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(errorWebElementLogFilePath));
-                    File.Create(errorWebElementLogFilePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-        }
-
-        private void CreateScreenshotFolder()
-        {
-            try
-            {
-                if (!Directory.Exists(screenshotPath))
-                    Directory.CreateDirectory(@screenshotPath);
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-        }
-
-        private void CreateConfigurationFile()
-        {
-            try
-            {
-                if (!File.Exists(configurationFilePath))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(configurationFilePath));
-                    File.WriteAllText(@configurationFilePath, JsonConvert.SerializeObject(webConnectionSettings));
-                }
-                webConnectionSettings = JsonConvert.DeserializeObject<WebConnectionSettings>(File.ReadAllText(configurationFilePath));
-            }
-            catch (Exception ex)
-            {
-                AddLog("SettingsService", ex);
-            }
-        }
-    
-        //--!
-    
     }
 }

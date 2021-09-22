@@ -40,7 +40,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -64,7 +64,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -84,7 +84,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -104,7 +104,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -121,7 +121,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
         }
 
@@ -134,7 +134,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
         }
 
@@ -149,7 +149,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -168,7 +168,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -184,7 +184,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -200,7 +200,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -219,7 +219,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -281,7 +281,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -329,7 +329,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -351,7 +351,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -379,7 +379,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -396,7 +396,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -412,7 +412,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -445,7 +445,7 @@ namespace BotClient.Bussines.Services
             }
             catch(Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }
@@ -474,7 +474,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return BotNews;
         }
@@ -500,7 +500,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotActionService", ex).ConfigureAwait(false);
+                settingsService.AddLog("BotActionService", ex);
             }
             return result;
         }

@@ -7,8 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotClient.Bussines.Interfaces;
 using BotClient.Models.Bot;
+using BotClient.Models.Enumerators;
+using BotClient.Models.FileSystem.Enumerators;
 using BotDataModels.Bot.Enumerators;
-using BotFile.Bussines.Interfaces;
 using BotMySQL.Bussines.Interfaces.Composite;
 using BotMySQL.Bussines.Interfaces.MySQL;
 using Microsoft.AspNetCore.Http;
@@ -30,7 +31,8 @@ namespace BotClient.Controllers
         private readonly IBotWorkService botWorkService;
         private readonly IPhraseService phraseService;
         private readonly ITextService textService;
-        private readonly IFileService fileService;
+        private readonly IFileSystemService fileSystemService;
+        private readonly IGoogleDriveService googleDriveService;
 
         public TestController(IBotCompositeService BotCompositeService,
                               IClientCompositeService ClientCompositeService,
@@ -41,7 +43,8 @@ namespace BotClient.Controllers
                               IBotWorkService BotWorkService,
                               IPhraseService PhraseService,
                               ITextService TextService,
-                              IFileService FileService)
+                              IFileSystemService FileSystemService,
+                              IGoogleDriveService GoogleDriveService)
         {
             botCompositeService = BotCompositeService;
             clientCompositeService = ClientCompositeService;
@@ -52,13 +55,15 @@ namespace BotClient.Controllers
             botWorkService = BotWorkService;
             phraseService = PhraseService;
             textService = TextService;
-            fileService = FileService;
+            fileSystemService = FileSystemService;
+            googleDriveService = GoogleDriveService;
         }
 
         [HttpGet("Test")]
         public async Task<IActionResult> Test()
         {
-            return Ok("hello");
+            googleDriveService.GetFiles();
+            return Ok();
         }
 
     }

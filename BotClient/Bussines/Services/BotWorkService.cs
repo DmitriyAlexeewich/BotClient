@@ -104,7 +104,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
         }
 
@@ -181,7 +181,6 @@ namespace BotClient.Bussines.Services
                         roleActionCount -= complitedRoleActions.Count(item => item.isSuccess);
 
                         await Chill(WebDriverId, botId, bot.isSkipSecondAction).ConfigureAwait(false);
-
                         var botWorkActionSchedule = GenerateSchedule(RoleId, botId, startTime);
 
                         while ((DateTime.Now > startTime) && (DateTime.Now < endTime) && (botWorkActionSchedule.Count > 0))
@@ -234,7 +233,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
         }
 
@@ -343,7 +342,7 @@ namespace BotClient.Bussines.Services
                                                 botCompositeService.CreateBotActionHistory(BotClientRoleConnector.BotId, EnumBotActionType.RoleMission,
                                                                     $"Успешный переход на страницу контактёра {BotClientRoleConnector.ClientId} ({client.FullName})");
                                                 clientCompositeService.UpdateClientData(client);
-                                                await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                                                await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.MissionId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                                             }
                                             break;
                                         case EnumMissionActionType.GoToGroup:
@@ -425,7 +424,7 @@ namespace BotClient.Bussines.Services
                                                     stepResult = false;
                                                     for (int j = 0; j < newMessage.TextParts.Count; j++)
                                                     {
-                                                        var sendResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, stepResult).ConfigureAwait(false);
+                                                        var sendResult = await vkActionService.SendFirstMessage(WebDriverId, newMessage.TextParts[j].Text, BotClientRoleConnector.RoleId, BotClientRoleConnector.MissionId, BotClientRoleConnector.Id, stepResult).ConfigureAwait(false);
                                                         if (await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false))
                                                         {
                                                             botCompositeService.SetIsPrintBlock(BotClientRoleConnector.BotId, true);
@@ -440,7 +439,7 @@ namespace BotClient.Bussines.Services
                                                                 apologies = await GetApologies(newMessage, j).ConfigureAwait(false);
                                                                 if (apologies.Length > 0)
                                                                 {
-                                                                    var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id).ConfigureAwait(false);
+                                                                    var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies, BotClientRoleConnector.RoleId, BotClientRoleConnector.MissionId, BotClientRoleConnector.Id).ConfigureAwait(false);
                                                                     if ((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
                                                                         clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
                                                                 }
@@ -456,7 +455,7 @@ namespace BotClient.Bussines.Services
                                                             apologies = await GetApologies(newMessage).ConfigureAwait(false);
                                                             if (apologies.Length > 0)
                                                             {
-                                                                var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id).ConfigureAwait(false);
+                                                                var sendApologiesResult = await vkActionService.SendFirstMessage(WebDriverId, apologies, BotClientRoleConnector.RoleId, BotClientRoleConnector.MissionId, BotClientRoleConnector.Id).ConfigureAwait(false);
                                                                 clientCompositeService.CreateMessage(BotClientRoleConnector.Id, apologies);
                                                                 if ((!sendApologiesResult.hasError) && (sendApologiesResult.ActionResultMessage == EnumActionResult.Success))
                                                                     clientCompositeService.CreateMessage(BotClientRoleConnector.Id, newMessage.Text);
@@ -507,7 +506,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return false;
         }
@@ -600,7 +599,7 @@ namespace BotClient.Bussines.Services
 
                             stepsResult.Add(stepResult);
                             if (!stepResult)
-                                await settingsService.AddLog("BotWorkService", "Mission news error -" + missionNodes[0].Type.ToString("g"));
+                                settingsService.AddMissionLog(missionNodes[0].Type, missionNodes[0].Text);
 
                             var missionPath = missionNodes[0].Path;
                             if (missionPath.Length > 0)
@@ -661,7 +660,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -708,13 +707,17 @@ namespace BotClient.Bussines.Services
                                         stepsResult.Add(false);
                                     break;
                                 case EnumMissionActionType.PostNews:
-                                    var text = await textService.RandMessage(missionNodes[0].Text).ConfigureAwait(false);
-                                    stepsResult.Add(await vkActionService.CreatePostNews(WebDriverId, text).ConfigureAwait(false));
+                                    var createPostNewsMissionNodeText = JsonConvert.DeserializeObject<CreatePostNewsMissionNodeTextModel>(missionNodes[0].Text);
+                                    createPostNewsMissionNodeText.Text = await textService.RandMessage(createPostNewsMissionNodeText.Text).ConfigureAwait(false);
+                                    var filePath = "";
+                                    if (createPostNewsMissionNodeText.FilePath.Count > 0)
+                                        filePath = "C:\\File\\" + createPostNewsMissionNodeText.FilePath[random.Next(0, createPostNewsMissionNodeText.FilePath.Count)];
+                                    stepsResult.Add(await vkActionService.CreatePostNews(WebDriverId, createPostNewsMissionNodeText.Text, filePath).ConfigureAwait(false));
                                     if (stepsResult.IndexOf(false) == -1)
                                     {
                                         var missionGroups = missionCompositeService.GetAllBotGroupMissionConnections(RoleId, randomMissionId, BotId);
                                         if (missionGroups.Count > 0)
-                                            missionCompositeService.SetBotGroupMissionConnectionText(missionGroups[0].Id, text);
+                                            missionCompositeService.SetBotGroupMissionConnectionText(missionGroups[0].Id, createPostNewsMissionNodeText.Text);
                                     }
                                     break;
                                 case EnumMissionActionType.RandomNewsAction:
@@ -766,7 +769,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -843,7 +846,7 @@ namespace BotClient.Bussines.Services
                                                 }
                                                 else
                                                     botCompositeService.SetIsPrintBlock(BotId, true);
-                                                await webDriverService.GetScreenshot(WebDriverId, botDialogsWithNewBotMessages[i].RoleId, botDialogsWithNewBotMessages[i].Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                                                await webDriverService.GetScreenshot(WebDriverId, botDialogsWithNewBotMessages[i].RoleId, botDialogsWithNewBotMessages[i].MissionId, botDialogsWithNewBotMessages[i].Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                                             }
                                         }
                                         if (!sendAnswerMessageResult.hasError)
@@ -866,7 +869,7 @@ namespace BotClient.Bussines.Services
             catch
             (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return true;
         }
@@ -956,7 +959,7 @@ namespace BotClient.Bussines.Services
                                     }
                                 }
                             }
-                            await webDriverService.GetScreenshot(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                            await webDriverService.GetScreenshot(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector.MissionId, botClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                         }
                         /*else
                             await vkActionService.SendAnswerMessage(WebDriverId, await textService.AudioReaction().ConfigureAwait(false), ClientVkId, botClientRoleConnector.Id).ConfigureAwait(false);
@@ -968,7 +971,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return false;
         }
@@ -997,7 +1000,7 @@ namespace BotClient.Bussines.Services
             catch
             (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -1050,7 +1053,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -1091,7 +1094,7 @@ namespace BotClient.Bussines.Services
                     }
                 }
                 if (!await vkActionService.hasChatBlock(WebDriverId).ConfigureAwait(false))
-                    await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
+                    await webDriverService.GetScreenshot(WebDriverId, BotClientRoleConnector.RoleId, BotClientRoleConnector.MissionId, BotClientRoleConnector.Id, DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")).ConfigureAwait(false);
                 else
                     clientCompositeService.SetIsChatBlocked(BotClientRoleConnector.Id, true);
                 if (await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false))
@@ -1099,7 +1102,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
             return result;
         }
@@ -1197,7 +1200,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("BotWorkService", ex);
+                settingsService.AddLog("BotWorkService", ex);
             }
         }
 

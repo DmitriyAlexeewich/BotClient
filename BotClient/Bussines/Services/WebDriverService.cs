@@ -53,7 +53,7 @@ namespace BotClient.Bussines.Services
                         if (startResult.Item2.HasError)
                         {
                             webDrivers = new List<HTMLWebDriver>();
-                            await settingsService.AddLog("WebDriver", startResult.Item2.ExceptionMessage).ConfigureAwait(false);
+                            settingsService.AddLog("WebDriver", startResult.Item2.ExceptionMessage);
                             break;
                         }
                     }
@@ -65,7 +65,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
+                settingsService.AddLog("WebDriverService", ex);
             }
         }
 
@@ -86,12 +86,12 @@ namespace BotClient.Bussines.Services
                     webDrivers[webDrivers.IndexOf(webDriver)] = startResult.Item1;
                     result = startResult.Item2;
                 }
-                if(result.HasError)
-                    await settingsService.AddLog("WebDriver", result.ExceptionMessage).ConfigureAwait(false);
+                if (result.HasError)
+                    settingsService.AddLog("WebDriver", result.ExceptionMessage);
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
+                settingsService.AddLog("WebDriverService", ex);
             }
         }
 
@@ -107,7 +107,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex).ConfigureAwait(false);
+                settingsService.AddLog("WebDriverService", ex);
             }
         }
         
@@ -366,7 +366,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return new List<HTMLWebDriver>();
         }
@@ -381,7 +381,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }
@@ -397,7 +397,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -419,7 +419,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -439,13 +439,13 @@ namespace BotClient.Bussines.Services
                         if (element.isAvailable)
                             return element;
                         else
-                            await settingsService.AddWebElementLog(Selector.ToString("g"), Link).ConfigureAwait(false);
+                            settingsService.AddElementLog(Selector.ToString("g"), Link);
                     }
                 }
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return null;
         }
@@ -472,7 +472,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -495,7 +495,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -539,7 +539,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
@@ -558,12 +558,12 @@ namespace BotClient.Bussines.Services
             }
             catch(Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return false;
         }
 
-        public async Task GetScreenshot(Guid WebDriverId, int RoleId, int BotClientRoleConnectionId, string ScreenshotName)
+        public async Task GetScreenshot(Guid WebDriverId, int RoleId, int MissionId, int ConnectionId, string ScreenshotName)
         {
             try
             {
@@ -573,24 +573,24 @@ namespace BotClient.Bussines.Services
                 {
                     Screenshot image = ((ITakesScreenshot)webDriver.WebDriver).GetScreenshot();
                     ScreenshotName = ScreenshotName.Replace('-', '_');
-                    var folderPath = await settingsService.GetScreenshotFolderPath(RoleId.ToString(), BotClientRoleConnectionId.ToString());
+                    var folderPath = settingsService.GetScreenshotFolderPath(RoleId, MissionId, ConnectionId);
                     if (folderPath != null)
                     {
                         image.SaveAsFile($"{folderPath}\\{ScreenshotName}.png", ScreenshotImageFormat.Png);
                         var dialogScreenshotCreate = new DialogScreenshotCreateModel()
                         {
-                            BotClientRoleConnectionId = BotClientRoleConnectionId,
+                            BotClientRoleConnectionId = ConnectionId,
                             ScreenshotCount = 1
                         };
                         var createDialogScreenshotResult = dialogScreenshotService.CreateDialogScreenshot(dialogScreenshotCreate);
                         if(createDialogScreenshotResult.HasError)
-                            await settingsService.AddLog("WebDriverService", createDialogScreenshotResult.ExceptionMessage);
+                            settingsService.AddLog("WebDriverService", createDialogScreenshotResult.ExceptionMessage);
                     }
                 }
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
         }
 
@@ -621,7 +621,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
         }
 
@@ -639,7 +639,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return "";
         }
@@ -660,7 +660,7 @@ namespace BotClient.Bussines.Services
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("WebDriverService", ex);
+                settingsService.AddLog("WebDriverService", ex);
             }
             return result;
         }

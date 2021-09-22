@@ -38,7 +38,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -55,7 +55,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -76,7 +76,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -170,7 +170,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -195,7 +195,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkActionService", ex);
+                settingsService.AddLog("VkActionService", ex);
             }
             return false;
         }
@@ -211,7 +211,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -226,7 +226,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -256,7 +256,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
@@ -271,10 +271,32 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkPersonalService", ex);
+                settingsService.AddLog("VkPersonalService", ex);
             }
             return result;
         }
 
+        public async Task<bool> SwitchAvatar(Guid WebDriverId, string FilePath)
+        {
+            var result = false;
+            try
+            {
+                settings = settingsService.GetServerSettings();
+                var switchAvatarBtn = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".owner_photo_bubble",
+                                                                                                EnumWebHTMLElementSelector.CSSSelector, ".owner_photo_bubble_action.owner_photo_bubble_action_update").ConfigureAwait(false);
+                if (webElementService.ClickToElement(switchAvatarBtn, EnumClickType.ElementClick))
+                {
+                    if (await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".OwnerAvatarEditor__formInput", FilePath).ConfigureAwait(false))
+                    {
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkPersonalService", ex);
+            }
+            return result;
+        }
     }
 }

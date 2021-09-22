@@ -3,6 +3,7 @@ using BotClient.Models.HTMLElements;
 using BotClient.Models.WebReports;
 using BotDataModels.Bot.Enumerators;
 using BotDataModels.Client;
+using BotDataModels.Role.Enumerators;
 using BotDataModels.Settings;
 using System;
 using System.Collections.Generic;
@@ -12,32 +13,15 @@ namespace BotClient.Bussines.Interfaces
 {
     public interface ISettingsService
     {
-
         WebConnectionSettings GetServerSettings();
-
-        Task<bool> AddLog(string CodeFileName, Exception Ex);
-
-        Task<bool> AddLog(string CodeFileName, string Ex);
-
-        Task<bool> AddWebElementLog(string Selector, string Link);
-
-        Task<List<string>> GetLogLines();
-
-        Task<SettingsReport> AddUpdateAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform, List<WebHTMLElementModel> Algoritm);
-
-        Task<List<WebHTMLElementModel>> GetAlgoritm(EnumAlgoritmName AlgoritmName, EnumSocialPlatform Platform);
-
-        Task<string> GetScreenshotFolderPath(string RoleId, string BotClientRoleConnectionId);
-
-        IList<T> Shuffle<T>(IList<T> list);
-                
-        IList<T> Split<T>(IList<T> list, int Index);
-
-        Task UpdateWebConnectionFile();
-        Task<string> GeneratePassword(int Length);
-
-        bool WaitTime(int Milliseconds);
-
+        void AddLog(string CodeFileName, Exception ExceptionText);
+        void AddElementLog(string Selector, string Link);
+        void AddMissionLog(EnumMissionActionType MissionActionType, string Text);
+        string GetScreenshotFolderPath(int RoleId, int MissionId, int ConnectionId);
         void ClearChromeDriverFolder();
+        Task<string> GeneratePassword(int Length);
+        bool WaitTime(int Milliseconds);
+        IList<T> Shuffle<T>(IList<T> list);
+        IList<T> Split<T>(IList<T> list, int Index);
     }
 }

@@ -37,7 +37,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkLoginService", ex);
+                settingsService.AddLog("VkLoginService", ex);
             }
             return result;
         }
@@ -52,7 +52,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkLoginService", ex);
+                settingsService.AddLog("VkLoginService", ex);
             }
             return result;
         }
@@ -67,7 +67,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkLoginService", ex);
+                settingsService.AddLog("VkLoginService", ex);
             }
             return result;
         }
@@ -106,7 +106,7 @@ namespace BotClient.Bussines.Services.VkPages
             }
             catch (Exception ex)
             {
-                await settingsService.AddLog("VkLoginService", ex);
+                settingsService.AddLog("VkLoginService", ex);
             }
             return result;
         }
