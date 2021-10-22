@@ -17,7 +17,8 @@ namespace BotClient.Bussines.Services.VkPages
 
         public VkPersonalService(IWebDriverService WebDriverService,
                               IWebElementService WebElementService,
-                              ISettingsService SettingsService)
+                              ISettingsService SettingsService,
+                              IFileSystemService FileSystemService)
         {
             webDriverService = WebDriverService;
             webElementService = WebElementService;
@@ -288,7 +289,51 @@ namespace BotClient.Bussines.Services.VkPages
                 {
                     if (await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".OwnerAvatarEditor__formInput", FilePath).ConfigureAwait(false))
                     {
+                        var _switchAvatarResult = false;
+                        string[] btnsText = new string[] { "Сохранить", "изменения", "Продолжить" };
+                        for (int i = 0; i < btnsText.Length; i++)
+                        {
+                            if (await SwitchAvatarWaitButton(WebDriverId, btnsText[i]).ConfigureAwait(false))
+                            {
+                                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".Button.Button--primary.Button--size-m", EnumClickType.ElementClick).ConfigureAwait(false))
+                                    _switchAvatarResult = true;
+                                else
+                                {
+                                    _switchAvatarResult = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                _switchAvatarResult = false;
+                                break;
+                            }
+                        }
+                        if (_switchAvatarResult)
+                            result = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                settingsService.AddLog("VkPersonalService", ex);
+            }
+            return result;
+        }
 
+        private async Task<bool> SwitchAvatarWaitButton(Guid WebDriverId, string BtnText)
+        {
+            var result = false;
+            try
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    settingsService.WaitTime(5000);
+                    var btnText = await webElementService.GetElementINNERText(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".Button.Button--primary.Button--size-m", true);
+                    if (btnText.IndexOf(BtnText) != -1)
+                    {
+                        result = true;
+                        break;
                     }
                 }
             }

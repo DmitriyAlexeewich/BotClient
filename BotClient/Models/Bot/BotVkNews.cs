@@ -12,5 +12,6 @@ namespace BotClient.Models.Bot
         public BotNewsModel BotNews { get; set; }
         public WebHTMLElement NewsElement { get; set; }
         public bool hasCaptcha { get; set; }
+        public bool hasMessage { get; set; }
     }
 }

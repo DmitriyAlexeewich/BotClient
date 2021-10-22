@@ -11,5 +11,6 @@ namespace BotClient.Bussines.Interfaces
     {
         Task StartQuizBot(int ServerId, int RoleId);
         Task<List<string>> Test(string Text);
+        bool isRegexMatch(string NewMessageText, string RegexString, bool isRegex, bool isInclude);
     }
 }

@@ -76,7 +76,7 @@
           "lib/netstandard2.0/Google.Protobuf.dll": {}
         }
       },
-      "HtmlAgilityPack/1.11.36": {
+      "HtmlAgilityPack/1.11.37": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {}
@@ -240,7 +240,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/94.0.4606.4101": {
+      "Selenium.WebDriver.ChromeDriver/94.0.4606.6100": {
         "type": "package",
         "build": {
           "build/Selenium.WebDriver.ChromeDriver.targets": {}
@@ -585,14 +585,14 @@
         "lib/netstandard2.0/Google.Protobuf.xml"
       ]
     },
-    "HtmlAgilityPack/1.11.36": {
-      "sha512": "dCuPhd6Mcdz0oyaSidPqZZiaKcVaBnIqCQlvgJx7Qr5PJAjSatSIVPmuOwpMjbtR8mqoXyUbWVKxuairGGauJg==",
+    "HtmlAgilityPack/1.11.37": {
+      "sha512": "HioktZJuMHVW7QTwVayHDoBL8dPL68vGRLFdQXYNuSJkVfhxn6xihcocUgbR+B1Lm/YesigUvWrdH0JY+PZ+0g==",
       "type": "package",
-      "path": "htmlagilitypack/1.11.36",
+      "path": "htmlagilitypack/1.11.37",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "htmlagilitypack.1.11.36.nupkg.sha512",
+        "htmlagilitypack.1.11.37.nupkg.sha512",
         "htmlagilitypack.nuspec",
         "lib/Net35/HtmlAgilityPack.dll",
         "lib/Net35/HtmlAgilityPack.pdb",
@@ -895,10 +895,10 @@
         "selenium.webdriver.nuspec"
       ]
     },
-    "Selenium.WebDriver.ChromeDriver/94.0.4606.4101": {
-      "sha512": "ZuzMHM75YZ7CuFgz6U0mr9jhJEaJep+PHcTA8LSOKiv5LZt6xE+Qmb8GoPlGHjL859Wnx0ER6fULMF9BzrFKjA==",
+    "Selenium.WebDriver.ChromeDriver/94.0.4606.6100": {
+      "sha512": "3mk0sCbTR0bCvis1VbIR6SF8PxRXQgwHjIg1bVve0DmQqC8muxoxIYdVrb3oL42cmGqVUoAxRFN/MWDHGKWYIw==",
       "type": "package",
-      "path": "selenium.webdriver.chromedriver/94.0.4606.4101",
+      "path": "selenium.webdriver.chromedriver/94.0.4606.6100",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -909,7 +909,7 @@
         "driver/mac64/chromedriver",
         "driver/win32/chromedriver.exe",
         "nupkg-icon.png",
-        "selenium.webdriver.chromedriver.94.0.4606.4101.nupkg.sha512",
+        "selenium.webdriver.chromedriver.94.0.4606.6100.nupkg.sha512",
         "selenium.webdriver.chromedriver.nuspec"
       ]
     },
@@ -1303,13 +1303,13 @@
       "BotDataModels >= 1.0.0",
       "BotMySQL >= 1.0.0",
       "Google.Apis.Drive.v3 >= 1.55.0.2397",
-      "HtmlAgilityPack >= 1.11.36",
+      "HtmlAgilityPack >= 1.11.37",
       "Microsoft.Extensions.Configuration >= 5.0.0",
       "Microsoft.Extensions.Configuration.Binder >= 5.0.0",
       "MySql.Data >= 8.0.26",
       "Newtonsoft.Json >= 13.0.1",
       "Selenium.WebDriver >= 3.141.0",
-      "Selenium.WebDriver.ChromeDriver >= 94.0.4606.4101"
+      "Selenium.WebDriver.ChromeDriver >= 94.0.4606.6100"
     ]
   },
   "packageFolders": {
@@ -1369,7 +1369,7 @@
           },
           "HtmlAgilityPack": {
             "target": "Package",
-            "version": "[1.11.36, )"
+            "version": "[1.11.37, )"
           },
           "Microsoft.Extensions.Configuration": {
             "target": "Package",
@@ -1393,7 +1393,7 @@
           },
           "Selenium.WebDriver.ChromeDriver": {
             "target": "Package",
-            "version": "[94.0.4606.4101, )"
+            "version": "[94.0.4606.6100, )"
           }
         },
         "imports": [

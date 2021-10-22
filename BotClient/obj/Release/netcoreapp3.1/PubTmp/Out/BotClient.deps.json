@@ -32,15 +32,15 @@
       "BotClient/1.0.0": {
         "dependencies": {
           "BotDataModels": "1.0.0",
-          "BotFile": "1.0.0",
           "BotMySQL": "1.0.0",
-          "HtmlAgilityPack": "1.11.36",
+          "Google.Apis.Drive.v3": "1.55.0.2397",
+          "HtmlAgilityPack": "1.11.37",
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "MySql.Data": "8.0.26",
           "Newtonsoft.Json": "13.0.1",
           "Selenium.WebDriver": "3.141.0",
-          "Selenium.WebDriver.ChromeDriver": "92.0.4515.10700",
+          "Selenium.WebDriver.ChromeDriver": "94.0.4606.6100",
           "Microsoft.AspNetCore.Antiforgery": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Abstractions": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Cookies": "3.1.0.0",
@@ -76,6 +76,7 @@
           "Microsoft.AspNetCore.Http.Connections": "3.1.0.0",
           "Microsoft.AspNetCore.Http": "3.1.0.0",
           "Microsoft.AspNetCore.Http.Extensions": "3.1.0.0",
+          "Microsoft.AspNetCore.Http.Features": "3.1.0.0",
           "Microsoft.AspNetCore.HttpOverrides": "3.1.0.0",
           "Microsoft.AspNetCore.HttpsPolicy": "3.1.0.0",
           "Microsoft.AspNetCore.Identity": "3.1.0.0",
@@ -213,6 +214,7 @@
           "System.IO.FileSystem.Watcher": "4.1.2.0",
           "System.IO.IsolatedStorage": "4.1.2.0",
           "System.IO.MemoryMappedFiles": "4.1.2.0",
+          "System.IO.Pipelines": "4.0.2.0",
           "System.IO.Pipes": "4.1.2.0",
           "System.IO.UnmanagedMemoryStream": "4.1.2.0",
           "System.Linq": "4.2.2.0",
@@ -252,6 +254,7 @@
           "System.Resources.Reader": "4.1.2.0",
           "System.Resources.ResourceManager": "4.1.2.0",
           "System.Resources.Writer": "4.1.2.0",
+          "System.Runtime.CompilerServices.Unsafe.Reference": "4.0.6.0",
           "System.Runtime.CompilerServices.VisualC": "4.1.2.0",
           "System.Runtime": "4.2.2.0",
           "System.Runtime.Extensions": "4.2.2.0",
@@ -335,24 +338,73 @@
           "lib/netstandard2.0/BouncyCastle.Crypto.dll": {}
         }
       },
-      "DocumentFormat.OpenXml/2.12.3": {
+      "Google.Apis/1.55.0": {
         "dependencies": {
-          "System.IO.Packaging": "4.7.0"
+          "Google.Apis.Core": "1.55.0"
         },
         "runtime": {
-          "lib/netstandard2.0/DocumentFormat.OpenXml.dll": {
-            "assemblyVersion": "2.12.3.0",
-            "fileVersion": "2.12.3.0"
+          "lib/netstandard2.0/Google.Apis.dll": {
+            "assemblyVersion": "1.55.0.0",
+            "fileVersion": "1.55.0.0"
           }
         },
         "compile": {
-          "lib/netstandard2.0/DocumentFormat.OpenXml.dll": {}
+          "lib/netstandard2.0/Google.Apis.dll": {}
+        }
+      },
+      "Google.Apis.Auth/1.55.0": {
+        "dependencies": {
+          "Google.Apis": "1.55.0",
+          "Google.Apis.Core": "1.55.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.Auth.PlatformServices.dll": {
+            "assemblyVersion": "1.55.0.0",
+            "fileVersion": "1.55.0.0"
+          },
+          "lib/netstandard2.0/Google.Apis.Auth.dll": {
+            "assemblyVersion": "1.55.0.0",
+            "fileVersion": "1.55.0.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Google.Apis.Auth.PlatformServices.dll": {},
+          "lib/netstandard2.0/Google.Apis.Auth.dll": {}
+        }
+      },
+      "Google.Apis.Core/1.55.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.Core.dll": {
+            "assemblyVersion": "1.55.0.0",
+            "fileVersion": "1.55.0.0"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Google.Apis.Core.dll": {}
+        }
+      },
+      "Google.Apis.Drive.v3/1.55.0.2397": {
+        "dependencies": {
+          "Google.Apis": "1.55.0",
+          "Google.Apis.Auth": "1.55.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Google.Apis.Drive.v3.dll": {
+            "assemblyVersion": "1.55.0.2397",
+            "fileVersion": "1.55.0.2397"
+          }
+        },
+        "compile": {
+          "lib/netstandard2.0/Google.Apis.Drive.v3.dll": {}
         }
       },
       "Google.Protobuf/3.14.0": {
         "dependencies": {
           "System.Memory": "4.5.3",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+          "System.Runtime.CompilerServices.Unsafe": "4.5.2"
         },
         "runtime": {
           "lib/netstandard2.0/Google.Protobuf.dll": {
@@ -364,11 +416,11 @@
           "lib/netstandard2.0/Google.Protobuf.dll": {}
         }
       },
-      "HtmlAgilityPack/1.11.36": {
+      "HtmlAgilityPack/1.11.37": {
         "runtime": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {
-            "assemblyVersion": "1.11.36.0",
-            "fileVersion": "1.11.36.0"
+            "assemblyVersion": "1.11.37.0",
+            "fileVersion": "1.11.37.0"
           }
         },
         "compile": {
@@ -418,25 +470,10 @@
           "lib/netstandard2.0/K4os.Hash.xxHash.dll": {}
         }
       },
-      "Microsoft.AspNetCore.Http.Features/5.0.5": {
-        "dependencies": {
-          "Microsoft.Extensions.Primitives": "5.0.1",
-          "System.IO.Pipelines": "5.0.1"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll": {
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.521.16708"
-          }
-        },
-        "compile": {
-          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll": {}
-        }
-      },
       "Microsoft.Extensions.Configuration/5.0.0": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "5.0.0",
-          "Microsoft.Extensions.Primitives": "5.0.1"
+          "Microsoft.Extensions.Primitives": "5.0.0"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.Extensions.Configuration.dll": {
@@ -450,7 +487,7 @@
       },
       "Microsoft.Extensions.Configuration.Abstractions/5.0.0": {
         "dependencies": {
-          "Microsoft.Extensions.Primitives": "5.0.1"
+          "Microsoft.Extensions.Primitives": "5.0.0"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.Extensions.Configuration.Abstractions.dll": {
@@ -476,38 +513,21 @@
           "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll": {}
         }
       },
-      "Microsoft.Extensions.Primitives/5.0.1": {
-        "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
-        },
+      "Microsoft.Extensions.Primitives/5.0.0": {
         "runtime": {
           "lib/netcoreapp3.0/Microsoft.Extensions.Primitives.dll": {
             "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.521.16609"
+            "fileVersion": "5.0.20.51904"
           }
         },
         "compile": {
           "lib/netcoreapp3.0/Microsoft.Extensions.Primitives.dll": {}
         }
       },
-      "Microsoft.NETCore.Platforms/5.0.0": {},
-      "Microsoft.Win32.SystemEvents/5.0.0": {
+      "Microsoft.NETCore.Platforms/3.1.0": {},
+      "Microsoft.Win32.SystemEvents/4.7.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "5.0.0"
-        },
-        "runtime": {
-          "lib/netstandard2.0/Microsoft.Win32.SystemEvents.dll": {
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
-          }
-        },
-        "runtimeTargets": {
-          "runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll": {
-            "rid": "win",
-            "assetType": "runtime",
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
-          }
+          "Microsoft.NETCore.Platforms": "3.1.0"
         }
       },
       "MySql.Data/8.0.26": {
@@ -567,7 +587,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/92.0.4515.10700": {},
+      "Selenium.WebDriver.ChromeDriver/94.0.4606.6100": {},
       "System.Buffers/4.5.1": {},
       "System.Configuration.ConfigurationManager/4.4.1": {
         "dependencies": {
@@ -583,71 +603,17 @@
           "ref/netstandard2.0/System.Configuration.ConfigurationManager.dll": {}
         }
       },
-      "System.Drawing.Common/5.0.2": {
+      "System.Drawing.Common/4.7.0": {
         "dependencies": {
-          "Microsoft.Win32.SystemEvents": "5.0.0"
-        },
-        "runtime": {
-          "lib/netcoreapp3.0/System.Drawing.Common.dll": {
-            "assemblyVersion": "5.0.0.2",
-            "fileVersion": "5.0.421.11614"
-          }
-        },
-        "runtimeTargets": {
-          "runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll": {
-            "rid": "unix",
-            "assetType": "runtime",
-            "assemblyVersion": "5.0.0.2",
-            "fileVersion": "5.0.421.11614"
-          },
-          "runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll": {
-            "rid": "win",
-            "assetType": "runtime",
-            "assemblyVersion": "5.0.0.2",
-            "fileVersion": "5.0.421.11614"
-          }
-        },
-        "compile": {
-          "ref/netcoreapp3.0/System.Drawing.Common.dll": {}
-        }
-      },
-      "System.IO.Packaging/4.7.0": {
-        "runtime": {
-          "lib/netstandard2.0/System.IO.Packaging.dll": {
-            "assemblyVersion": "4.0.5.0",
-            "fileVersion": "4.700.19.56404"
-          }
-        },
-        "compile": {
-          "ref/netstandard2.0/System.IO.Packaging.dll": {}
-        }
-      },
-      "System.IO.Pipelines/5.0.1": {
-        "runtime": {
-          "lib/netcoreapp3.0/System.IO.Pipelines.dll": {
-            "assemblyVersion": "5.0.0.1",
-            "fileVersion": "5.0.120.57516"
-          }
-        },
-        "compile": {
-          "ref/netcoreapp2.0/System.IO.Pipelines.dll": {}
+          "Microsoft.NETCore.Platforms": "3.1.0",
+          "Microsoft.Win32.SystemEvents": "4.7.0"
         }
       },
       "System.Memory/4.5.3": {},
-      "System.Runtime.CompilerServices.Unsafe/5.0.0": {
-        "runtime": {
-          "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.dll": {
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
-          }
-        },
-        "compile": {
-          "ref/netstandard2.1/System.Runtime.CompilerServices.Unsafe.dll": {}
-        }
-      },
+      "System.Runtime.CompilerServices.Unsafe/4.5.2": {},
       "System.Security.AccessControl/4.7.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "5.0.0",
+          "Microsoft.NETCore.Platforms": "3.1.0",
           "System.Security.Principal.Windows": "4.7.0"
         }
       },
@@ -676,12 +642,12 @@
       "System.Security.Principal.Windows/4.7.0": {},
       "System.Text.Encoding.CodePages/4.4.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "5.0.0"
+          "Microsoft.NETCore.Platforms": "3.1.0"
         }
       },
       "System.Windows.Extensions/4.7.0": {
         "dependencies": {
-          "System.Drawing.Common": "5.0.2"
+          "System.Drawing.Common": "4.7.0"
         }
       },
       "BotDataModels/1.0.0": {
@@ -690,19 +656,6 @@
         },
         "compile": {
           "BotDataModels.dll": {}
-        }
-      },
-      "BotFile/1.0.0": {
-        "dependencies": {
-          "DocumentFormat.OpenXml": "2.12.3",
-          "Microsoft.AspNetCore.Http.Features": "5.0.5",
-          "System.Drawing.Common": "5.0.2"
-        },
-        "runtime": {
-          "BotFile.dll": {}
-        },
-        "compile": {
-          "BotFile.dll": {}
         }
       },
       "BotMySQL/1.0.0": {
@@ -925,6 +878,12 @@
       "Microsoft.AspNetCore.Http.Extensions/3.1.0.0": {
         "compile": {
           "Microsoft.AspNetCore.Http.Extensions.dll": {}
+        },
+        "compileOnly": true
+      },
+      "Microsoft.AspNetCore.Http.Features/3.1.0.0": {
+        "compile": {
+          "Microsoft.AspNetCore.Http.Features.dll": {}
         },
         "compileOnly": true
       },
@@ -1750,6 +1709,12 @@
         },
         "compileOnly": true
       },
+      "System.IO.Pipelines/4.0.2.0": {
+        "compile": {
+          "System.IO.Pipelines.dll": {}
+        },
+        "compileOnly": true
+      },
       "System.IO.Pipes/4.1.2.0": {
         "compile": {
           "System.IO.Pipes.dll": {}
@@ -1981,6 +1946,12 @@
       "System.Resources.Writer/4.1.2.0": {
         "compile": {
           "System.Resources.Writer.dll": {}
+        },
+        "compileOnly": true
+      },
+      "System.Runtime.CompilerServices.Unsafe.Reference/4.0.6.0": {
+        "compile": {
+          "System.Runtime.CompilerServices.Unsafe.dll": {}
         },
         "compileOnly": true
       },
@@ -2383,12 +2354,33 @@
       "path": "bouncycastle.netcore/1.8.5",
       "hashPath": "bouncycastle.netcore.1.8.5.nupkg.sha512"
     },
-    "DocumentFormat.OpenXml/2.12.3": {
+    "Google.Apis/1.55.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-qLww6khV25dTzGU3+9rG5vB6RbMoWuNA015151ZmazoepkvxW6/4a5u4QQASoXsZsBITsw5ZO0/Xpzm31tQ43g==",
-      "path": "documentformat.openxml/2.12.3",
-      "hashPath": "documentformat.openxml.2.12.3.nupkg.sha512"
+      "sha512": "sha512-siw3M6VOFbkrTlOTo7F89BrdDFQw/XVks8qo4xDMXwGpwKpCt0KWENYs7N2RWFznJghlrmPuZ6Sx13vvYqrynA==",
+      "path": "google.apis/1.55.0",
+      "hashPath": "google.apis.1.55.0.nupkg.sha512"
+    },
+    "Google.Apis.Auth/1.55.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YPHAgzqsU3j/CiPjb2GSvZo2kHhVkFsdfrqA8X5CUWxlwfivcvSn3N5Hi995r4vpGRNmyXNiWZOXbFKps03bmg==",
+      "path": "google.apis.auth/1.55.0",
+      "hashPath": "google.apis.auth.1.55.0.nupkg.sha512"
+    },
+    "Google.Apis.Core/1.55.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QX6pmjRxZYgyGFqsa7tyxdjoEb6ssJ9lv6ub8AxhPd/BCMEglmqzW4GpsuKQZaRg9Qq9gp9HRzjCiLZ3RgmNgw==",
+      "path": "google.apis.core/1.55.0",
+      "hashPath": "google.apis.core.1.55.0.nupkg.sha512"
+    },
+    "Google.Apis.Drive.v3/1.55.0.2397": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Obqo65kMrhG7PCryZEbKJfp/MSLNI8LjLHPLPABOiHv3GMy+OQjtvsZ7RmJoJDGGLywvAETJRq1X7C+izkINzg==",
+      "path": "google.apis.drive.v3/1.55.0.2397",
+      "hashPath": "google.apis.drive.v3.1.55.0.2397.nupkg.sha512"
     },
     "Google.Protobuf/3.14.0": {
       "type": "package",
@@ -2397,12 +2389,12 @@
       "path": "google.protobuf/3.14.0",
       "hashPath": "google.protobuf.3.14.0.nupkg.sha512"
     },
-    "HtmlAgilityPack/1.11.36": {
+    "HtmlAgilityPack/1.11.37": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-dCuPhd6Mcdz0oyaSidPqZZiaKcVaBnIqCQlvgJx7Qr5PJAjSatSIVPmuOwpMjbtR8mqoXyUbWVKxuairGGauJg==",
-      "path": "htmlagilitypack/1.11.36",
-      "hashPath": "htmlagilitypack.1.11.36.nupkg.sha512"
+      "sha512": "sha512-HioktZJuMHVW7QTwVayHDoBL8dPL68vGRLFdQXYNuSJkVfhxn6xihcocUgbR+B1Lm/YesigUvWrdH0JY+PZ+0g==",
+      "path": "htmlagilitypack/1.11.37",
+      "hashPath": "htmlagilitypack.1.11.37.nupkg.sha512"
     },
     "K4os.Compression.LZ4/1.1.11": {
       "type": "package",
@@ -2425,13 +2417,6 @@
       "path": "k4os.hash.xxhash/1.0.6",
       "hashPath": "k4os.hash.xxhash.1.0.6.nupkg.sha512"
     },
-    "Microsoft.AspNetCore.Http.Features/5.0.5": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-UZxVOurL/kSpWRQf4XAVMNeOxLyHpOc32NdYxkli807S5cTposKnAH3H6sQ0+bMrkN3MP3fdezW9i8PwKbmb5w==",
-      "path": "microsoft.aspnetcore.http.features/5.0.5",
-      "hashPath": "microsoft.aspnetcore.http.features.5.0.5.nupkg.sha512"
-    },
     "Microsoft.Extensions.Configuration/5.0.0": {
       "type": "package",
       "serviceable": true,
@@ -2453,26 +2438,26 @@
       "path": "microsoft.extensions.configuration.binder/5.0.0",
       "hashPath": "microsoft.extensions.configuration.binder.5.0.0.nupkg.sha512"
     },
-    "Microsoft.Extensions.Primitives/5.0.1": {
+    "Microsoft.Extensions.Primitives/5.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-5WPSmL4YeP7eW+Vc8XZ4DwjYWBAiSwDV9Hm63JJWcz1Ie3Xjv4KuJXzgCstj48LkLfVCYa7mLcx7y+q6yqVvtw==",
-      "path": "microsoft.extensions.primitives/5.0.1",
-      "hashPath": "microsoft.extensions.primitives.5.0.1.nupkg.sha512"
+      "sha512": "sha512-cI/VWn9G1fghXrNDagX9nYaaB/nokkZn0HYAawGaELQrl8InSezfe9OnfPZLcJq3esXxygh3hkq2c3qoV3SDyQ==",
+      "path": "microsoft.extensions.primitives/5.0.0",
+      "hashPath": "microsoft.extensions.primitives.5.0.0.nupkg.sha512"
     },
-    "Microsoft.NETCore.Platforms/5.0.0": {
+    "Microsoft.NETCore.Platforms/3.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
-      "path": "microsoft.netcore.platforms/5.0.0",
-      "hashPath": "microsoft.netcore.platforms.5.0.0.nupkg.sha512"
+      "sha512": "sha512-z7aeg8oHln2CuNulfhiLYxCVMPEwBl3rzicjvIX+4sUuCwvXw5oXQEtbiU2c0z4qYL5L3Kmx0mMA/+t/SbY67w==",
+      "path": "microsoft.netcore.platforms/3.1.0",
+      "hashPath": "microsoft.netcore.platforms.3.1.0.nupkg.sha512"
     },
-    "Microsoft.Win32.SystemEvents/5.0.0": {
+    "Microsoft.Win32.SystemEvents/4.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Bh6blKG8VAKvXiLe2L+sEsn62nc1Ij34MrNxepD2OCrS5cpCwQa9MeLyhVQPQ/R4Wlzwuy6wMK8hLb11QPDRsQ==",
-      "path": "microsoft.win32.systemevents/5.0.0",
-      "hashPath": "microsoft.win32.systemevents.5.0.0.nupkg.sha512"
+      "sha512": "sha512-mtVirZr++rq+XCDITMUdnETD59XoeMxSpLRIII7JRI6Yj0LEDiO1pPn0ktlnIj12Ix8bfvQqQDMMIF9wC98oCA==",
+      "path": "microsoft.win32.systemevents/4.7.0",
+      "hashPath": "microsoft.win32.systemevents.4.7.0.nupkg.sha512"
     },
     "MySql.Data/8.0.26": {
       "type": "package",
@@ -2495,12 +2480,12 @@
       "path": "selenium.webdriver/3.141.0",
       "hashPath": "selenium.webdriver.3.141.0.nupkg.sha512"
     },
-    "Selenium.WebDriver.ChromeDriver/92.0.4515.10700": {
+    "Selenium.WebDriver.ChromeDriver/94.0.4606.6100": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1izYN4xibfIy9MgQvMpSzoNPU5TugR18aOcXptSVpVrbrgEl6pah3kgNm7WPwSknG0UX4E2u//oq0oEbqzsoqg==",
-      "path": "selenium.webdriver.chromedriver/92.0.4515.10700",
-      "hashPath": "selenium.webdriver.chromedriver.92.0.4515.10700.nupkg.sha512"
+      "sha512": "sha512-3mk0sCbTR0bCvis1VbIR6SF8PxRXQgwHjIg1bVve0DmQqC8muxoxIYdVrb3oL42cmGqVUoAxRFN/MWDHGKWYIw==",
+      "path": "selenium.webdriver.chromedriver/94.0.4606.6100",
+      "hashPath": "selenium.webdriver.chromedriver.94.0.4606.6100.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",
@@ -2516,26 +2501,12 @@
       "path": "system.configuration.configurationmanager/4.4.1",
       "hashPath": "system.configuration.configurationmanager.4.4.1.nupkg.sha512"
     },
-    "System.Drawing.Common/5.0.2": {
+    "System.Drawing.Common/4.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-rvr/M1WPf24ljpvvrVd74+NdjRUJu1bBkspkZcnzSZnmAUQWSvanlQ0k/hVHk+cHufZbZfu7vOh/vYc0q5Uu/A==",
-      "path": "system.drawing.common/5.0.2",
-      "hashPath": "system.drawing.common.5.0.2.nupkg.sha512"
-    },
-    "System.IO.Packaging/4.7.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-9VV4KAbgRQZ79iEoG40KIeZy38O30oWwewScAST879+oki8g/Wa2HXZQgrhDDxQM4GkP1PnRJll05NMiVPbYAw==",
-      "path": "system.io.packaging/4.7.0",
-      "hashPath": "system.io.packaging.4.7.0.nupkg.sha512"
-    },
-    "System.IO.Pipelines/5.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-qEePWsaq9LoEEIqhbGe6D5J8c9IqQOUuTzzV6wn1POlfdLkJliZY3OlB0j0f17uMWlqZYjH7txj+2YbyrIA8Yg==",
-      "path": "system.io.pipelines/5.0.1",
-      "hashPath": "system.io.pipelines.5.0.1.nupkg.sha512"
+      "sha512": "sha512-v+XbyYHaZjDfn0ENmJEV1VYLgGgCTx1gnfOBcppowbpOAriglYgGCvFCPr2EEZyBvXlpxbEsTwkOlInl107ahA==",
+      "path": "system.drawing.common/4.7.0",
+      "hashPath": "system.drawing.common.4.7.0.nupkg.sha512"
     },
     "System.Memory/4.5.3": {
       "type": "package",
@@ -2544,12 +2515,12 @@
       "path": "system.memory/4.5.3",
       "hashPath": "system.memory.4.5.3.nupkg.sha512"
     },
-    "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+    "System.Runtime.CompilerServices.Unsafe/4.5.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
-      "path": "system.runtime.compilerservices.unsafe/5.0.0",
-      "hashPath": "system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512"
+      "sha512": "sha512-wprSFgext8cwqymChhrBLu62LMg/1u92bU+VOwyfBimSPVFXtsNqEWC92Pf9ofzJFlk4IHmJA75EDJn1b2goAQ==",
+      "path": "system.runtime.compilerservices.unsafe/4.5.2",
+      "hashPath": "system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512"
     },
     "System.Security.AccessControl/4.7.0": {
       "type": "package",
@@ -2594,11 +2565,6 @@
       "hashPath": "system.windows.extensions.4.7.0.nupkg.sha512"
     },
     "BotDataModels/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "BotFile/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2779,6 +2745,11 @@
       "sha512": ""
     },
     "Microsoft.AspNetCore.Http.Extensions/3.1.0.0": {
+      "type": "referenceassembly",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.AspNetCore.Http.Features/3.1.0.0": {
       "type": "referenceassembly",
       "serviceable": false,
       "sha512": ""
@@ -3468,6 +3439,11 @@
       "serviceable": false,
       "sha512": ""
     },
+    "System.IO.Pipelines/4.0.2.0": {
+      "type": "referenceassembly",
+      "serviceable": false,
+      "sha512": ""
+    },
     "System.IO.Pipes/4.1.2.0": {
       "type": "referenceassembly",
       "serviceable": false,
@@ -3659,6 +3635,11 @@
       "sha512": ""
     },
     "System.Resources.Writer/4.1.2.0": {
+      "type": "referenceassembly",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Runtime.CompilerServices.Unsafe.Reference/4.0.6.0": {
       "type": "referenceassembly",
       "serviceable": false,
       "sha512": ""

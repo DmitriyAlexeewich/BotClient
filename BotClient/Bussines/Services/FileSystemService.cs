@@ -31,10 +31,13 @@ namespace BotClient.Bussines.Services
                 case EnumBasicDirectoryType.ActionLog:
                     break;
                 case EnumBasicDirectoryType.Configuration:
-                    result = GetDiretory(@"C:\Configuration");
+                    result = GetDiretory(@"C:\BotConfiguration");
                     break;
                 case EnumBasicDirectoryType.MissionLog:
                     result = GetDiretory(@"C:\BotLogs\MissionLog");
+                    break;
+                case EnumBasicDirectoryType.Avatar:
+                    result = GetDiretory(@"C:\Avatar");
                     break;
             }
             return result;

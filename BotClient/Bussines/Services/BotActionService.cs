@@ -455,22 +455,26 @@ namespace BotClient.Bussines.Services
             var result = false;
             try
             {
+
                 BotNews.hasCaptcha = false;
                 var settings = settingsService.GetServerSettings();
                 BotNews.NewsElement.ScrollTo();
-                
-                if (BotNews.BotNews.isLiked)
-                    BotNews.BotNews.isLiked = await vkActionService.LikePostNews(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
-                BotNews.hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
-                
-                if ((BotNews.BotNews.isReposted) && (!BotNews.hasCaptcha))
-                    BotNews.BotNews.isReposted = await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
-                
-                if(!BotNews.hasCaptcha)
-                    BotNews.hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
-
                 var waitingTime = (settings.NewsWaitingTimeInMinutes + random.Next(-settings.NewsWaitingDeltaTimeInMinutes, settings.NewsWaitingDeltaTimeInMinutes)) * 60000;
                 result = await hasNewMessagesByTime(WebDriverId, waitingTime, StartDialogCount).ConfigureAwait(false);
+                if (!result)
+                {
+                    if (BotNews.BotNews.isLiked)
+                        BotNews.BotNews.isLiked = await vkActionService.LikePostNews(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
+                    BotNews.hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
+
+                    if ((BotNews.BotNews.isReposted) && (!BotNews.hasCaptcha))
+                        BotNews.BotNews.isReposted = await vkActionService.RepostPostToSelfPage(WebDriverId, BotNews.BotNews.NewsId).ConfigureAwait(false);
+
+                    if (!BotNews.hasCaptcha)
+                        BotNews.hasCaptcha = await vkActionService.hasCaptcha(WebDriverId).ConfigureAwait(false);
+                }
+                else
+                    BotNews.hasMessage = result;
             }
             catch (Exception ex)
             {
@@ -489,13 +493,13 @@ namespace BotClient.Bussines.Services
                 var endTime = DateTime.Now.AddMilliseconds(WaitingTime);
                 while (DateTime.Now < endTime)
                 {
-                    settingsService.WaitTime(10000);
                     var currentDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
                     if (StartDialogCount < currentDialogCount)
                     {
                         result = true;
                         break;
                     }
+                    settingsService.WaitTime(10000);
                 }
             }
             catch (Exception ex)

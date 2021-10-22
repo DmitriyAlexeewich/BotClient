@@ -8,6 +8,7 @@
         Chromedriver = 4,
         ActionLog = 5,
         Configuration = 6,
-        MissionLog = 7
+        MissionLog = 7,
+        Avatar = 8
     }
 }

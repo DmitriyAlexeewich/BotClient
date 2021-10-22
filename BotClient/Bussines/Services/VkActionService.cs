@@ -918,7 +918,8 @@ namespace BotClient.Bussines.Services
             };
             try
             {
-                if (await webElementService.ClickToElement(WebDriverId, EnumWebHTMLElementSelector.CSSSelector, ".flat_button.profile_btn_cut_left", EnumClickType.ElementClick).ConfigureAwait(false))
+                var sendBtn = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "profile_message_send", EnumWebHTMLElementSelector.TagName, "a").ConfigureAwait(false);
+                if (webElementService.ClickToElement(sendBtn, EnumClickType.ElementClick))
                 {
                     if (await webDriverService.hasWebHTMLElement(WebDriverId, EnumWebHTMLElementSelector.Id, "mail_box_editable").ConfigureAwait(false))
                     {
@@ -1014,6 +1015,8 @@ namespace BotClient.Bussines.Services
             var result = new List<DialogWithNewMessagesModel>();
             try
             {
+                for(int i=0; i<10; i++)
+                    await webElementService.SendKeyToElement(WebDriverId, EnumWebHTMLElementSelector.TagName, "body", Keys.PageUp).ConfigureAwait(false);
                 var dialogsWithNewMessagesCont = await webElementService.GetElementInElement(WebDriverId, EnumWebHTMLElementSelector.Id, "l_msg",
                     EnumWebHTMLElementSelector.CSSSelector, ".inl_bl.left_count").ConfigureAwait(false);
                 if (dialogsWithNewMessagesCont != null)
@@ -1123,6 +1126,7 @@ namespace BotClient.Bussines.Services
                                 var messageCont = webElementService.GetElementInElement(messages[i], EnumWebHTMLElementSelector.CSSSelector, ".im-mess--text.wall_module._im_log_body");
                                 if (messageCont != null)
                                 {
+                                    webElementService.RemoveChildElementByCss(messageCont, ".im-replied._im_replied_message");
                                     var text = webElementService.GetElementINNERText(messageCont, true);
                                     var audio = webElementService.GetElementInElement(messageCont, EnumWebHTMLElementSelector.CSSSelector, ".im_msg_audiomsg");
                                     if ((text != null) || (audio != null))

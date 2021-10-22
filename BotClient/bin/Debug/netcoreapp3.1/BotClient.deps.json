@@ -34,13 +34,13 @@
           "BotDataModels": "1.0.0",
           "BotMySQL": "1.0.0",
           "Google.Apis.Drive.v3": "1.55.0.2397",
-          "HtmlAgilityPack": "1.11.36",
+          "HtmlAgilityPack": "1.11.37",
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "MySql.Data": "8.0.26",
           "Newtonsoft.Json": "13.0.1",
           "Selenium.WebDriver": "3.141.0",
-          "Selenium.WebDriver.ChromeDriver": "94.0.4606.4101",
+          "Selenium.WebDriver.ChromeDriver": "94.0.4606.6100",
           "Microsoft.AspNetCore.Antiforgery": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Abstractions": "3.1.0.0",
           "Microsoft.AspNetCore.Authentication.Cookies": "3.1.0.0",
@@ -416,11 +416,11 @@
           "lib/netstandard2.0/Google.Protobuf.dll": {}
         }
       },
-      "HtmlAgilityPack/1.11.36": {
+      "HtmlAgilityPack/1.11.37": {
         "runtime": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {
-            "assemblyVersion": "1.11.36.0",
-            "fileVersion": "1.11.36.0"
+            "assemblyVersion": "1.11.37.0",
+            "fileVersion": "1.11.37.0"
           }
         },
         "compile": {
@@ -587,7 +587,7 @@
           "lib/netstandard2.0/WebDriver.dll": {}
         }
       },
-      "Selenium.WebDriver.ChromeDriver/94.0.4606.4101": {},
+      "Selenium.WebDriver.ChromeDriver/94.0.4606.6100": {},
       "System.Buffers/4.5.1": {},
       "System.Configuration.ConfigurationManager/4.4.1": {
         "dependencies": {
@@ -2389,12 +2389,12 @@
       "path": "google.protobuf/3.14.0",
       "hashPath": "google.protobuf.3.14.0.nupkg.sha512"
     },
-    "HtmlAgilityPack/1.11.36": {
+    "HtmlAgilityPack/1.11.37": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-dCuPhd6Mcdz0oyaSidPqZZiaKcVaBnIqCQlvgJx7Qr5PJAjSatSIVPmuOwpMjbtR8mqoXyUbWVKxuairGGauJg==",
-      "path": "htmlagilitypack/1.11.36",
-      "hashPath": "htmlagilitypack.1.11.36.nupkg.sha512"
+      "sha512": "sha512-HioktZJuMHVW7QTwVayHDoBL8dPL68vGRLFdQXYNuSJkVfhxn6xihcocUgbR+B1Lm/YesigUvWrdH0JY+PZ+0g==",
+      "path": "htmlagilitypack/1.11.37",
+      "hashPath": "htmlagilitypack.1.11.37.nupkg.sha512"
     },
     "K4os.Compression.LZ4/1.1.11": {
       "type": "package",
@@ -2480,12 +2480,12 @@
       "path": "selenium.webdriver/3.141.0",
       "hashPath": "selenium.webdriver.3.141.0.nupkg.sha512"
     },
-    "Selenium.WebDriver.ChromeDriver/94.0.4606.4101": {
+    "Selenium.WebDriver.ChromeDriver/94.0.4606.6100": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZuzMHM75YZ7CuFgz6U0mr9jhJEaJep+PHcTA8LSOKiv5LZt6xE+Qmb8GoPlGHjL859Wnx0ER6fULMF9BzrFKjA==",
-      "path": "selenium.webdriver.chromedriver/94.0.4606.4101",
-      "hashPath": "selenium.webdriver.chromedriver.94.0.4606.4101.nupkg.sha512"
+      "sha512": "sha512-3mk0sCbTR0bCvis1VbIR6SF8PxRXQgwHjIg1bVve0DmQqC8muxoxIYdVrb3oL42cmGqVUoAxRFN/MWDHGKWYIw==",
+      "path": "selenium.webdriver.chromedriver/94.0.4606.6100",
+      "hashPath": "selenium.webdriver.chromedriver.94.0.4606.6100.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",

@@ -208,5 +208,38 @@ namespace BotClient.Bussines.Services
             return new List<WebHTMLElement>();
         }
 
+        public async Task<WebHTMLElement> GetParentElement(WebHTMLElement startElement, int stepsCount)
+        {
+            if ((startElement != null) && (stepsCount > 0))
+            {
+                WebHTMLElement element = startElement;
+                for (int i = 0; i < stepsCount; i++)
+                {
+                    element = GetElementInElement(element, EnumWebHTMLElementSelector.XPath, @"./..");
+                    if (element == null)
+                        break;
+                }
+                if (element != null)
+                    return null;
+            }
+            return null;
+        }
+
+        public bool RemoveChildElementByCss(WebHTMLElement Element, string CSSText)
+        {
+            if (Element != null)
+            {
+                return Element.RemoveChildElementByCss(CSSText);
+            }
+            return false;
+        }
+
+        public async Task<bool> RemoveChildElementByCss(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string CSSText)
+        {
+            var element = await webDriverService.GetElement(WebDriverId, Selector, Link).ConfigureAwait(false);
+            if (element != null)
+                return RemoveChildElementByCss(element, CSSText);
+            return false;
+        }
     }
 }

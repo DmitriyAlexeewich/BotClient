@@ -158,7 +158,7 @@ namespace BotClient.Models.HTMLElements
                     sendedText += GetAttributeValue("value");
                     if (sendedText.IndexOf(Text) != -1)
                         return true;
-                    element.Clear();
+                    //element.Clear();
                 }
                 IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
                 executor.ExecuteScript($"arguments[0].value='{Text}';" +
@@ -364,6 +364,24 @@ namespace BotClient.Models.HTMLElements
                 }
             }
             return result;
+        }
+
+        public bool RemoveChildElementByCss(string CSSText)
+        {
+            try
+            {
+                if (element != null)
+                {
+                    IJavaScriptExecutor executor = (IJavaScriptExecutor)webDriver;
+                    executor.ExecuteScript("arguments[0].querySelector('" + CSSText + "').remove();", element);
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private IWebElement FindWebElement(WebHTMLElementModel ElementModel, bool? isParentElementIsDriver = true)

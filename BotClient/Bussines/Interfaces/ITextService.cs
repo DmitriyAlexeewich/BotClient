@@ -11,7 +11,7 @@ namespace BotClient.Bussines.Interfaces
     public interface ITextService
     {
         Task<BotMessageText> RandOriginalMessage(string message, string? Name = null, EnumGender? Gender = 0);
-        string TextToRegex(string Text);
+        bool IsIncludePatttern(string Pattern, string Text);
         Task<string> GetApologies(BotMessageTextPartModel BotMessageTextPart);
         Task<string> GetApologies();
         Task<string> GetCapsApologies();

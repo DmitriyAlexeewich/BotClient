@@ -34,5 +34,8 @@ namespace BotClient.Bussines.Interfaces
         Task<WebHTMLElement> GetElementInElement(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelector, string ParentLink, EnumWebHTMLElementSelector Selector, string Link, bool? isRequired = true);
         List<WebHTMLElement> GetChildElements(WebHTMLElement Element, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true);
         Task<List<WebHTMLElement>> GetChildElements(Guid WebDriverId, EnumWebHTMLElementSelector ParentSelectorType, string ParentLink, EnumWebHTMLElementSelector SelectorType, string Link, bool? isRequired = true);
+        Task<WebHTMLElement> GetParentElement(WebHTMLElement startElement, int stepsCount);
+        bool RemoveChildElementByCss(WebHTMLElement Element, string CSSText);
+        Task<bool> RemoveChildElementByCss(Guid WebDriverId, EnumWebHTMLElementSelector Selector, string Link, string CSSText);
     }
 }
