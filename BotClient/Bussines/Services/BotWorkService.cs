@@ -78,6 +78,7 @@ namespace BotClient.Bussines.Services
                 var bots = botCompositeService.GetBotsByServerId(ServerId, null, null);
                 var settings = settingsService.GetServerSettings();
                 var browsers = await webDriverService.GetWebDrivers().ConfigureAwait(false);
+
                 bots.RemoveAll(item => item.isDead || item.isPrintBlock || item.hasCaptcha);
                 if (bots.Count > 0)
                 {
@@ -778,6 +779,7 @@ namespace BotClient.Bussines.Services
 
         private async Task<bool> CheckMessage(Guid WebDriverId, int BotId)
         {
+            var result = false;
             try
             {
                 var bot = botCompositeService.GetBotById(BotId);
@@ -800,6 +802,8 @@ namespace BotClient.Bussines.Services
                             }
                             else
                                 readNewMessagesResult = await ReadNewMessages(WebDriverId, botClientRoleConnector.RoleId, botClientRoleConnector, dialogs[i].ClientVkId).ConfigureAwait(false);
+                            if (readNewMessagesResult)
+                                result = true;
                         }
                         await vkActionService.CloseDialog(WebDriverId).ConfigureAwait(false);
                         bot = botCompositeService.GetBotById(BotId);
@@ -873,7 +877,7 @@ namespace BotClient.Bussines.Services
             {
                 settingsService.AddLog("BotWorkService", ex);
             }
-            return true;
+            return result;
         }
 
         private async Task<bool> ReadNewMessages(Guid WebDriverId, int RoleId, BotClientRoleConnectorModel botClientRoleConnector, string ClientVkId)
@@ -881,6 +885,7 @@ namespace BotClient.Bussines.Services
             try
             {
                 var newMessages = await vkActionService.GetNewMessagesInDialog(WebDriverId, ClientVkId).ConfigureAwait(false);
+
                 if ((newMessages != null) && (newMessages.Count > 0))
                 {
                     if (newMessages.FirstOrDefault(item => item.hasChatBlocked) == null)
@@ -920,6 +925,7 @@ namespace BotClient.Bussines.Services
                                 for (int i = 0; i < nodes.Count; i++)
                                 {
                                     var nodePatterns = missionCompositeService.GetNodePatterns(botClientRoleConnector.MissionId, nodes[i].PatternId);
+                                    nodePatterns = nodePatterns.OrderBy(item => item.Id).ToList();
                                     for (int j = 0; j < nodePatterns.Count; j++)
                                     {
                                         if (isRegexMatch(newMessageText, nodePatterns[j].PatternText, nodePatterns[j].isRegex, nodePatterns[j].isInclude))
@@ -1010,21 +1016,22 @@ namespace BotClient.Bussines.Services
 
         public bool isRegexMatch(string NewMessageText, string RegexString, bool isRegex, bool isInclude)
         {
+            var result = false;
             try
             {
                 if (!isRegex)
-                    return textService.IsIncludePatttern(RegexString, NewMessageText) == isInclude;
+                    result = textService.IsIncludePatttern(RegexString, NewMessageText) == isInclude;
                 else
                 {
                     var regex = new Regex(@RegexString, RegexOptions.IgnoreCase);
-                    return regex.IsMatch(NewMessageText) == isInclude;
+                    result = regex.IsMatch(NewMessageText) == isInclude;
                 }
             }
             catch (Exception ex)
             {
                 settingsService.AddLog("BotWorkService", ex);
             }
-            return false;
+            return result;
         }
 
         private async Task<string> GetApologies(BotMessageText BotMessageText, int? TextPartIndex = null)
@@ -1112,6 +1119,7 @@ namespace BotClient.Bussines.Services
                 var settings = settingsService.GetServerSettings();
                 var nextTime = DateTime.Now.AddMinutes(random.Next(settings.MinRoleWaitingTimeInMinutes, settings.MaxRoleWaitingTimeInMinutes));
                 var currentDay = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0);
+
                 var chillActionCount = 1;
 
                 if ((DateTime.Now.Hour < 8) && (DateTime.Now.Hour > 23))
@@ -1204,8 +1212,18 @@ namespace BotClient.Bussines.Services
                         }
                         waitActions.RemoveAt(0);
                     }
-                    await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                    var checkResult = await CheckMessage(WebDriverId, BotId).ConfigureAwait(false);
+                    if (checkResult)
+                    {
+                        var timeDifferece = (DateTime.Now - startTime).TotalMilliseconds;
+                        if (timeDifferece > 0)
+                        {
+                            nextTime.AddMilliseconds(timeDifferece);
+                            startTime = DateTime.Now;
+                        }
+                    }
                     startDialogCount = await vkActionService.GetNewDialogsCount(WebDriverId).ConfigureAwait(false);
+                    
                 }
             }
             catch (Exception ex)

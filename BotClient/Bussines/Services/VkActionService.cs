@@ -1115,38 +1115,48 @@ namespace BotClient.Bussines.Services
                 if (goToDialogByVkIdResult)
                 {
                     var messages = await GetMessages(WebDriverId).ConfigureAwait(false);
+                    for (int i = 0; i < 10 && messages.Count < 1; i++)
+                    {
+                        messages = await GetMessages(WebDriverId).ConfigureAwait(false);
+                        settingsService.WaitTime(5000);
+                    }
                     if ((messages != null) && (messages.Count > 0))
                     {
                         var messageText = new List<NewMessageModel>();
-                        for (int i = 0; i < messages.Count; i++)
+                        for (int i = 0; i < 10 && messageText.Count < 1; i++)
                         {
-                            var senderAttribute = webElementService.GetAttributeValue(messages[i], "data-peer");
-                            if ((senderAttribute != null) && (senderAttribute.IndexOf(ClientVkId) != -1))
+                            for (int j = 0; j < messages.Count; j++)
                             {
-                                var messageCont = webElementService.GetElementInElement(messages[i], EnumWebHTMLElementSelector.CSSSelector, ".im-mess--text.wall_module._im_log_body");
-                                if (messageCont != null)
+                                var senderAttribute = webElementService.GetAttributeValue(messages[j], "data-peer");
+                                if ((senderAttribute != null) && (senderAttribute.IndexOf(ClientVkId) != -1))
                                 {
-                                    webElementService.RemoveChildElementByCss(messageCont, ".im-replied._im_replied_message");
-                                    var text = webElementService.GetElementINNERText(messageCont, true);
-                                    var audio = webElementService.GetElementInElement(messageCont, EnumWebHTMLElementSelector.CSSSelector, ".im_msg_audiomsg");
-                                    if ((text != null) || (audio != null))
+                                    var messageCont = webElementService.GetElementInElement(messages[j], EnumWebHTMLElementSelector.CSSSelector, ".im-mess--text.wall_module._im_log_body");
+                                    if (messageCont != null)
                                     {
-                                        messageText.Add(new NewMessageModel()
+                                        webElementService.RemoveChildElementByCss(messageCont, ".im-replied._im_replied_message");
+                                        var text = webElementService.GetElementINNERText(messageCont, true);
+                                        var audio = webElementService.GetElementInElement(messageCont, EnumWebHTMLElementSelector.CSSSelector, ".im_msg_audiomsg");
+                                        if ((text != null) || (audio != null))
                                         {
-                                            AttachedText = "",
-                                            ReceiptMessageDatePlatformFormat = "",
-                                            Text = text,
-                                            hasAudio = audio == null
-                                        });
+                                            messageText.Add(new NewMessageModel()
+                                            {
+                                                AttachedText = "",
+                                                ReceiptMessageDatePlatformFormat = "",
+                                                Text = text,
+                                                hasAudio = audio == null
+                                            });
+                                        }
                                     }
                                 }
+                                else
+                                    break;
                             }
-                            else
+                            if (messageText.Count > 0)
+                            {
+                                messageText[0].hasChatBlocked = await hasChatBlock(WebDriverId).ConfigureAwait(false);
                                 break;
-                        }
-                        if (messageText.Count > 0)
-                        {
-                            messageText[0].hasChatBlocked = await hasChatBlock(WebDriverId).ConfigureAwait(false);
+                            }
+                            settingsService.WaitTime(5000);
                         }
                         if (messageText.Count > 0)
                             return messageText;
@@ -1213,9 +1223,9 @@ namespace BotClient.Bussines.Services
                             return result;
                         }
                     }
-                }
+                }/*
                 await CloseMessageBlockWindow(WebDriverId).ConfigureAwait(false);
-                await CloseModalWindow(WebDriverId).ConfigureAwait(false);
+                await CloseModalWindow(WebDriverId).ConfigureAwait(false);*/
             }
             catch (Exception ex)
             {
